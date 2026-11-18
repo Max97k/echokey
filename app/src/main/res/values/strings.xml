@@ -70,4 +70,32 @@
     <string name="step_y_label">Vertical step: %1$d dp (smaller = faster)</string>
     <string name="show_switch_ime_title">Show Switch Keyboard Key</string>
     <string name="show_switch_ime_desc">Keep off on Pixel or devices that already show a globe icon in the navigation bar.</string>
+
+    <string name="btn_open_pc_remote">Open PC Bluetooth Voice Remote</string>
+    <string name="remote_title">PC Bluetooth Remote</string>
+    <string name="remote_permissions_needed">Microphone and Bluetooth permissions are required.</string>
+    <string name="remote_grant_permissions">Grant</string>
+    <string name="remote_select_pc">Paired Windows 11 PC</string>
+    <string name="remote_no_paired_devices">No paired Bluetooth devices</string>
+    <string name="remote_connect">Connect</string>
+    <string name="remote_connecting">Connecting…</string>
+    <string name="remote_disconnect">Disconnect</string>
+    <string name="remote_status_disconnected">Disconnected (dictation will be queued locally)</string>
+    <string name="remote_status_connecting">Connecting to %1$s…</string>
+    <string name="remote_status_connected">Connected to %1$s</string>
+    <string name="remote_status_error">Connection error: %1$s</string>
+    <string name="remote_preview_placeholder">Hold the mic button to speak. Final text is sent to your PC cursor.</string>
+    <string name="remote_pending_label">Pending to send:</string>
+    <string name="remote_resend">Resend</string>
+    <string name="remote_clear">Clear</string>
+    <string name="remote_backspace">Backspace</string>
+    <string name="remote_enter">Enter</string>
+    <string name="remote_mic_hold">Hold to dictate to PC</string>
+    <string name="remote_error_uipi">PC window is elevated (Admin/UAC). Switch to a normal window and tap Resend.</string>
+    <string name="remote_error_no_key">Set your Gemini API key in Settings first.</string>
+    <string name="remote_error_no_network">No cellular/internet connection.</string>
+    <string name="remote_error_invalid_key">Invalid Gemini API key.</string>
+    <string name="remote_error_quota">Gemini API quota exceeded.</string>
+    <string name="remote_error_max_duration">Stopped at 60s max duration.</string>
+    <string name="remote_error_generic">Transcription error occurred.</string>
 </resources>

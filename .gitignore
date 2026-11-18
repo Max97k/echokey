@@ -11,3 +11,5 @@ app/build/
 captures/
 design_draft.md
 *_report.md
+__pycache__/
+*.pyc

@@ -49,6 +49,18 @@
 
 ---
 
+## 💻 Windows 11 藍牙語音遙控輸入
+
+針對封鎖 Google AI Studio 連線或禁止未簽章 `.exe` 的公司電腦，AKeyboard 提供免安裝、零第三方套件的 Python 3.10+ 接收腳本（`tools/akeyboard_bridge.py`）與 App 內專屬「**電腦藍牙語音遙控**」畫面：
+
+1. 先將手機與 Windows 11 電腦完成藍牙配對。
+2. 在 Windows 11 執行 `python tools/akeyboard_bridge.py`（僅使用 Python 標準函式庫，免 `pip install`、免系統管理員權限）。
+3. 在手機打開 **AKeyboard 設定 → 開啟電腦藍牙語音遙控輸入**，連上電腦後按住麥克風說話，即可將繁體中文與中英混雜文字直接打在電腦游標處。
+
+*（限制：Windows 11 需預裝 Python 3.10+、公司群組原則須允許藍牙 RFCOMM，且一般權限腳本無法輸入至系統管理員 UAC 提權視窗。）*
+
+---
+
 ## 📄 授權條款
 
 採用 MIT 授權條款，詳見 [LICENSE](LICENSE)。

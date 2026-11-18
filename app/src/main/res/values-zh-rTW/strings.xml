@@ -67,4 +67,32 @@
     <string name="step_y_label">垂直步長：%1$d dp（越小越靈敏）</string>
     <string name="show_switch_ime_title">在鍵盤內顯示「切換輸入法」按鍵</string>
     <string name="show_switch_ime_desc">若系統導覽列右下角已有地球鍵（如 Pixel），建議保持關閉以避免重複。</string>
+
+    <string name="btn_open_pc_remote">開啟電腦藍牙語音遙控輸入</string>
+    <string name="remote_title">電腦藍牙語音遙控</string>
+    <string name="remote_permissions_needed">需要麥克風與附近藍牙裝置權限才能連線電腦。</string>
+    <string name="remote_grant_permissions">授權</string>
+    <string name="remote_select_pc">已配對的 Windows 11 電腦</string>
+    <string name="remote_no_paired_devices">找不到已配對的藍牙裝置</string>
+    <string name="remote_connect">連線</string>
+    <string name="remote_connecting">連線中…</string>
+    <string name="remote_disconnect">中斷連線</string>
+    <string name="remote_status_disconnected">未連線（仍可語音轉錄並暫存待重送）</string>
+    <string name="remote_status_connecting">正在連線至 %1$s…</string>
+    <string name="remote_status_connected">已連線至 %1$s</string>
+    <string name="remote_status_error">連線錯誤：%1$s</string>
+    <string name="remote_preview_placeholder">按住麥克風說話，放開後將自動送出文字到電腦游標處。</string>
+    <string name="remote_pending_label">待重送文字：</string>
+    <string name="remote_resend">重送</string>
+    <string name="remote_clear">清除</string>
+    <string name="remote_backspace">退格刪除</string>
+    <string name="remote_enter">Enter 送出</string>
+    <string name="remote_mic_hold">按住對電腦語音輸入</string>
+    <string name="remote_error_uipi">電腦目前視窗為系統管理員權限（UIPI 阻擋），請切回一般視窗後點擊「重送」。</string>
+    <string name="remote_error_no_key">請先在設定頁填入 Gemini API Key。</string>
+    <string name="remote_error_no_network">目前沒有行動網路連線。</string>
+    <string name="remote_error_invalid_key">Gemini API Key 無效。</string>
+    <string name="remote_error_quota">Gemini API 配額已滿。</string>
+    <string name="remote_error_max_duration">已達單次最長 60 秒錄音上限。</string>
+    <string name="remote_error_generic">語音轉錄發生錯誤。</string>
 </resources>

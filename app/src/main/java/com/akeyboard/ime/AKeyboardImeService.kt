@@ -30,24 +30,20 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.akeyboard.AKeyboardApp
 import com.akeyboard.audio.AudioCaptureManager
-import com.akeyboard.audio.AudioCaptureResult
-import com.akeyboard.audio.AudioFailureReason
 import com.akeyboard.data.SettingsRepository
 import com.akeyboard.live.GeminiLiveClient
-import com.akeyboard.live.LiveError
-import com.akeyboard.live.LiveEvent
+import com.akeyboard.live.VoiceDictationSession
+import com.akeyboard.live.VoiceSessionError
+import com.akeyboard.live.VoiceSessionPhase
 import com.akeyboard.settings.SettingsActivity
 import com.akeyboard.ui.KeyboardScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class AKeyboardImeService :
@@ -69,6 +65,7 @@ class AKeyboardImeService :
 
     private lateinit var app: AKeyboardApp
     private lateinit var liveClient: GeminiLiveClient
+    private lateinit var dictationSession: VoiceDictationSession
     private val audioManager = AudioCaptureManager()
 
     private val _imeState = MutableStateFlow<ImeState>(ImeState.Idle)
@@ -91,12 +88,6 @@ class AKeyboardImeService :
 
     private var voiceAllowed = true
     private var currentEditorInfo: EditorInfo? = null
-    private var liveEventsJob: Job? = null
-    private var maxDurationJob: Job? = null
-    private var finalizeJob: Job? = null
-
-    private var runningComposingText = StringBuilder()
-    private var hasCommittedCurrentTurn = false
 
     override fun onCreate() {
         lifecycleDispatcher.onServicePreSuperOnCreate()
@@ -107,6 +98,42 @@ class AKeyboardImeService :
 
         app = application as AKeyboardApp
         liveClient = GeminiLiveClient(app.okHttpClient)
+        dictationSession = VoiceDictationSession(
+            scope = serviceScope,
+            audioManager = audioManager,
+            liveClient = liveClient,
+            apiKeyStore = app.apiKeyStore,
+            settingsRepository = app.settingsRepository,
+            hasMicPermission = ::hasMicPermission,
+            isNetworkAvailable = ::isNetworkAvailable,
+            onPhaseChanged = { phase ->
+                if (voiceAllowed) {
+                    _imeState.value = when (phase) {
+                        VoiceSessionPhase.IDLE -> ImeState.Idle
+                        VoiceSessionPhase.WARM -> ImeState.Warm
+                        VoiceSessionPhase.RECORDING -> ImeState.Recording
+                        VoiceSessionPhase.FINALIZING -> ImeState.Finalizing
+                    }
+                }
+            },
+            onInterim = { text -> currentInputConnection?.setComposingText(text, 1) },
+            onFinal = { text -> currentInputConnection?.commitText(text, 1) },
+            onFinishComposing = { currentInputConnection?.finishComposingText() },
+            onError = { err ->
+                _imeState.value = ImeState.Error(
+                    when (err) {
+                        VoiceSessionError.NO_PERMISSION -> ImeErrorReason.NO_PERMISSION
+                        VoiceSessionError.NO_KEY -> ImeErrorReason.NO_KEY
+                        VoiceSessionError.NO_NETWORK -> ImeErrorReason.NO_NETWORK
+                        VoiceSessionError.MIC_BUSY -> ImeErrorReason.MIC_BUSY
+                        VoiceSessionError.INVALID_KEY -> ImeErrorReason.INVALID_KEY
+                        VoiceSessionError.QUOTA_EXCEEDED -> ImeErrorReason.QUOTA_EXCEEDED
+                        VoiceSessionError.MAX_DURATION -> ImeErrorReason.MAX_DURATION
+                        VoiceSessionError.GENERIC -> ImeErrorReason.GENERIC
+                    }
+                )
+            }
+        )
 
         serviceScope.launch {
             app.settingsRepository.settings.collect { s ->
@@ -115,7 +142,6 @@ class AKeyboardImeService :
                 _showSwitchImeButton.value = s.showSwitchImeKey
             }
         }
-        observeLiveEvents()
     }
 
     override fun onCreateInputView(): View {
@@ -167,20 +193,8 @@ class AKeyboardImeService :
         }
 
         _imeState.value = ImeState.Idle
-        serviceScope.launch {
-            val key = app.apiKeyStore.load()
-            val hasPerm = hasMicPermission()
-            val settings = app.settingsRepository.settings.first()
-            if (!key.isNullOrBlank() && hasPerm && isNetworkAvailable()) {
-                liveClient.warmUp(
-                    scope = serviceScope,
-                    apiKey = key,
-                    modelId = settings.selectedModelId,
-                    languageCodes = settings.languageCodes,
-                    smartMode = settings.smartModeEnabled
-                )
-            }
-        }
+        dictationSession.resetPhaseToIdle()
+        dictationSession.warmUp()
     }
 
     override fun onEvaluateFullscreenMode(): Boolean = false
@@ -198,67 +212,11 @@ class AKeyboardImeService :
     }
 
     override fun onDestroy() {
-        abortActiveSession()
-        liveClient.close()
+        dictationSession.close()
         serviceScope.cancel()
         lifecycleDispatcher.onServicePreSuperOnDestroy()
         super.onDestroy()
         store.clear()
-    }
-
-    private fun observeLiveEvents() {
-        liveEventsJob?.cancel()
-        liveEventsJob = serviceScope.launch {
-            liveClient.events.collect { event ->
-                when (event) {
-                    LiveEvent.Ready -> {
-                        if (_imeState.value == ImeState.Idle) {
-                            _imeState.value = ImeState.Warm
-                        }
-                    }
-                    is LiveEvent.Interim -> {
-                        if (_imeState.value == ImeState.Recording || _imeState.value == ImeState.Finalizing) {
-                            runningComposingText.clear()
-                            runningComposingText.append(event.text)
-                            currentInputConnection?.setComposingText(event.text, 1)
-                        }
-                    }
-                    is LiveEvent.Final -> {
-                        if (_imeState.value == ImeState.Recording || _imeState.value == ImeState.Finalizing) {
-                            commitFinalText(event.text)
-                            if (_imeState.value == ImeState.Finalizing) {
-                                finalizeJob?.cancel()
-                                _imeState.value = ImeState.Warm
-                            }
-                        }
-                    }
-                    LiveEvent.TurnComplete -> {
-                        if (_imeState.value == ImeState.Finalizing) {
-                            if (!hasCommittedCurrentTurn && runningComposingText.isNotEmpty()) {
-                                commitFinalText(runningComposingText.toString())
-                            }
-                            finalizeJob?.cancel()
-                            _imeState.value = ImeState.Warm
-                        }
-                    }
-                    is LiveEvent.Failed -> {
-                        audioManager.stop()
-                        maxDurationJob?.cancel()
-                        finalizeJob?.cancel()
-                        if (!hasCommittedCurrentTurn && runningComposingText.isNotEmpty()) {
-                            currentInputConnection?.finishComposingText()
-                        }
-                        runningComposingText.clear()
-                        val reason = when (event.error) {
-                            LiveError.InvalidKey -> ImeErrorReason.INVALID_KEY
-                            LiveError.QuotaExceeded -> ImeErrorReason.QUOTA_EXCEEDED
-                            is LiveError.Network -> ImeErrorReason.GENERIC
-                        }
-                        _imeState.value = ImeState.Error(reason)
-                    }
-                }
-            }
-        }
     }
 
     private fun onMicPressed() {
@@ -266,107 +224,15 @@ class AKeyboardImeService :
             _imeState.value = ImeState.Error(ImeErrorReason.PASSWORD_FIELD)
             return
         }
-        if (_imeState.value == ImeState.Finalizing || _imeState.value == ImeState.Recording) {
-            return
-        }
-        if (!hasMicPermission()) {
-            _imeState.value = ImeState.Error(ImeErrorReason.NO_PERMISSION)
-            return
-        }
-        if (!isNetworkAvailable()) {
-            _imeState.value = ImeState.Error(ImeErrorReason.NO_NETWORK)
-            return
-        }
-
-        serviceScope.launch {
-            val key = app.apiKeyStore.load()
-            if (key.isNullOrBlank()) {
-                _imeState.value = ImeState.Error(ImeErrorReason.NO_KEY)
-                return@launch
-            }
-            val settings = app.settingsRepository.settings.first()
-            when (val capture = audioManager.start(serviceScope)) {
-                is AudioCaptureResult.Failed -> {
-                    _imeState.value = ImeState.Error(
-                        when (capture.reason) {
-                            AudioFailureReason.NO_PERMISSION -> ImeErrorReason.NO_PERMISSION
-                            AudioFailureReason.MIC_UNAVAILABLE -> ImeErrorReason.MIC_BUSY
-                        }
-                    )
-                }
-                is AudioCaptureResult.Started -> {
-                    runningComposingText.clear()
-                    hasCommittedCurrentTurn = false
-                    _imeState.value = ImeState.Recording
-                    liveClient.startUtterance(
-                        scope = serviceScope,
-                        apiKey = key,
-                        modelId = settings.selectedModelId,
-                        audioFrames = capture.frames,
-                        languageCodes = settings.languageCodes,
-                        smartMode = settings.smartModeEnabled
-                    )
-
-                    maxDurationJob?.cancel()
-                    maxDurationJob = serviceScope.launch {
-                        delay(MAX_HOLD_DURATION_MS)
-                        if (_imeState.value == ImeState.Recording) {
-                            stopAndFinalize(reachedCap = true)
-                        }
-                    }
-                }
-            }
-        }
+        dictationSession.onMicPressed()
     }
 
     private fun onMicReleased() {
-        if (_imeState.value != ImeState.Recording) return
-        stopAndFinalize(reachedCap = false)
-    }
-
-    private fun stopAndFinalize(reachedCap: Boolean) {
-        maxDurationJob?.cancel()
-        audioManager.stop()
-        _imeState.value = ImeState.Finalizing
-
-        finalizeJob?.cancel()
-        finalizeJob = serviceScope.launch {
-            liveClient.finishUtterance(serviceScope)
-            delay(liveClient.finalizeTimeout())
-            if (_imeState.value == ImeState.Finalizing) {
-                if (!hasCommittedCurrentTurn && runningComposingText.isNotEmpty()) {
-                    commitFinalText(runningComposingText.toString())
-                } else {
-                    currentInputConnection?.finishComposingText()
-                }
-                _imeState.value = if (reachedCap) {
-                    ImeState.Error(ImeErrorReason.MAX_DURATION)
-                } else {
-                    ImeState.Warm
-                }
-            }
-        }
-    }
-
-    private fun commitFinalText(text: String) {
-        if (hasCommittedCurrentTurn) return
-        hasCommittedCurrentTurn = true
-        runningComposingText.clear()
-        currentInputConnection?.commitText(text, 1)
+        dictationSession.onMicReleased()
     }
 
     private fun abortActiveSession() {
-        maxDurationJob?.cancel()
-        finalizeJob?.cancel()
-        audioManager.stop()
-        if (!hasCommittedCurrentTurn && runningComposingText.isNotEmpty()) {
-            currentInputConnection?.finishComposingText()
-        }
-        runningComposingText.clear()
-        hasCommittedCurrentTurn = false
-        if (_imeState.value == ImeState.Recording || _imeState.value == ImeState.Finalizing) {
-            _imeState.value = ImeState.Idle
-        }
+        dictationSession.abort()
     }
 
     private fun performBackspace() {
@@ -458,9 +324,5 @@ class AKeyboardImeService :
         return (flags and InputType.TYPE_TEXT_FLAG_MULTI_LINE) != 0 ||
             (flags and InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE) != 0 ||
             variation == InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE
-    }
-
-    companion object {
-        private const val MAX_HOLD_DURATION_MS = 60_000L
     }
 }

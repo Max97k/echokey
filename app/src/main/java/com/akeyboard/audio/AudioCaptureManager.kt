@@ -1,7 +1,10 @@
 package com.akeyboard.audio
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.media.AudioDeviceInfo
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import kotlinx.coroutines.CoroutineScope
@@ -22,13 +25,16 @@ enum class AudioFailureReason {
     MIC_UNAVAILABLE
 }
 
-class AudioCaptureManager {
+open class AudioCaptureManager(
+    private val context: Context? = null,
+    private val preferBuiltInMic: Boolean = false
+) {
 
     private var audioRecord: AudioRecord? = null
     private var captureJob: Job? = null
 
     @SuppressLint("MissingPermission")
-    fun start(scope: CoroutineScope): AudioCaptureResult {
+    open fun start(scope: CoroutineScope): AudioCaptureResult {
         stop()
         val minBuf = AudioRecord.getMinBufferSize(
             SAMPLE_RATE_HZ,
@@ -56,6 +62,16 @@ class AudioCaptureManager {
         if (recorder.state != AudioRecord.STATE_INITIALIZED) {
             recorder.release()
             return AudioCaptureResult.Failed(AudioFailureReason.MIC_UNAVAILABLE)
+        }
+
+        if (preferBuiltInMic && context != null) {
+            val audioMgr = context.getSystemService(AudioManager::class.java)
+            val builtIn = audioMgr
+                ?.getDevices(AudioManager.GET_DEVICES_INPUTS)
+                ?.firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_MIC }
+            if (builtIn != null) {
+                recorder.setPreferredDevice(builtIn)
+            }
         }
 
         try {
@@ -95,7 +111,7 @@ class AudioCaptureManager {
         return AudioCaptureResult.Started(channel)
     }
 
-    fun stop() {
+    open fun stop() {
         captureJob?.cancel()
         captureJob = null
         audioRecord?.let { rec ->

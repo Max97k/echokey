@@ -62,6 +62,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.akeyboard.AKeyboardApp
 import com.akeyboard.R
 import com.akeyboard.data.SettingsRepository
+import com.akeyboard.remote.RemoteDictationActivity
 import com.akeyboard.ui.AKeyboardTheme
 import kotlin.math.roundToInt
 
@@ -172,6 +173,17 @@ private fun SettingsContent(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Button(
+                onClick = {
+                    context.startActivity(Intent(context, RemoteDictationActivity::class.java))
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.btn_open_pc_remote))
+            }
+
+            HorizontalDivider()
+
             // 1. Permissions & System IME
             Text(
                 text = stringResource(R.string.section_permissions),

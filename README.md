@@ -82,6 +82,18 @@ Android InputConnection  <--->  AKeyboardImeService (Compose + Lifecycle)
 
 ---
 
+## 💻 Windows 11 Bluetooth Voice Bridge
+
+For restricted corporate PCs that block `generativelanguage.googleapis.com` or unsigned `.exe` installers, AKeyboard includes a zero-dependency Python 3.10+ receiver (`tools/akeyboard_bridge.py`) and an in-app **PC Bluetooth Remote** screen:
+
+1. Pair your Android phone and Windows 11 PC over Bluetooth.
+2. On Windows 11, run `python tools/akeyboard_bridge.py` (uses only Python standard library; no `pip install` or admin rights required).
+3. On your phone, open **AKeyboard Settings → Open PC Bluetooth Voice Remote**, connect to your PC, and hold the mic button to dictate directly to your PC cursor.
+
+*(Limitations: requires Python 3.10+ on Windows 11, corporate GPO must allow Bluetooth RFCOMM, and UIPI blocks `SendInput` into elevated Admin/UAC windows.)*
+
+---
+
 ## 📄 License
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
