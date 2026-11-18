@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AKeyboard</string>
+    <string name="ime_name">AKeyboard 语音键盘</string>
+    <string name="ime_subtype_voice">语音</string>
+
+    <string name="hold_to_speak">按住说话</string>
+    <string name="listening">聆听中…</string>
+    <string name="finalizing">完成识别中…</string>
+    <string name="touchpad_hint">在此滑动可移动游标</string>
+    <string name="cd_mic_button">按住进行语音输入</string>
+    <string name="cd_backspace">退格删除</string>
+    <string name="cd_enter">换行或发送</string>
+    <string name="cd_switch_ime">切换输入法</string>
+    <string name="open_settings">前往设置</string>
+
+    <string name="err_no_key">尚未设置 API Key，请前往设置页输入。</string>
+    <string name="err_invalid_key">API Key 无效，请在设置页检查。</string>
+    <string name="err_no_permission">需要麦克风权限，请在设置页授权。</string>
+    <string name="err_no_network">无网络连接。</string>
+    <string name="err_quota">API 配额不足，请稍后再试。</string>
+    <string name="err_password_field">密码框不支持语音输入。</string>
+    <string name="err_mic_busy">麦克风不可用或正被其他应用占用。</string>
+    <string name="err_max_duration">已达单次 60 秒录音上限。</string>
+    <string name="err_generic">连接发生错误，请重新按住麦克风。</string>
+
+    <string name="disclosure_title">语音与数据披露声明</string>
+    <string name="disclosure_body">AKeyboard 是一款纯语音输入法。仅在您按住麦克风按钮期间采集音频，并使用您自己的 API Key 直接发送至 Google Gemini API。\n\n本应用不会将音频写入本地磁盘，也没有开发者后端服务器。Google 会按您的 Google AI Studio 账户条款处理音频。</string>
+    <string name="disclosure_agree">同意并继续</string>
+
+    <string name="settings_title">AKeyboard 设置</string>
+    <string name="section_permissions">1. 系统设置</string>
+    <string name="perm_mic_granted">麦克风权限：已授权</string>
+    <string name="perm_mic_missing">麦克风权限：未授权</string>
+    <string name="btn_grant_mic">授予麦克风权限</string>
+    <string name="btn_open_app_info">打开应用设置</string>
+    <string name="btn_enable_ime">在系统设置中启用 AKeyboard</string>
+    <string name="btn_switch_ime">立即切换输入法</string>
+
+    <string name="section_api_key">2. Google AI Studio API Key</string>
+    <string name="api_key_label">API Key</string>
+    <string name="api_key_saved_hint">Key 已加密保存于本机</string>
+    <string name="btn_validate_save">验证并保存 Key</string>
+    <string name="btn_clear_key">清除 Key</string>
+    <string name="validating">验证中…</string>
+    <string name="key_valid_status">Key 验证成功，共 %1$d 个实时模型可用。</string>
+    <string name="key_cleared_status">已清除 API Key。</string>
+
+    <string name="section_model">3. 实时语音转文字模型</string>
+    <string name="model_label">当前选择的模型</string>
+    <string name="no_models_loaded">请先验证 API Key 以加载可用模型。</string>
+
+    <string name="section_transcription">4. 识别语言与智能模式</string>
+    <string name="lang_label">默认输入语言</string>
+    <string name="lang_zh_tw">繁体中文 (zh-TW)</string>
+    <string name="lang_zh_tw_en">繁体中文 + 英文混输 (zh-TW, en-US)</string>
+    <string name="lang_auto">自动检测（支持 85+ 语言）</string>
+    <string name="lang_zh_cn">简体中文 (zh-CN)</string>
+    <string name="lang_en_us">英文 (en-US)</string>
+    <string name="lang_ja_jp">日文 (ja-JP)</string>
+    <string name="lang_ko_kr">韩文 (ko-KR)</string>
+    <string name="smart_mode_title">智能转录模式（自动滤除赘词）</string>
+    <string name="smart_mode_desc">开启后会自动过滤「呃、那个」与口语重复；关闭则逐字原样输出（仅 transcribe 模型支持）。</string>
+
+    <string name="section_touchpad">5. 触控板游标灵敏度</string>
+    <string name="step_x_label">水平步长：%1$d dp（越小越灵敏）</string>
+    <string name="step_y_label">垂直步长：%1$d dp（越小越灵敏）</string>
+    <string name="show_switch_ime_title">在键盘内显示「切换输入法」按键</string>
+    <string name="show_switch_ime_desc">若系统导航栏右下角已有地球键（如 Pixel），建议保持关闭以避免重复。</string>
+</resources>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AKeyboard</string>
+    <string name="ime_name">AKeyboard Voice</string>
+    <string name="ime_subtype_voice">Voice</string>
+
+    <!-- Keyboard UI -->
+    <string name="hold_to_speak">Hold to speak</string>
+    <string name="listening">Listening…</string>
+    <string name="finalizing">Finalizing…</string>
+    <string name="touchpad_hint">Slide here to move cursor</string>
+    <string name="cd_mic_button">Hold to record voice input</string>
+    <string name="cd_backspace">Backspace</string>
+    <string name="cd_enter">Enter or send</string>
+    <string name="cd_switch_ime">Switch keyboard</string>
+    <string name="open_settings">Open Settings</string>
+
+    <!-- Keyboard Errors -->
+    <string name="err_no_key">API key not set. Open Settings to add your key.</string>
+    <string name="err_invalid_key">Invalid API key. Check your key in Settings.</string>
+    <string name="err_no_permission">Microphone permission required. Grant it in Settings.</string>
+    <string name="err_no_network">No network connection.</string>
+    <string name="err_quota">API quota exceeded. Try again later.</string>
+    <string name="err_password_field">Voice input is disabled in password fields.</string>
+    <string name="err_mic_busy">Microphone unavailable or in use by another app.</string>
+    <string name="err_max_duration">60s recording limit reached.</string>
+    <string name="err_generic">Connection error. Hold mic to retry.</string>
+
+    <!-- Settings & Disclosure -->
+    <string name="disclosure_title">Voice &amp; Data Disclosure</string>
+    <string name="disclosure_body">AKeyboard is a voice-only keyboard. Audio is captured only while you hold the microphone button and is streamed directly to Google Gemini API using your own API key.\n\nAKeyboard does not save audio to disk and has no developer backend server. Google processes the audio under your Google AI Studio account terms.</string>
+    <string name="disclosure_agree">Agree and Continue</string>
+
+    <string name="settings_title">AKeyboard Settings</string>
+    <string name="section_permissions">1. System Setup</string>
+    <string name="perm_mic_granted">Microphone permission: Granted</string>
+    <string name="perm_mic_missing">Microphone permission: Required</string>
+    <string name="btn_grant_mic">Grant Microphone Permission</string>
+    <string name="btn_open_app_info">Open App Settings</string>
+    <string name="btn_enable_ime">Enable AKeyboard in System Settings</string>
+    <string name="btn_switch_ime">Switch Keyboard Now</string>
+
+    <string name="section_api_key">2. Google AI Studio API Key</string>
+    <string name="api_key_label">API Key</string>
+    <string name="api_key_saved_hint">Key is encrypted and saved on this device</string>
+    <string name="btn_validate_save">Validate &amp; Save Key</string>
+    <string name="btn_clear_key">Clear Key</string>
+    <string name="validating">Validating…</string>
+    <string name="key_valid_status">Key verified. Available live models: %1$d</string>
+    <string name="key_cleared_status">API key cleared.</string>
+
+    <string name="section_model">3. Live Transcription Model</string>
+    <string name="model_label">Selected Model</string>
+    <string name="no_models_loaded">Validate your API key to load available models.</string>
+
+    <string name="section_transcription">4. Language &amp; Transcription</string>
+    <string name="lang_label">Transcription Language</string>
+    <string name="lang_zh_tw">Traditional Chinese (zh-TW)</string>
+    <string name="lang_zh_tw_en">Traditional Chinese + English</string>
+    <string name="lang_auto">Auto-detect (85+ languages)</string>
+    <string name="lang_zh_cn">Simplified Chinese (zh-CN)</string>
+    <string name="lang_en_us">English (en-US)</string>
+    <string name="lang_ja_jp">Japanese (ja-JP)</string>
+    <string name="lang_ko_kr">Korean (ko-KR)</string>
+    <string name="smart_mode_title">Smart Transcription Mode</string>
+    <string name="smart_mode_desc">Automatically remove filler words and repetitions (supported by transcribe models).</string>
+
+    <string name="section_touchpad">5. Touchpad Cursor Sensitivity</string>
+    <string name="step_x_label">Horizontal step: %1$d dp (smaller = faster)</string>
+    <string name="step_y_label">Vertical step: %1$d dp (smaller = faster)</string>
+    <string name="show_switch_ime_title">Show Switch Keyboard Key</string>
+    <string name="show_switch_ime_desc">Keep off on Pixel or devices that already show a globe icon in the navigation bar.</string>
+</resources>
