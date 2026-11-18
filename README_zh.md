@@ -13,7 +13,7 @@
 [![BYOK](https://img.shields.io/badge/Privacy-BYOK%20Direct%20%7C%20No%20Backend-success?style=flat-square&logo=shield&logoColor=white)](#-隱私與安全設計)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
-[English](README.md) • [繁體中文](README_zh.md) • [設計文件](docs/designs/akeyboard_voice_ime.md)
+[English](README.md) • [繁體中文](README_zh.md) • [下載 APK](https://github.com/Max97k/AKeyboard/releases/latest) • [設計文件](docs/designs/akeyboard_voice_ime.md)
 
 </div>
 
