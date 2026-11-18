@@ -5,15 +5,15 @@
 **一款採用 BYOK（自带金鑰）模式的極簡 Android 語音輸入法，直連 Google AI Studio Gemini Live API（`gemini-3.5-transcribe-live`），並將非錄音區域化為 2D 游標觸控板。**
 
 [![Platform](https://img.shields.io/badge/Platform-Android%2016%20(API%2036%2B)-3DDC84?style=flat-square&logo=android&logoColor=white)](https://android.com)
-[![Version](https://img.shields.io/badge/Version-v0.1.0-blue?style=flat-square)](https://github.com/Max97k/AKeyboard)
-[![Tests](https://img.shields.io/badge/Tests-9%2F9%20Passing-brightgreen?style=flat-square)](https://github.com/Max97k/AKeyboard)
+[![Version](https://img.shields.io/badge/Version-v0.2.0-blue?style=flat-square)](https://github.com/Max97k/echokey)
+[![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen?style=flat-square)](https://github.com/Max97k/echokey)
 [![Target Device](https://img.shields.io/badge/Tested%20On-Google%20Pixel%208%20Pro-4285F4?style=flat-square&logo=google&logoColor=white)](https://store.google.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-7F52FF?style=flat-square&logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20%7C%20Material%203-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
 [![BYOK](https://img.shields.io/badge/Privacy-BYOK%20Direct%20%7C%20No%20Backend-success?style=flat-square&logo=shield&logoColor=white)](#-隱私與安全設計)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
-[English](README.md) • [繁體中文](README_zh.md) • [下載 APK](https://github.com/Max97k/AKeyboard/releases/latest) • [設計文件](docs/designs/akeyboard_voice_ime.md)
+[English](README.md) • [繁體中文](README_zh.md) • [下載 APK](https://github.com/Max97k/echokey/releases/latest) • [設計文件](docs/designs/akeyboard_voice_ime.md)
 
 </div>
 
