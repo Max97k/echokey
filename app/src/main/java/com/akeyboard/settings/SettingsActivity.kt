@@ -55,7 +55,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -124,6 +127,7 @@ class SettingsActivity : ComponentActivity() {
 @Composable
 private fun DisclosureScreen(onAgree: () -> Unit) {
     Scaffold(
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(title = { Text(stringResource(R.string.disclosure_title)) })
@@ -150,7 +154,9 @@ private fun DisclosureScreen(onAgree: () -> Unit) {
                 Spacer(modifier = Modifier.weight(1f))
                 Button(
                     onClick = onAgree,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("disclosure_agree_btn")
                 ) {
                     Text(stringResource(R.string.disclosure_agree))
                 }
@@ -191,6 +197,7 @@ private fun SettingsContent(
     }
 
     Scaffold(
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(title = { Text(stringResource(R.string.settings_title)) })
@@ -214,7 +221,9 @@ private fun SettingsContent(
                     onClick = {
                         context.startActivity(Intent(context, RemoteDictationActivity::class.java))
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("btn_open_pc_remote")
                 ) {
                     Text(stringResource(R.string.btn_open_pc_remote))
                 }
@@ -235,7 +244,8 @@ private fun SettingsContent(
                         MaterialTheme.colorScheme.primary
                     } else {
                         MaterialTheme.colorScheme.error
-                    }
+                    },
+                    modifier = Modifier.testTag("settings_mic_status")
                 )
                 if (!hasMicPerm) {
                     FlowRow(
@@ -265,7 +275,8 @@ private fun SettingsContent(
                         MaterialTheme.colorScheme.primary
                     } else {
                         MaterialTheme.colorScheme.onSurfaceVariant
-                    }
+                    },
+                    modifier = Modifier.testTag("settings_ime_enabled_status")
                 )
                 Text(
                     text = stringResource(
@@ -276,7 +287,8 @@ private fun SettingsContent(
                         MaterialTheme.colorScheme.primary
                     } else {
                         MaterialTheme.colorScheme.onSurfaceVariant
-                    }
+                    },
+                    modifier = Modifier.testTag("settings_ime_selected_status")
                 )
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -316,13 +328,16 @@ private fun SettingsContent(
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("settings_api_key_input")
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
                         onClick = viewModel::validateAndSaveKey,
                         enabled = state.keyInput.isNotBlank() &&
-                            state.keyStatus != KeyValidationStatus.Validating
+                            state.keyStatus != KeyValidationStatus.Validating,
+                        modifier = Modifier.testTag("settings_validate_save_btn")
                     ) {
                         Text(stringResource(R.string.btn_validate_save))
                     }
@@ -465,7 +480,8 @@ private fun SettingsContent(
                     }
                     Switch(
                         checked = state.settings.smartModeEnabled,
-                        onCheckedChange = viewModel::setSmartModeEnabled
+                        onCheckedChange = viewModel::setSmartModeEnabled,
+                        modifier = Modifier.testTag("settings_smart_mode_switch")
                     )
                 }
 
@@ -473,7 +489,8 @@ private fun SettingsContent(
                     Text(
                         text = stringResource(R.string.model_non_transcribe_hint),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.tertiary
+                        color = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.testTag("settings_non_transcribe_hint")
                     )
                 }
 
@@ -553,6 +570,7 @@ private fun KeyStatusText(status: KeyValidationStatus) {
     Text(
         text = msg,
         style = MaterialTheme.typography.bodySmall,
-        color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+        color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+        modifier = Modifier.testTag("settings_key_status")
     )
 }

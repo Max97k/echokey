@@ -83,10 +83,12 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
@@ -196,6 +198,7 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
     var menuExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             TopAppBar(
@@ -204,7 +207,8 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
                     IconButton(
                         onClick = {
                             context.startActivity(Intent(context, SettingsActivity::class.java))
-                        }
+                        },
+                        modifier = Modifier.testTag("remote_open_settings_btn")
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_settings),
@@ -322,6 +326,7 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
                             modifier = Modifier
                                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                                 .fillMaxWidth()
+                                .testTag("remote_device_selector")
                         )
                         ExposedDropdownMenu(
                             expanded = menuExpanded,
@@ -341,18 +346,27 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
 
                     when (connectionState) {
                         is ConnectionState.Connected -> {
-                            OutlinedButton(onClick = { viewModel.disconnect() }) {
+                            OutlinedButton(
+                                onClick = { viewModel.disconnect() },
+                                modifier = Modifier.testTag("remote_disconnect_btn")
+                            ) {
                                 Text(stringResource(R.string.remote_disconnect))
                             }
                         }
                         is ConnectionState.Connecting -> {
-                            OutlinedButton(onClick = { viewModel.cancelConnect() }) {
+                            OutlinedButton(
+                                onClick = { viewModel.cancelConnect() },
+                                modifier = Modifier.testTag("remote_cancel_btn")
+                            ) {
                                 Text(stringResource(R.string.remote_btn_cancel))
                             }
                         }
                         else -> {
                             if (pendingConnectActive) {
-                                OutlinedButton(onClick = { viewModel.cancelConnect() }) {
+                                OutlinedButton(
+                                    onClick = { viewModel.cancelConnect() },
+                                    modifier = Modifier.testTag("remote_cancel_btn")
+                                ) {
                                     Text(stringResource(R.string.remote_btn_cancel))
                                 }
                             } else {
@@ -363,7 +377,8 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
                                 }
                                 Button(
                                     onClick = { viewModel.onConnectClicked() },
-                                    enabled = canConnect
+                                    enabled = canConnect,
+                                    modifier = Modifier.testTag("remote_connect_btn")
                                 ) {
                                     Text(stringResource(R.string.remote_connect))
                                 }
@@ -380,12 +395,14 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
                     FilterChip(
                         selected = preferBuiltInMic,
                         onClick = { viewModel.setPreferBuiltInMic(true) },
-                        label = { Text(stringResource(R.string.remote_mic_built_in)) }
+                        label = { Text(stringResource(R.string.remote_mic_built_in)) },
+                        modifier = Modifier.testTag("remote_mic_builtin_chip")
                     )
                     FilterChip(
                         selected = !preferBuiltInMic,
                         onClick = { viewModel.setPreferBuiltInMic(false) },
-                        label = { Text(stringResource(R.string.remote_mic_system)) }
+                        label = { Text(stringResource(R.string.remote_mic_system)) },
+                        modifier = Modifier.testTag("remote_mic_system_chip")
                     )
                 }
 
@@ -405,7 +422,8 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
                         MaterialTheme.colorScheme.primary
                     } else {
                         MaterialTheme.colorScheme.onSurfaceVariant
-                    }
+                    },
+                    modifier = Modifier.testTag("remote_connection_status")
                 )
 
                 Card(
@@ -413,6 +431,7 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
                         .weight(1f)
                         .heightIn(min = 120.dp)
                         .fillMaxWidth()
+                        .testTag("remote_preview_card")
                 ) {
                     Column(
                         modifier = Modifier
@@ -469,7 +488,8 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
                     Text(
                         text = stringResource(errBannerRes),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.testTag("remote_error_banner")
                     )
                 }
 
@@ -547,6 +567,7 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
                                 .scale(pressScale)
                                 .clip(CircleShape)
                                 .background(micBg)
+                                .testTag("remote_mic_hold_btn")
                                 .semantics { contentDescription = micCd }
                                 .pointerInput(isFinalizing) {
                                     if (isFinalizing) return@pointerInput
@@ -620,7 +641,9 @@ private fun RemoteBlockerCard(
 
     Card(
         colors = CardDefaults.cardColors(containerColor = containerColor),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("remote_blocker_card")
     ) {
         Column(
             modifier = Modifier
@@ -630,19 +653,24 @@ private fun RemoteBlockerCard(
         ) {
             Text(
                 text = message,
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.testTag("remote_blocker_message")
             )
             when (blocker) {
                 RemoteBlocker.NoHardware -> Unit
                 is RemoteBlocker.PermissionsMissing -> {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(
-                            onClick = { onGrantPermissions(blocker.missingBt, blocker.missingMic) }
+                            onClick = { onGrantPermissions(blocker.missingBt, blocker.missingMic) },
+                            modifier = Modifier.testTag("remote_grant_permissions_btn")
                         ) {
                             Text(stringResource(R.string.remote_grant_permissions))
                         }
                         if (showOpenAppInfo) {
-                            TextButton(onClick = onOpenAppInfo) {
+                            TextButton(
+                                onClick = onOpenAppInfo,
+                                modifier = Modifier.testTag("remote_open_app_info_btn")
+                            ) {
                                 Text(stringResource(R.string.btn_open_app_info))
                             }
                         }
@@ -650,18 +678,27 @@ private fun RemoteBlockerCard(
                 }
                 is RemoteBlocker.BluetoothDisabled -> {
                     if (!blocker.turningOn) {
-                        TextButton(onClick = onEnableBluetooth) {
+                        TextButton(
+                            onClick = onEnableBluetooth,
+                            modifier = Modifier.testTag("remote_enable_bt_btn")
+                        ) {
                             Text(stringResource(R.string.remote_btn_enable_bt))
                         }
                     }
                 }
                 RemoteBlocker.NoPairedDevices -> {
-                    TextButton(onClick = onOpenBluetoothSettings) {
+                    TextButton(
+                        onClick = onOpenBluetoothSettings,
+                        modifier = Modifier.testTag("remote_pair_bt_btn")
+                    ) {
                         Text(stringResource(R.string.remote_btn_pair_bt))
                     }
                 }
                 RemoteBlocker.ApiKeyMissing -> {
-                    TextButton(onClick = onOpenSettings) {
+                    TextButton(
+                        onClick = onOpenSettings,
+                        modifier = Modifier.testTag("remote_blocker_settings_btn")
+                    ) {
                         Text(stringResource(R.string.remote_btn_open_settings))
                     }
                 }

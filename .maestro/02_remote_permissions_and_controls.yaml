@@ -1,0 +1,40 @@
+appId: com.akeyboard
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: deny
+- tapOn:
+    id: "disclosure_agree_btn"
+- tapOn:
+    id: "btn_open_pc_remote"
+- assertVisible:
+    id: "remote_blocker_card"
+- assertVisible:
+    id: "remote_blocker_message"
+- assertVisible:
+    id: "remote_grant_permissions_btn"
+- assertVisible:
+    id: "remote_device_selector"
+- assertVisible:
+    id: "remote_connect_btn"
+- assertVisible:
+    id: "remote_mic_builtin_chip"
+- assertVisible:
+    id: "remote_mic_system_chip"
+- assertVisible:
+    id: "remote_connection_status"
+- assertVisible:
+    id: "remote_preview_card"
+- assertVisible:
+    id: "remote_mic_hold_btn"
+- assertVisible:
+    id: "remote_open_settings_btn"
+- tapOn:
+    id: "remote_mic_system_chip"
+- tapOn:
+    id: "remote_mic_builtin_chip"
+- tapOn:
+    id: "remote_open_settings_btn"
+- assertVisible:
+    id: "btn_open_pc_remote"

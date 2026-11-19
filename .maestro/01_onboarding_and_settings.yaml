@@ -1,0 +1,30 @@
+appId: com.akeyboard
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: "disclosure_agree_btn"
+- tapOn:
+    id: "disclosure_agree_btn"
+- assertVisible:
+    id: "btn_open_pc_remote"
+- assertVisible:
+    id: "settings_mic_status"
+- assertVisible:
+    id: "settings_ime_enabled_status"
+- assertVisible:
+    id: "settings_ime_selected_status"
+- assertVisible:
+    id: "settings_api_key_input"
+- assertVisible:
+    id: "settings_validate_save_btn"
+- scrollUntilVisible:
+    element:
+      id: "settings_smart_mode_switch"
+    direction: DOWN
+- tapOn:
+    id: "settings_smart_mode_switch"
+- tapOn:
+    id: "settings_smart_mode_switch"
+- assertNotVisible:
+    id: "settings_non_transcribe_hint"

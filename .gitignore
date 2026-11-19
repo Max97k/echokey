@@ -13,3 +13,5 @@ design_draft.md
 *_report.md
 __pycache__/
 *.pyc
+.maestro/.last_run.json
+.maestro/debug/

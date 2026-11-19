@@ -52,10 +52,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.akeyboard.R
@@ -100,7 +102,10 @@ fun KeyboardScreen(
     AKeyboardTheme {
         Surface(
             color = MaterialTheme.colorScheme.surfaceContainerLow,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { testTagsAsResourceId = true }
+                .testTag("ime_keyboard_root")
         ) {
             Column(
                 modifier = Modifier
@@ -204,6 +209,7 @@ fun KeyboardScreen(
                                     .scale(pressScale)
                                     .clip(CircleShape)
                                     .background(micBg)
+                                    .testTag("ime_mic_btn")
                                     .semantics { contentDescription = micCd }
                                     .pointerInput(isDisabled) {
                                         if (isDisabled) return@pointerInput
@@ -257,6 +263,7 @@ fun KeyboardScreen(
                                 .size(auxBtnSize)
                                 .clip(auxShape)
                                 .background(MaterialTheme.colorScheme.secondaryContainer)
+                                .testTag("ime_backspace_btn")
                                 .semantics { contentDescription = cdBackspace }
                                 .pointerInput(Unit) {
                                     awaitEachGesture {
@@ -302,6 +309,7 @@ fun KeyboardScreen(
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier
                                 .size(auxBtnSize)
+                                .testTag("ime_enter_btn")
                                 .semantics { contentDescription = cdEnter }
                         ) {
                             Box(contentAlignment = Alignment.Center) {

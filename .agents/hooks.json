@@ -1,0 +1,11 @@
+{
+  "android-maestro-e2e-guard": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/stop_e2e_guard.ps1",
+        "timeout": 15
+      }
+    ]
+  }
+}
