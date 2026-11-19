@@ -9,6 +9,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -17,13 +18,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -42,8 +48,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -83,6 +91,11 @@ fun KeyboardScreen(
     val haptic = LocalHapticFeedback.current
     val view = LocalView.current
     val coroutineScope = rememberCoroutineScope()
+    val density = LocalDensity.current
+    val windowHeightDp = with(density) { LocalWindowInfo.current.containerSize.height.toDp() }
+    val panelHeight = (windowHeightDp * 0.34f).coerceIn(168.dp, 216.dp)
+    val isCompact = panelHeight < 196.dp
+    val micSize = if (isCompact) 68.dp else 84.dp
 
     AKeyboardTheme {
         Surface(
@@ -93,7 +106,8 @@ fun KeyboardScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .navigationBarsPadding()
-                    .height(216.dp)
+                    .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
+                    .height(panelHeight)
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 StatusBar(state = state, onOpenSettings = onOpenSettings)
@@ -118,14 +132,16 @@ fun KeyboardScreen(
                             .clip(RoundedCornerShape(20.dp))
                             .background(MaterialTheme.colorScheme.surfaceContainer)
                     ) {
-                        Text(
-                            text = stringResource(R.string.touchpad_hint),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .padding(top = 10.dp)
-                        )
+                        if (!isCompact) {
+                            Text(
+                                text = stringResource(R.string.touchpad_hint),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .padding(top = 10.dp)
+                            )
+                        }
 
                         val micCd = stringResource(R.string.cd_mic_button)
                         val isRecording = state is ImeState.Recording
@@ -173,7 +189,7 @@ fun KeyboardScreen(
                                 )
                                 Box(
                                     modifier = Modifier
-                                        .size(84.dp)
+                                        .size(micSize)
                                         .scale(pulseScale)
                                         .alpha(pulseAlpha)
                                         .clip(CircleShape)
@@ -184,7 +200,7 @@ fun KeyboardScreen(
                             Box(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier
-                                    .size(84.dp)
+                                    .size(micSize)
                                     .scale(pressScale)
                                     .clip(CircleShape)
                                     .background(micBg)
@@ -212,8 +228,16 @@ fun KeyboardScreen(
 
                     Spacer(modifier = Modifier.width(10.dp))
 
-                    val auxBtnSize = if (showSwitchIme) 44.dp else 56.dp
-                    val auxSpacing = if (showSwitchIme) 8.dp else 14.dp
+                    val auxBtnSize = if (isCompact) {
+                        if (showSwitchIme) 34.dp else 44.dp
+                    } else {
+                        if (showSwitchIme) 44.dp else 56.dp
+                    }
+                    val auxSpacing = if (isCompact) {
+                        if (showSwitchIme) 4.dp else 8.dp
+                    } else {
+                        if (showSwitchIme) 8.dp else 14.dp
+                    }
                     val auxShape = RoundedCornerShape(18.dp)
                     Column(
                         modifier = Modifier
@@ -365,7 +389,15 @@ private fun StatusBar(
             },
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
+                .then(
+                    if (isActionableError) {
+                        Modifier.clickable(onClick = onOpenSettings)
+                    } else {
+                        Modifier
+                    }
+                )
         )
         IconButton(
             onClick = onOpenSettings,

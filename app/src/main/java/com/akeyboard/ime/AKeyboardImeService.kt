@@ -3,10 +3,7 @@ package com.akeyboard.ime
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.inputmethodservice.InputMethodService
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Handler
 import android.os.Looper
 import android.text.InputType
@@ -16,7 +13,6 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ServiceLifecycleDispatcher
@@ -37,6 +33,8 @@ import com.akeyboard.live.VoiceSessionError
 import com.akeyboard.live.VoiceSessionPhase
 import com.akeyboard.settings.SettingsActivity
 import com.akeyboard.ui.KeyboardScreen
+import com.akeyboard.util.hasPermission
+import com.akeyboard.util.isNetworkAvailable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -104,8 +102,8 @@ class AKeyboardImeService :
             liveClient = liveClient,
             apiKeyStore = app.apiKeyStore,
             settingsRepository = app.settingsRepository,
-            hasMicPermission = ::hasMicPermission,
-            isNetworkAvailable = ::isNetworkAvailable,
+            hasMicPermission = { hasPermission(Manifest.permission.RECORD_AUDIO) },
+            isNetworkAvailable = { isNetworkAvailable() },
             onPhaseChanged = { phase ->
                 if (voiceAllowed) {
                     _imeState.value = when (phase) {
@@ -183,7 +181,7 @@ class AKeyboardImeService :
         }
         currentEditorInfo = info
         _isMultiline.value = isMultilineInput(info)
-        _imeAction.value = (info?.imeOptions ?: 0) and EditorInfo.IME_MASK_ACTION
+        _imeAction.value = resolveEffectiveImeAction(info?.imeOptions ?: 0)
         voiceAllowed = !isSensitiveInput(info)
 
         if (!voiceAllowed) {
@@ -252,9 +250,11 @@ class AKeyboardImeService :
     private fun performEnter() {
         val ic = currentInputConnection ?: return
         val info = currentEditorInfo
-        val action = (info?.imeOptions ?: 0) and EditorInfo.IME_MASK_ACTION
-        if (action != EditorInfo.IME_ACTION_NONE && action != EditorInfo.IME_ACTION_UNSPECIFIED) {
-            if (ic.performEditorAction(action)) return
+        if (((info?.imeOptions ?: 0) and EditorInfo.IME_FLAG_NO_ENTER_ACTION) == 0) {
+            val action = resolveEffectiveImeAction(info?.imeOptions ?: 0)
+            if (action != EditorInfo.IME_ACTION_NONE && action != EditorInfo.IME_ACTION_UNSPECIFIED) {
+                if (ic.performEditorAction(action)) return
+            }
         }
         ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
         ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
@@ -287,20 +287,6 @@ class AKeyboardImeService :
         }
     }
 
-    private fun hasMicPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.RECORD_AUDIO
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun isNetworkAvailable(): Boolean {
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return false
-        val net = cm.activeNetwork ?: return false
-        val caps = cm.getNetworkCapabilities(net) ?: return false
-        return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-    }
-
     private fun isSensitiveInput(info: EditorInfo?): Boolean {
         if (info == null) return false
         if ((info.imeOptions and EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING) != 0) return true
@@ -324,5 +310,15 @@ class AKeyboardImeService :
         return (flags and InputType.TYPE_TEXT_FLAG_MULTI_LINE) != 0 ||
             (flags and InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE) != 0 ||
             variation == InputType.TYPE_TEXT_VARIATION_LONG_MESSAGE
+    }
+
+    companion object {
+        fun resolveEffectiveImeAction(imeOptions: Int): Int {
+            return if ((imeOptions and EditorInfo.IME_FLAG_NO_ENTER_ACTION) != 0) {
+                EditorInfo.IME_ACTION_NONE
+            } else {
+                imeOptions and EditorInfo.IME_MASK_ACTION
+            }
+        }
     }
 }

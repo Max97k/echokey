@@ -14,6 +14,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicBoolean
 
 sealed class AudioCaptureResult {
     data class Started(val frames: Channel<ByteArray>) : AudioCaptureResult()
@@ -27,11 +28,14 @@ enum class AudioFailureReason {
 
 open class AudioCaptureManager(
     private val context: Context? = null,
-    private val preferBuiltInMic: Boolean = false
+    private val preferBuiltInMic: Boolean = false,
+    private val preferBuiltInMicProvider: () -> Boolean = { preferBuiltInMic }
 ) {
+    var onCaptureError: ((AudioFailureReason) -> Unit)? = null
 
     private var audioRecord: AudioRecord? = null
     private var captureJob: Job? = null
+    private val isStopping = AtomicBoolean(false)
 
     @SuppressLint("MissingPermission")
     open fun start(scope: CoroutineScope): AudioCaptureResult {
@@ -64,7 +68,7 @@ open class AudioCaptureManager(
             return AudioCaptureResult.Failed(AudioFailureReason.MIC_UNAVAILABLE)
         }
 
-        if (preferBuiltInMic && context != null) {
+        if (preferBuiltInMicProvider() && context != null) {
             val audioMgr = context.getSystemService(AudioManager::class.java)
             val builtIn = audioMgr
                 ?.getDevices(AudioManager.GET_DEVICES_INPUTS)
@@ -90,10 +94,11 @@ open class AudioCaptureManager(
             onBufferOverflow = BufferOverflow.DROP_OLDEST
         )
 
+        isStopping.set(false)
         captureJob = scope.launch(Dispatchers.IO) {
             val readBuf = ByteArray(FRAME_BYTES)
             try {
-                while (isActive) {
+                while (isActive && !isStopping.get()) {
                     val read = recorder.read(readBuf, 0, FRAME_BYTES)
                     if (read > 0) {
                         channel.trySend(readBuf.copyOf(read))
@@ -101,6 +106,9 @@ open class AudioCaptureManager(
                         read == AudioRecord.ERROR_DEAD_OBJECT ||
                         read == AudioRecord.ERROR_BAD_VALUE
                     ) {
+                        if (!isStopping.get()) {
+                            onCaptureError?.invoke(AudioFailureReason.MIC_UNAVAILABLE)
+                        }
                         break
                     }
                 }
@@ -112,6 +120,7 @@ open class AudioCaptureManager(
     }
 
     open fun stop() {
+        isStopping.set(true)
         captureJob?.cancel()
         captureJob = null
         audioRecord?.let { rec ->

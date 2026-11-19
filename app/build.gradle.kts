@@ -12,8 +12,8 @@ android {
 
     defaultConfig {
         applicationId = "com.akeyboard"
-        minSdk = 36
-        targetSdk = 36
+        minSdk = 31
+        targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -60,9 +60,8 @@ android {
     lint {
         warningsAsErrors = true
         abortOnError = true
-        // Intentional API 36 (Android 16 stable) and pinned BOM/dependency versions
+        // Intentional pinned BOM and dependency versions
         disable += setOf(
-            "OldTargetApi",
             "GradleDependency",
             "NewerVersionAvailable",
             "AndroidGradlePluginVersion"

@@ -16,7 +16,10 @@ data class UserSettings(
     val showSwitchImeKey: Boolean = false,
     val touchpadStepXDp: Int = SettingsRepository.DEFAULT_STEP_X_DP,
     val touchpadStepYDp: Int = SettingsRepository.DEFAULT_STEP_Y_DP,
-    val disclosureAccepted: Boolean = false
+    val disclosureAccepted: Boolean = false,
+    val lastRemoteDeviceAddress: String? = null,
+    val lastRemoteDeviceName: String? = null,
+    val remotePreferBuiltInMic: Boolean = true
 )
 
 class SettingsRepository(private val dataStore: DataStore<Preferences>) {
@@ -35,7 +38,10 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
             showSwitchImeKey = prefs[KEY_SHOW_SWITCH_IME_KEY] ?: false,
             touchpadStepXDp = (prefs[KEY_STEP_X_DP] ?: DEFAULT_STEP_X_DP).coerceIn(MIN_STEP_DP, MAX_STEP_DP),
             touchpadStepYDp = (prefs[KEY_STEP_Y_DP] ?: DEFAULT_STEP_Y_DP).coerceIn(MIN_STEP_DP, MAX_STEP_DP),
-            disclosureAccepted = prefs[KEY_DISCLOSURE_ACCEPTED] ?: false
+            disclosureAccepted = prefs[KEY_DISCLOSURE_ACCEPTED] ?: false,
+            lastRemoteDeviceAddress = prefs[KEY_LAST_REMOTE_ADDRESS],
+            lastRemoteDeviceName = prefs[KEY_LAST_REMOTE_NAME],
+            remotePreferBuiltInMic = prefs[KEY_REMOTE_PREFER_BUILT_IN_MIC] ?: true
         )
     }
 
@@ -67,6 +73,25 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
         dataStore.edit { it[KEY_DISCLOSURE_ACCEPTED] = accepted }
     }
 
+    suspend fun setLastRemoteDevice(address: String?, name: String?) {
+        dataStore.edit { prefs ->
+            if (address == null) {
+                prefs.remove(KEY_LAST_REMOTE_ADDRESS)
+            } else {
+                prefs[KEY_LAST_REMOTE_ADDRESS] = address
+            }
+            if (name == null) {
+                prefs.remove(KEY_LAST_REMOTE_NAME)
+            } else {
+                prefs[KEY_LAST_REMOTE_NAME] = name
+            }
+        }
+    }
+
+    suspend fun setRemotePreferBuiltInMic(preferBuiltIn: Boolean) {
+        dataStore.edit { it[KEY_REMOTE_PREFER_BUILT_IN_MIC] = preferBuiltIn }
+    }
+
     companion object {
         const val DEFAULT_MODEL_ID = "gemini-3.5-transcribe-live"
         val DEFAULT_LANGUAGE_CODES = listOf("zh-TW")
@@ -82,5 +107,8 @@ class SettingsRepository(private val dataStore: DataStore<Preferences>) {
         private val KEY_STEP_X_DP = intPreferencesKey("touchpad_step_x_dp")
         private val KEY_STEP_Y_DP = intPreferencesKey("touchpad_step_y_dp")
         private val KEY_DISCLOSURE_ACCEPTED = booleanPreferencesKey("disclosure_accepted")
+        private val KEY_LAST_REMOTE_ADDRESS = stringPreferencesKey("last_remote_device_address")
+        private val KEY_LAST_REMOTE_NAME = stringPreferencesKey("last_remote_device_name")
+        private val KEY_REMOTE_PREFER_BUILT_IN_MIC = booleanPreferencesKey("remote_prefer_built_in_mic")
     }
 }
