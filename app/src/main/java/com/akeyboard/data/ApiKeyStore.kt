@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.first
+import java.io.IOException
 import java.security.GeneralSecurityException
 import java.security.KeyStore
 import javax.crypto.Cipher
@@ -22,15 +23,12 @@ class ApiKeyStore(
     suspend fun save(apiKey: String) {
         val trimmed = apiKey.trim()
         require(trimmed.isNotEmpty()) { "API key must not be blank" }
-        val cipher = Cipher.getInstance(TRANSFORMATION)
-        cipher.init(Cipher.ENCRYPT_MODE, getOrCreateSecretKey())
-        val iv = cipher.iv
-        val ciphertext = cipher.doFinal(trimmed.toByteArray(Charsets.UTF_8))
-        val combined = ByteArray(1 + iv.size + ciphertext.size)
-        combined[0] = iv.size.toByte()
-        System.arraycopy(iv, 0, combined, 1, iv.size)
-        System.arraycopy(ciphertext, 0, combined, 1 + iv.size, ciphertext.size)
-        val encoded = Base64.encodeToString(combined, Base64.NO_WRAP)
+        val encoded = try {
+            encryptApiKey(trimmed)
+        } catch (_: GeneralSecurityException) {
+            deleteSecretKey()
+            encryptApiKey(trimmed)
+        }
         dataStore.edit { prefs ->
             prefs[KEY_API_KEY_ENC] = encoded
         }
@@ -59,6 +57,7 @@ class ApiKeyStore(
             cipher.init(Cipher.DECRYPT_MODE, key, GCMParameterSpec(GCM_TAG_BITS, iv))
             String(cipher.doFinal(ciphertext), Charsets.UTF_8)
         } catch (_: GeneralSecurityException) {
+            deleteSecretKey()
             clear()
             null
         } catch (_: IllegalArgumentException) {
@@ -70,6 +69,31 @@ class ApiKeyStore(
     suspend fun clear() {
         dataStore.edit { prefs ->
             prefs.remove(KEY_API_KEY_ENC)
+        }
+    }
+
+    private fun encryptApiKey(plaintext: String): String {
+        val cipher = Cipher.getInstance(TRANSFORMATION)
+        cipher.init(Cipher.ENCRYPT_MODE, getOrCreateSecretKey())
+        val iv = cipher.iv
+        val ciphertext = cipher.doFinal(plaintext.toByteArray(Charsets.UTF_8))
+        val combined = ByteArray(1 + iv.size + ciphertext.size)
+        combined[0] = iv.size.toByte()
+        System.arraycopy(iv, 0, combined, 1, iv.size)
+        System.arraycopy(ciphertext, 0, combined, 1 + iv.size, ciphertext.size)
+        return Base64.encodeToString(combined, Base64.NO_WRAP)
+    }
+
+    private fun deleteSecretKey() {
+        try {
+            val ks = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
+            if (ks.containsAlias(keyAlias)) {
+                ks.deleteEntry(keyAlias)
+            }
+        } catch (_: GeneralSecurityException) {
+            // Best-effort cleanup of corrupted alias
+        } catch (_: IOException) {
+            // Best-effort cleanup of corrupted alias
         }
     }
 

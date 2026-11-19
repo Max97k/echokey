@@ -52,6 +52,11 @@ class VoiceDictationSession(
     private var hasCommittedCurrentTurn = false
 
     init {
+        audioManager.onCaptureError = { reason ->
+            scope.launch {
+                handleCaptureError(reason)
+            }
+        }
         observeLiveEvents()
     }
 
@@ -142,6 +147,7 @@ class VoiceDictationSession(
     }
 
     fun close() {
+        audioManager.onCaptureError = null
         abort()
         liveEventsJob?.cancel()
         liveClient.close()
@@ -149,6 +155,26 @@ class VoiceDictationSession(
 
     fun resetPhaseToIdle() {
         setPhase(VoiceSessionPhase.IDLE)
+    }
+
+    private fun handleCaptureError(reason: AudioFailureReason) {
+        if (phase != VoiceSessionPhase.RECORDING) return
+        maxDurationJob?.cancel()
+        finalizeJob?.cancel()
+        audioManager.stop()
+        liveClient.close()
+        if (!hasCommittedCurrentTurn && runningComposingText.isNotEmpty()) {
+            onFinishComposing()
+        }
+        runningComposingText.clear()
+        hasCommittedCurrentTurn = false
+        setPhase(VoiceSessionPhase.IDLE)
+        onError(
+            when (reason) {
+                AudioFailureReason.NO_PERMISSION -> VoiceSessionError.NO_PERMISSION
+                AudioFailureReason.MIC_UNAVAILABLE -> VoiceSessionError.MIC_BUSY
+            }
+        )
     }
 
     private fun setPhase(newPhase: VoiceSessionPhase) {
