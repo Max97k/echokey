@@ -39,6 +39,10 @@
     <string name="btn_open_app_info">Open App Settings</string>
     <string name="btn_enable_ime">Enable AKeyboard in System Settings</string>
     <string name="btn_switch_ime">Switch Keyboard Now</string>
+    <string name="ime_status_enabled">Keyboard enabled in system settings: Yes</string>
+    <string name="ime_status_disabled">Keyboard enabled in system settings: No</string>
+    <string name="ime_status_selected">Current default keyboard: AKeyboard</string>
+    <string name="ime_status_not_selected">Current default keyboard: Other</string>
 
     <string name="section_api_key">2. Google AI Studio API Key</string>
     <string name="api_key_label">API Key</string>
@@ -48,10 +52,13 @@
     <string name="validating">Validating…</string>
     <string name="key_valid_status">Key verified. Available live models: %1$d</string>
     <string name="key_cleared_status">API key cleared.</string>
+    <string name="key_storage_error">Failed to securely save API key on this device. Please try again.</string>
 
     <string name="section_model">3. Live Transcription Model</string>
     <string name="model_label">Selected Model</string>
     <string name="no_models_loaded">Validate your API key to load available models.</string>
+    <string name="model_badge_transcribe">[Transcribe]</string>
+    <string name="model_badge_live">[Live]</string>
 
     <string name="section_transcription">4. Language &amp; Transcription</string>
     <string name="lang_label">Transcription Language</string>
@@ -64,6 +71,7 @@
     <string name="lang_ko_kr">Korean (ko-KR)</string>
     <string name="smart_mode_title">Smart Transcription Mode</string>
     <string name="smart_mode_desc">Automatically remove filler words and repetitions (supported by transcribe models).</string>
+    <string name="model_non_transcribe_hint">The selected Live model does not support transcription language codes or Smart Mode filler removal.</string>
 
     <string name="section_touchpad">5. Touchpad Cursor Sensitivity</string>
     <string name="step_x_label">Horizontal step: %1$d dp (smaller = faster)</string>
@@ -92,10 +100,26 @@
     <string name="remote_enter">Enter</string>
     <string name="remote_mic_hold">Hold to dictate to PC</string>
     <string name="remote_error_uipi">PC window is elevated (Admin/UAC). Switch to a normal window and tap Resend.</string>
+    <string name="remote_error_no_focus">No active text field or window on PC (or screen locked). Click a text box and tap Resend.</string>
+    <string name="remote_error_send_failed">Failed to deliver text to PC. Check connection and tap Resend.</string>
+    <string name="remote_error_pc_disconnected">PC bridge disconnected. Reconnect and tap Resend.</string>
+    <string name="remote_error_bt_enable_timeout">Timed out waiting for Bluetooth to turn on. Please try connecting again.</string>
+    <string name="remote_error_bt_enable_denied">Bluetooth was not enabled. Turn on Bluetooth to connect.</string>
     <string name="remote_error_no_key">Set your Gemini API key in Settings first.</string>
-    <string name="remote_error_no_network">No cellular/internet connection.</string>
+    <string name="remote_error_no_network">No network connection.</string>
     <string name="remote_error_invalid_key">Invalid Gemini API key.</string>
     <string name="remote_error_quota">Gemini API quota exceeded.</string>
     <string name="remote_error_max_duration">Stopped at 60s max duration.</string>
     <string name="remote_error_generic">Transcription error occurred.</string>
+    <string name="remote_blocker_no_hardware">This device does not support Bluetooth.</string>
+    <string name="remote_blocker_bt_off">Bluetooth is turned off. Turn it on to connect to your PC.</string>
+    <string name="remote_blocker_bt_turning_on">Turning Bluetooth on…</string>
+    <string name="remote_blocker_no_paired">No paired PC found. Pair your Windows PC in Bluetooth settings first.</string>
+    <string name="remote_blocker_no_key">Gemini API key is not set yet. Open Settings to configure it.</string>
+    <string name="remote_btn_enable_bt">Turn On Bluetooth</string>
+    <string name="remote_btn_pair_bt">Bluetooth Settings</string>
+    <string name="remote_btn_open_settings">Open Settings</string>
+    <string name="remote_btn_cancel">Cancel</string>
+    <string name="remote_mic_built_in">Phone mic</string>
+    <string name="remote_mic_system">System default (Wired/USB headset)</string>
 </resources>

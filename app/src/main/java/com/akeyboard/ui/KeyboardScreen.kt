@@ -94,7 +94,7 @@ fun KeyboardScreen(
     val density = LocalDensity.current
     val windowHeightDp = with(density) { LocalWindowInfo.current.containerSize.height.toDp() }
     val panelHeight = (windowHeightDp * 0.34f).coerceIn(168.dp, 216.dp)
-    val isCompact = panelHeight < 196.dp
+    val isCompact = panelHeight < 200.dp
     val micSize = if (isCompact) 68.dp else 84.dp
 
     AKeyboardTheme {
