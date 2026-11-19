@@ -1,5 +1,6 @@
 package com.akeyboard.settings
 
+import android.content.ComponentName
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -9,11 +10,14 @@ import com.akeyboard.data.ModelRegistryClient
 import com.akeyboard.data.ModelRegistryException
 import com.akeyboard.data.SettingsRepository
 import com.akeyboard.data.UserSettings
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.IOException
+import java.security.GeneralSecurityException
 
 sealed class KeyValidationStatus {
     data object Idle : KeyValidationStatus()
@@ -22,6 +26,7 @@ sealed class KeyValidationStatus {
     data object InvalidKey : KeyValidationStatus()
     data object QuotaExceeded : KeyValidationStatus()
     data object NetworkError : KeyValidationStatus()
+    data object StorageError : KeyValidationStatus()
     data object Cleared : KeyValidationStatus()
 }
 
@@ -30,7 +35,9 @@ data class SettingsUiState(
     val hasStoredKey: Boolean = false,
     val keyInput: String = "",
     val models: List<ModelInfo> = emptyList(),
-    val keyStatus: KeyValidationStatus = KeyValidationStatus.Idle
+    val keyStatus: KeyValidationStatus = KeyValidationStatus.Idle,
+    val isImeEnabled: Boolean = false,
+    val isImeSelected: Boolean = false
 )
 
 class SettingsViewModel(
@@ -54,6 +61,12 @@ class SettingsViewModel(
                 _uiState.update { it.copy(hasStoredKey = true) }
                 refreshModels(savedKey, persistKey = false)
             }
+        }
+    }
+
+    fun refreshImeStatus(isEnabled: Boolean, isSelected: Boolean) {
+        _uiState.update {
+            it.copy(isImeEnabled = isEnabled, isImeSelected = isSelected)
         }
     }
 
@@ -131,7 +144,17 @@ class SettingsViewModel(
         result.fold(
             onSuccess = { models ->
                 if (persistKey) {
-                    apiKeyStore.save(apiKey)
+                    try {
+                        apiKeyStore.save(apiKey)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: GeneralSecurityException) {
+                        _uiState.update { it.copy(keyStatus = KeyValidationStatus.StorageError) }
+                        return@fold
+                    } catch (_: IOException) {
+                        _uiState.update { it.copy(keyStatus = KeyValidationStatus.StorageError) }
+                        return@fold
+                    }
                 }
                 val currentSelected = _uiState.value.settings.selectedModelId
                 if (models.isNotEmpty() && models.none { it.id == currentSelected }) {
@@ -168,6 +191,18 @@ class SettingsViewModel(
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return SettingsViewModel(apiKeyStore, settingsRepository, modelRegistryClient) as T
+        }
+    }
+
+    companion object {
+        fun parseDefaultImePackage(defaultIme: String?): String? {
+            val trimmed = defaultIme?.trim()?.takeIf { it.isNotEmpty() } ?: return null
+            ComponentName.unflattenFromString(trimmed)?.packageName?.let { pkg ->
+                if (pkg.isNotBlank()) return pkg
+            }
+            val slash = trimmed.indexOf('/')
+            if (slash <= 0 || slash >= trimmed.lastIndex) return null
+            return trimmed.substring(0, slash).takeIf { it.isNotBlank() }
         }
     }
 }

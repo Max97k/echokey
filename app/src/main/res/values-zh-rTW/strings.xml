@@ -36,6 +36,10 @@
     <string name="btn_open_app_info">開啟應用程式設定</string>
     <string name="btn_enable_ime">在系統設定中啟用 AKeyboard</string>
     <string name="btn_switch_ime">立即切換輸入法</string>
+    <string name="ime_status_enabled">系統輸入法狀態：已啟用</string>
+    <string name="ime_status_disabled">系統輸入法狀態：尚未啟用</string>
+    <string name="ime_status_selected">目前預設輸入法：已切換為 AKeyboard</string>
+    <string name="ime_status_not_selected">目前預設輸入法：尚未切換</string>
 
     <string name="section_api_key">2. Google AI Studio API Key</string>
     <string name="api_key_label">API Key</string>
@@ -45,10 +49,13 @@
     <string name="validating">驗證中…</string>
     <string name="key_valid_status">Key 驗證成功，共 %1$d 個即時模型可用。</string>
     <string name="key_cleared_status">已清除 API Key。</string>
+    <string name="key_storage_error">無法安全儲存 API Key 至本機金鑰庫，請重試。</string>
 
     <string name="section_model">3. 即時語音轉文字模型</string>
     <string name="model_label">目前選擇的模型</string>
     <string name="no_models_loaded">請先驗證 API Key 以載入可用模型。</string>
+    <string name="model_badge_transcribe">[Transcribe]</string>
+    <string name="model_badge_live">[Live]</string>
 
     <string name="section_transcription">4. 辨識語言與智慧模式</string>
     <string name="lang_label">預設輸入語言</string>
@@ -61,6 +68,7 @@
     <string name="lang_ko_kr">韓文 (ko-KR)</string>
     <string name="smart_mode_title">智慧轉錄模式（自動濾除贅詞）</string>
     <string name="smart_mode_desc">開啟後會自動過濾「呃、那個」與口語重複；關閉則逐字原樣輸出（僅 transcribe 模型支援）。</string>
+    <string name="model_non_transcribe_hint">目前選擇的是一般 Live 模型，不支援指定轉錄語言代碼與智慧去贅詞模式。</string>
 
     <string name="section_touchpad">5. 觸控板游標靈敏度</string>
     <string name="step_x_label">水平步長：%1$d dp（越小越靈敏）</string>
@@ -89,10 +97,26 @@
     <string name="remote_enter">Enter 送出</string>
     <string name="remote_mic_hold">按住對電腦語音輸入</string>
     <string name="remote_error_uipi">電腦目前視窗為系統管理員權限（UIPI 阻擋），請切回一般視窗後點擊「重送」。</string>
+    <string name="remote_error_no_focus">電腦目前沒有焦點輸入視窗（或處於鎖定畫面），請點擊輸入框後按「重送」。</string>
+    <string name="remote_error_send_failed">傳送文字至電腦失敗，請確認連線狀態後點擊「重送」。</string>
+    <string name="remote_error_pc_disconnected">電腦端橋接腳本已中斷連線，請重新連線後點擊「重送」。</string>
+    <string name="remote_error_bt_enable_timeout">等待藍牙開啟逾時，請重新點擊連線。</string>
+    <string name="remote_error_bt_enable_denied">未開啟藍牙，已取消自動連線。</string>
     <string name="remote_error_no_key">請先在設定頁填入 Gemini API Key。</string>
-    <string name="remote_error_no_network">目前沒有行動網路連線。</string>
+    <string name="remote_error_no_network">無網路連線。</string>
     <string name="remote_error_invalid_key">Gemini API Key 無效。</string>
     <string name="remote_error_quota">Gemini API 配額已滿。</string>
     <string name="remote_error_max_duration">已達單次最長 60 秒錄音上限。</string>
     <string name="remote_error_generic">語音轉錄發生錯誤。</string>
+    <string name="remote_blocker_no_hardware">此裝置不支援藍牙硬體。</string>
+    <string name="remote_blocker_bt_off">藍牙尚未開啟，請開啟藍牙以連線電腦。</string>
+    <string name="remote_blocker_bt_turning_on">正在開啟藍牙…</string>
+    <string name="remote_blocker_no_paired">找不到已配對電腦，請先於系統藍牙設定配對您的 Windows 電腦。</string>
+    <string name="remote_blocker_no_key">尚未設定 Gemini API Key，請先前往設定頁填入。</string>
+    <string name="remote_btn_enable_bt">開啟藍牙</string>
+    <string name="remote_btn_pair_bt">前往藍牙配對</string>
+    <string name="remote_btn_open_settings">前往設定</string>
+    <string name="remote_btn_cancel">取消</string>
+    <string name="remote_mic_built_in">手機內建麥克風優先</string>
+    <string name="remote_mic_system">系統預設（外接有線／USB 耳麥）</string>
 </resources>
