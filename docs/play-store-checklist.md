@@ -1,6 +1,6 @@
 # Google Play Store Checklist (v1)
 
-- [x] `compileSdk = 36`, `minSdk = 36`, `targetSdk = 36` (meets August 31, 2026 Play requirement).
+- [x] `compileSdk = 37`, `minSdk = 31`, `targetSdk = 37` (meets August 31, 2026 Play requirement).
 - [x] Edge-to-edge enabled (`enableEdgeToEdge()` in `SettingsActivity`, `WindowInsets.navigationBars` in `KeyboardScreen`).
 - [x] Prominent in-app disclosure before first use (`DisclosureScreen` in `SettingsActivity`).
 - [x] Password and `IME_FLAG_NO_PERSONALIZED_LEARNING` fields disable voice input.

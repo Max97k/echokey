@@ -4,7 +4,7 @@
 
 **A minimalist, BYOK Android voice-only Input Method (IME) powered by Google AI Studio's Gemini Live API (`gemini-3.5-transcribe-live`), with a built-in 2D touchpad for cursor control.**
 
-[![Platform](https://img.shields.io/badge/Platform-Android%2016%20(API%2036%2B)-3DDC84?style=flat-square&logo=android&logoColor=white)](https://android.com)
+[![Platform](https://img.shields.io/badge/Platform-Android%2012%2B%20(API%2031--37)-3DDC84?style=flat-square&logo=android&logoColor=white)](https://android.com)
 [![Version](https://img.shields.io/badge/Version-v0.2.0-blue?style=flat-square)](https://github.com/Max97k/echokey)
 [![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen?style=flat-square)](https://github.com/Max97k/echokey)
 [![Target Device](https://img.shields.io/badge/Tested%20On-Google%20Pixel%208%20Pro-4285F4?style=flat-square&logo=google&logoColor=white)](https://store.google.com)
@@ -64,7 +64,7 @@ Android InputConnection  <--->  AKeyboardImeService (Compose + Lifecycle)
 ## 🚀 Getting Started
 
 ### Prerequisites
-* Android 16 (API 36) or higher (tested on Google Pixel 8 Pro / Android 17)
+* Android 12 (API 31) or higher (targetSdk 37 / Android 17)
 * A Google AI Studio API key
 
 ### Build & Test
@@ -82,15 +82,15 @@ Android InputConnection  <--->  AKeyboardImeService (Compose + Lifecycle)
 
 ---
 
-## 💻 Windows 11 Bluetooth Voice Bridge
+## 💻 Windows 10/11 Bluetooth Voice Bridge
 
-For restricted corporate PCs that block `generativelanguage.googleapis.com` or unsigned `.exe` installers, AKeyboard includes a zero-dependency Python 3.10+ receiver (`tools/akeyboard_bridge.py`) and an in-app **PC Bluetooth Remote** screen:
+For restricted corporate PCs that block `generativelanguage.googleapis.com` or unsigned `.exe` installers, AKeyboard includes a zero-dependency Python 3.10+ receiver (`tools/akeyboard_bridge.py`) for Windows 10/11 and an in-app **PC Bluetooth Remote** screen:
 
-1. Pair your Android phone and Windows 11 PC over Bluetooth.
-2. On Windows 11, run `python tools/akeyboard_bridge.py` (uses only Python standard library; no `pip install` or admin rights required).
+1. Pair your Android phone and Windows 10/11 PC over Bluetooth.
+2. On Windows 10/11, run `python tools/akeyboard_bridge.py` (uses official Python 3.10+ standard library only; no `pip install` or admin rights required).
 3. On your phone, open **AKeyboard Settings → Open PC Bluetooth Voice Remote**, connect to your PC, and hold the mic button to dictate directly to your PC cursor.
 
-*(Limitations: requires Python 3.10+ on Windows 11, corporate GPO must allow Bluetooth RFCOMM, and UIPI blocks `SendInput` into elevated Admin/UAC windows.)*
+*(Limitations: requires official CPython 3.10+ with Bluetooth socket support on Windows 10/11, corporate GPO must allow Bluetooth RFCOMM, a target window must have focus, and UIPI blocks `SendInput` into elevated Admin/UAC windows.)*
 
 ---
 
