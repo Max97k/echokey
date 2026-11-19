@@ -29,9 +29,14 @@
     <!-- Settings & Disclosure -->
     <string name="disclosure_title">Voice &amp; Data Disclosure</string>
     <string name="disclosure_body">AKeyboard is a voice-only keyboard. Audio is captured only while you hold the microphone button and is streamed directly to Google Gemini API using your own API key.\n\nAKeyboard does not save audio to disk and has no developer backend server. Google processes the audio under your Google AI Studio account terms.</string>
+    <string name="disclosure_setup_hint">Using AKeyboard requires your own Google AI Studio API key (free tier available in eligible regions; see the next screen for setup steps). Data handling depends on the Google AI Studio plan you choose (free or paid) under Google\'s Gemini API terms.</string>
     <string name="disclosure_agree">Agree and Continue</string>
 
     <string name="settings_title">AKeyboard Settings</string>
+    <string name="setup_checklist_title">Get started</string>
+    <string name="setup_step_api_key">Get and save your Google AI Studio API key</string>
+    <string name="setup_step_keyboard">Enable AKeyboard in system settings</string>
+    <string name="setup_step_mic">Allow microphone access</string>
     <string name="section_permissions">1. System Setup</string>
     <string name="perm_mic_granted">Microphone permission: Granted</string>
     <string name="perm_mic_missing">Microphone permission: Required</string>
@@ -45,6 +50,11 @@
     <string name="ime_status_not_selected">Current default keyboard: Other</string>
 
     <string name="section_api_key">2. Google AI Studio API Key</string>
+    <string name="api_key_help">Google AI Studio offers a free API key tier in eligible regions. Sign in with a Google account, create a key, copy it, then return here and tap Paste. Limits vary by model and region; check AI Studio for your current limits.</string>
+    <string name="btn_get_api_key">Get a key at Google AI Studio</string>
+    <string name="btn_paste_key">Paste from clipboard</string>
+    <string name="api_key_no_browser">No browser found. Open aistudio.google.com/apikey manually.</string>
+    <string name="api_key_clipboard_empty">Clipboard has no text to paste.</string>
     <string name="api_key_label">API Key</string>
     <string name="api_key_saved_hint">Key is encrypted and saved on this device</string>
     <string name="btn_validate_save">Validate &amp; Save Key</string>

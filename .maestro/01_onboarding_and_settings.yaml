@@ -14,8 +14,16 @@ appId: com.akeyboard
     id: "settings_ime_enabled_status"
 - assertVisible:
     id: "settings_ime_selected_status"
+- scrollUntilVisible:
+    element:
+      id: "settings_api_key_input"
+    direction: DOWN
 - assertVisible:
     id: "settings_api_key_input"
+- scrollUntilVisible:
+    element:
+      id: "settings_validate_save_btn"
+    direction: DOWN
 - assertVisible:
     id: "settings_validate_save_btn"
 - scrollUntilVisible:

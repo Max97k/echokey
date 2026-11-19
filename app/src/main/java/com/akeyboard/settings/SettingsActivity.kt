@@ -1,6 +1,7 @@
 package com.akeyboard.settings
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -8,6 +9,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -31,12 +33,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -51,17 +56,22 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -72,6 +82,7 @@ import com.akeyboard.remote.RemoteDictationActivity
 import com.akeyboard.ui.AKeyboardTheme
 import com.akeyboard.util.hasPermission
 import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
 class SettingsActivity : ComponentActivity() {
 
@@ -151,6 +162,12 @@ private fun DisclosureScreen(onAgree: () -> Unit) {
                     text = stringResource(R.string.disclosure_body),
                     style = MaterialTheme.typography.bodyLarge
                 )
+                Text(
+                    text = stringResource(R.string.disclosure_setup_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.testTag("disclosure_setup_hint")
+                )
                 Spacer(modifier = Modifier.weight(1f))
                 Button(
                     onClick = onAgree,
@@ -173,11 +190,14 @@ private fun SettingsContent(
     onRefreshImeStatus: () -> Unit
 ) {
     val context = LocalContext.current
+    val clipboard = LocalClipboard.current
+    val coroutineScope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
 
     var hasMicPerm by remember {
         mutableStateOf(context.hasPermission(Manifest.permission.RECORD_AUDIO))
     }
+    var showNoBrowserHint by rememberSaveable { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner, context) {
         val observer = LifecycleEventObserver { _, event ->
@@ -226,6 +246,19 @@ private fun SettingsContent(
                         .testTag("btn_open_pc_remote")
                 ) {
                     Text(stringResource(R.string.btn_open_pc_remote))
+                }
+
+                if (!isSetupComplete(
+                        hasKey = state.hasStoredKey,
+                        imeEnabled = state.isImeEnabled,
+                        micGranted = hasMicPerm
+                    )
+                ) {
+                    SetupChecklistCard(
+                        hasKey = state.hasStoredKey,
+                        imeEnabled = state.isImeEnabled,
+                        micGranted = hasMicPerm
+                    )
                 }
 
                 HorizontalDivider()
@@ -314,11 +347,32 @@ private fun SettingsContent(
                     text = stringResource(R.string.section_api_key),
                     style = MaterialTheme.typography.titleMedium
                 )
+                Text(
+                    text = stringResource(R.string.api_key_help),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 if (state.hasStoredKey) {
                     Text(
                         text = stringResource(R.string.api_key_saved_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                OutlinedButton(
+                    onClick = {
+                        showNoBrowserHint = !openAiStudioApiKeyPage(context)
+                    },
+                    modifier = Modifier.testTag("settings_get_key_btn")
+                ) {
+                    Text(stringResource(R.string.btn_get_api_key))
+                }
+                if (showNoBrowserHint) {
+                    Text(
+                        text = stringResource(R.string.api_key_no_browser),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.testTag("settings_no_browser_hint")
                     )
                 }
                 OutlinedTextField(
@@ -332,6 +386,34 @@ private fun SettingsContent(
                         .fillMaxWidth()
                         .testTag("settings_api_key_input")
                 )
+                OutlinedButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            val pasted = try {
+                                val clipData = clipboard.getClipEntry()?.clipData
+                                if (clipData != null && clipData.itemCount > 0) {
+                                    clipData.getItemAt(0)?.text?.toString()?.trim()
+                                } else {
+                                    null
+                                }
+                            } catch (_: Exception) {
+                                null
+                            }
+                            if (!pasted.isNullOrEmpty()) {
+                                viewModel.onKeyInputChange(pasted)
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    R.string.api_key_clipboard_empty,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    },
+                    modifier = Modifier.testTag("settings_paste_key_btn")
+                ) {
+                    Text(stringResource(R.string.btn_paste_key))
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
                         onClick = viewModel::validateAndSaveKey,
@@ -573,4 +655,104 @@ private fun KeyStatusText(status: KeyValidationStatus) {
         color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
         modifier = Modifier.testTag("settings_key_status")
     )
+}
+
+internal const val AI_STUDIO_API_KEY_URL = "https://aistudio.google.com/apikey"
+
+internal fun isSetupComplete(
+    hasKey: Boolean,
+    imeEnabled: Boolean,
+    micGranted: Boolean
+): Boolean = hasKey && imeEnabled && micGranted
+
+private fun openAiStudioApiKeyPage(context: Context): Boolean {
+    return try {
+        context.startActivity(Intent(Intent.ACTION_VIEW, AI_STUDIO_API_KEY_URL.toUri()))
+        true
+    } catch (_: ActivityNotFoundException) {
+        false
+    } catch (_: SecurityException) {
+        false
+    }
+}
+
+@Composable
+private fun SetupChecklistCard(
+    hasKey: Boolean,
+    imeEnabled: Boolean,
+    micGranted: Boolean
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("setup_checklist_card")
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.setup_checklist_title),
+                style = MaterialTheme.typography.titleMedium
+            )
+            SetupChecklistRow(
+                stepNumber = "1",
+                label = stringResource(R.string.setup_step_api_key),
+                done = hasKey,
+                tag = "setup_step_api_key"
+            )
+            SetupChecklistRow(
+                stepNumber = "2",
+                label = stringResource(R.string.setup_step_keyboard),
+                done = imeEnabled,
+                tag = "setup_step_keyboard"
+            )
+            SetupChecklistRow(
+                stepNumber = "3",
+                label = stringResource(R.string.setup_step_mic),
+                done = micGranted,
+                tag = "setup_step_mic"
+            )
+        }
+    }
+}
+
+@Composable
+private fun SetupChecklistRow(
+    stepNumber: String,
+    label: String,
+    done: Boolean,
+    tag: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(tag),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (done) {
+            Icon(
+                painter = painterResource(R.drawable.ic_check),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            Text(
+                text = stepNumber,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f)
+        )
+    }
 }

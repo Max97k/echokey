@@ -1,0 +1,32 @@
+appId: com.akeyboard
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: "disclosure_setup_hint"
+- tapOn:
+    id: "disclosure_agree_btn"
+- assertVisible:
+    id: "setup_checklist_card"
+- assertVisible:
+    id: "setup_step_api_key"
+- assertVisible:
+    id: "setup_step_keyboard"
+- assertVisible:
+    id: "setup_step_mic"
+- scrollUntilVisible:
+    element:
+      id: "settings_get_key_btn"
+    direction: DOWN
+- assertVisible:
+    id: "settings_get_key_btn"
+- scrollUntilVisible:
+    element:
+      id: "settings_paste_key_btn"
+    direction: DOWN
+- assertVisible:
+    id: "settings_paste_key_btn"
+- tapOn:
+    id: "settings_paste_key_btn"
+- assertVisible:
+    id: "settings_api_key_input"

@@ -15,7 +15,7 @@ AKeyboard is an Android voice-only keyboard application operating in Bring-Your-
 
 ## 3. Third-Party Processing
 
-Audio streams and model listing requests are sent directly to Google LLC (`generativelanguage.googleapis.com`) and are governed by your Google AI Studio / Gemini API terms and Google's Privacy Policy.
+Audio streams and model listing requests are sent directly to Google LLC (`generativelanguage.googleapis.com`) and are governed by your Google AI Studio / Gemini API terms and Google's Privacy Policy. Whether Google may use content sent under free (unpaid) Gemini API usage to improve its products depends on Google's current Gemini API terms and the plan you choose in Google AI Studio.
 
 ## 4. Analytics & Advertising
 

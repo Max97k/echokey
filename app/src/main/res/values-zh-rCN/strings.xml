@@ -26,9 +26,14 @@
 
     <string name="disclosure_title">语音与数据披露声明</string>
     <string name="disclosure_body">AKeyboard 是一款纯语音输入法。仅在您按住麦克风按钮期间采集音频，并使用您自己的 API Key 直接发送至 Google Gemini API。\n\n本应用不会将音频写入本地磁盘，也没有开发者后端服务器。Google 会按您的 Google AI Studio 账户条款处理音频。</string>
+    <string name="disclosure_setup_hint">使用 AKeyboard 需要您自己的 Google AI Studio API Key（适用地区提供免费层，下一步会引导设置）。数据处理方式依您在 Google AI Studio 选用的方案（免费或计费）适用 Google 的 Gemini API 条款。</string>
     <string name="disclosure_agree">同意并继续</string>
 
     <string name="settings_title">AKeyboard 设置</string>
+    <string name="setup_checklist_title">开始使用</string>
+    <string name="setup_step_api_key">获取并保存 Google AI Studio API Key</string>
+    <string name="setup_step_keyboard">在系统设置启用 AKeyboard</string>
+    <string name="setup_step_mic">允许麦克风权限</string>
     <string name="section_permissions">1. 系统设置</string>
     <string name="perm_mic_granted">麦克风权限：已授权</string>
     <string name="perm_mic_missing">麦克风权限：未授权</string>
@@ -42,6 +47,11 @@
     <string name="ime_status_not_selected">当前默认输入法：尚未切换</string>
 
     <string name="section_api_key">2. Google AI Studio API Key</string>
+    <string name="api_key_help">Google AI Studio 在适用地区提供免费层 API Key。使用 Google 账号登录、创建并复制 Key，回到此处点按「从剪贴板粘贴」。额度因地区与模型而异，请到 AI Studio 查看当前的限制。</string>
+    <string name="btn_get_api_key">前往 Google AI Studio 申请 Key</string>
+    <string name="btn_paste_key">从剪贴板粘贴</string>
+    <string name="api_key_no_browser">找不到浏览器，请手动前往 aistudio.google.com/apikey。</string>
+    <string name="api_key_clipboard_empty">剪贴板当前没有可粘贴的文字。</string>
     <string name="api_key_label">API Key</string>
     <string name="api_key_saved_hint">Key 已加密保存于本机</string>
     <string name="btn_validate_save">验证并保存 Key</string>

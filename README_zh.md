@@ -40,6 +40,14 @@
 
 ---
 
+## 🚀 快速開始
+
+1. 前往 [Google AI Studio](https://aistudio.google.com/apikey)（或在 AKeyboard 設定頁點選「**前往 Google AI Studio 申請 Key**」），登入 Google 帳號、建立並複製 API Key。
+2. 回到 AKeyboard 設定頁，點選「**從剪貼簿貼上**」後按「**驗證並儲存 Key**」。
+3. 依設定頁上方的「**開始使用**」清單，在系統設定中啟用 AKeyboard 並允許麥克風權限。
+
+---
+
 ## 🛡️ 隱私與安全設計
 
 * **無開發者後端**：音訊僅在按住錄音時經加密通道（`wss://`）直連 Google Gemini API，本機不寫入任何錄音檔。

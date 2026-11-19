@@ -67,6 +67,11 @@ Android InputConnection  <--->  AKeyboardImeService (Compose + Lifecycle)
 * Android 12 (API 31) or higher (targetSdk 37 / Android 17)
 * A Google AI Studio API key
 
+### First-Time Setup
+1. Open [Google AI Studio](https://aistudio.google.com/apikey) (or tap **Get a key at Google AI Studio** in AKeyboard Settings), sign in, create an API key, and copy it.
+2. Return to AKeyboard Settings, tap **Paste from clipboard**, and tap **Validate & Save Key**.
+3. Follow the **Get started** checklist at the top of Settings to enable AKeyboard in system settings and grant microphone access.
+
 ### Build & Test
 
 ```bash
