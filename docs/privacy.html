@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy | 隱私權政策 — AKeyboard</title>
+  <meta name="description" content="Privacy Policy for AKeyboard, an open-source BYOK voice-only Android keyboard.">
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --tag-bg: #f1f5f9;
+      --table-header: #f8fafc;
+      --code-bg: #f1f5f9;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #090d16;
+        --card-bg: #111827;
+        --text: #f3f4f6;
+        --text-muted: #9ca3af;
+        --border: #1f2937;
+        --primary: #3b82f6;
+        --primary-hover: #60a5fa;
+        --primary-light: #1e293b;
+        --tag-bg: #1f2937;
+        --table-header: #131c2e;
+        --code-bg: #1f2937;
+        --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding: 1.5rem 1rem 4rem;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+    }
+
+    .badge-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    h1 {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.5rem;
+    }
+
+    .meta {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    .lang-switcher {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+    }
+
+    .lang-btn {
+      display: inline-block;
+      padding: 0.45rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      color: var(--primary);
+      background: var(--primary-light);
+      border: 1px solid transparent;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .lang-btn:hover {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.5rem;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .card > h2:first-child {
+      margin-top: 0;
+    }
+
+    h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary);
+    }
+
+    p {
+      margin-bottom: 0.85rem;
+      color: var(--text);
+    }
+
+    ul, ol {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    li {
+      margin-bottom: 0.45rem;
+    }
+
+    strong {
+      color: var(--text);
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.875em;
+      background: var(--code-bg);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.875rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.75rem 0.85rem;
+      text-align: left;
+    }
+
+    th {
+      background: var(--table-header);
+      font-weight: 600;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .callout {
+      background: var(--primary-light);
+      border-left: 4px solid var(--primary);
+      padding: 1rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1rem 0;
+      font-size: 0.925rem;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 1rem 0.75rem 3rem;
+      }
+      header, .card {
+        padding: 1.25rem;
+        border-radius: 12px;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge-bar">
+        <span class="badge">Google Play Compliant</span>
+        <span class="badge">Zero Telemetry</span>
+        <span class="badge">BYOK Architecture</span>
+        <span class="badge">No Backend Server</span>
+      </div>
+      <h1>Privacy Policy / 隱私權政策</h1>
+      <p class="meta">AKeyboard (EchoKey) &bull; Last updated / 最後更新：2026-11-20</p>
+      <div class="lang-switcher">
+        <a href="#zh-tw" class="lang-btn">繁體中文 (Traditional Chinese)</a>
+        <a href="#en" class="lang-btn">English (英文版)</a>
+      </div>
+    </header>
+
+    <!-- 繁體中文版 -->
+    <main class="card" id="zh-tw">
+      <h2>繁體中文版 (Traditional Chinese)</h2>
+
+      <div class="callout">
+        <strong>核心承諾：</strong> AKeyboard 堅持零中繼伺服器、零追蹤（Zero Telemetry）、自帶金鑰（BYOK）與本地端對端加密設計。所有語音轉文字皆直連 Google Gemini API，本機不寫入任何錄音檔，亦無任何第三方廣告或分析工具。
+      </div>
+
+      <h3>1. 概述 (Overview)</h3>
+      <p><strong>AKeyboard</strong> 是一款以保護使用者隱私為核心設計原則的 Android 開源純語音輸入法（IME）。AKeyboard 嚴格遵循 <strong>BYOK（Bring Your Own Key，自帶金鑰）</strong> 架構。<strong>本軟體開發者未架設、未營運，亦未維護任何中繼伺服器、代理伺服器、資料庫或雲端儲存空間。</strong> 所有的語音轉文字過程，皆由您的行動裝置使用您個人的 API 金鑰，透過加密通道直接與 Google Gemini Live API 進行通訊。</p>
+
+      <h3>2. 語音擷取與資料傳輸機制 (Audio Capture & Data Flow)</h3>
+      <ul>
+        <li><strong>使用者主動觸發（按住說話）</strong>：麥克風僅在使用者於鍵盤介面上主動按住麥克風按鈕時才會被啟動錄音。本應用程式絕無任何背景竊聽、喚醒詞常駐監聽或被動錄音行為。</li>
+        <li><strong>端對端加密直連傳輸</strong>：錄製的音訊（16 kHz, 16-bit 單聲道 PCM）即時透過 TLS 加密 WebSocket（<code>wss://generativelanguage.googleapis.com</code>）直接串流至 Google LLC 的 Gemini API 端點。</li>
+        <li><strong>本機絕不儲存錄音檔</strong>：音訊影格在串流傳輸過程中僅暫存於揮發性記憶體（RAM），傳輸完畢後立即釋放。AKeyboard 絕不將錄音資料寫入或快取於裝置本機儲存空間或 SD 卡中。</li>
+        <li><strong>不記錄按鍵與敏感內容</strong>：AKeyboard 絕不記錄、收集或儲存使用者的任何輸入文字、按鍵內容或剪貼簿紀錄。若輸入框屬於密碼欄位、PIN 碼或標記有 <code>IME_FLAG_NO_PERSONALIZED_LEARNING</code>（禁止個人化學習）的隱私輸入框，語音輸入與麥克風功能將被自動完全停用。</li>
+      </ul>
+
+      <h3>3. 自帶金鑰（BYOK）與本機安全保護 (API Key Security)</h3>
+      <ul>
+        <li><strong>硬體層級金鑰加密</strong>：您在設定中所輸入的 Google AI Studio API Key，在本機皆使用 <strong>Android Keystore 系統（AES-256-GCM 硬體隔離保護）</strong> 進行加密。</li>
+        <li><strong>隔離安全儲存</strong>：加密後的密文僅存放於應用程式私有目錄下的 Jetpack DataStore。</li>
+        <li><strong>排除雲端備份與遷移</strong>：本應用程式停用雲端備份（<code>android:allowBackup="false"</code> 與 <code>data_extraction_rules.xml</code>），API 金鑰不會被上傳至 Google Drive 雲端備份，亦不會在裝置轉移更換手機時外洩。</li>
+        <li><strong>防截圖與防側錄</strong>：設定頁面強制啟用 <code>FLAG_SECURE</code>，防止螢幕截圖、螢幕錄影或多工任務快照洩漏您的 API 金鑰。</li>
+      </ul>
+
+      <h3>4. 藍牙語音遙控輸入（Bluetooth Bridge）</h3>
+      <p>AKeyboard 提供可選的<strong>藍牙語音遙控輸入</strong>功能，允許您將手機上的語音聽寫文字即時輸入至已配對的 Windows 電腦：</p>
+      <ul>
+        <li><strong>近端點對點傳輸</strong>：轉錄文字與虛擬控制鍵（<code>ENTER</code>、<code>BACKSPACE</code>）僅透過近距離藍牙 RFCOMM（串列埠規範 SPP）直接傳送至執行 EchoKey 接收端的 Windows 裝置。</li>
+        <li><strong>不經過任何雲端中繼</strong>：藍牙傳輸完全限定於本機近場裝置之間，絕不將通訊內容轉發或上傳至外部伺服器或第三方雲端服務。</li>
+      </ul>
+
+      <h3>5. Android 系統權限與用途說明 (Permissions & Justifications)</h3>
+      <p>AKeyboard 僅宣告並請求維持核心功能運作所不可或缺的權限：</p>
+      <table>
+        <thead>
+          <tr>
+            <th>權限名稱</th>
+            <th>技術宣告代碼</th>
+            <th>權限用途與必要性說明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>麥克風錄音</strong></td>
+            <td><code>android.permission.RECORD_AUDIO</code></td>
+            <td>用於在使用者按住麥克風按鈕時擷取語音輸入並進行語音辨識。麥克風硬體特性標註為非強制（<code>required=false</code>），相容無內建麥克風但外接耳機或音訊輸入裝置之場景。</td>
+          </tr>
+          <tr>
+            <td><strong>網際網路</strong></td>
+            <td><code>android.permission.INTERNET</code></td>
+            <td>用於透過加密 WebSocket（<code>wss://</code>）連線至 Google Gemini Live API 端點，以及查詢該金鑰可用之模型清單（<code>models.list</code>）。</td>
+          </tr>
+          <tr>
+            <td><strong>網路連線狀態</strong></td>
+            <td><code>android.permission.ACCESS_NETWORK_STATE</code></td>
+            <td>用於檢測目前行動裝置是否已連線至網路，以便在無網路或離線時即時提供友善狀態回饋。</td>
+          </tr>
+          <tr>
+            <td><strong>藍牙連線</strong></td>
+            <td><code>android.permission.BLUETOOTH_CONNECT</code></td>
+            <td>適用於 Android 12（API 31）以上版本，僅在使用者啟用藍牙橋接功能時，用於搜尋已配對的藍牙裝置並將文字指令發送至您自己的 Windows 電腦。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>6. 第三方服務與資料處理者 (Third-Party Processing)</h3>
+      <p>當您使用 AKeyboard 進行語音聽寫與模型查詢時，相關資料將直連傳送至：</p>
+      <ul>
+        <li><strong>Google LLC（Google AI Studio / Gemini API）</strong>：
+          <ul>
+            <li>服務端點：<code>generativelanguage.googleapis.com</code></li>
+            <li>政策規範：與 Google API 之間的互動適用 <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google 隱私權政策</a> 與 <a href="https://ai.google.dev/terms" target="_blank" rel="noopener">Google AI Studio &amp; Gemini API 服務條款</a>。</li>
+            <li>資料處理機制：依您在 Google AI Studio 帳號所選用的計費方案（免費版 Free Tier 或付費版 Paid Tier），Google 對於 API 傳輸內容之保留與處理方式各有不同規範。使用者可隨時至 <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio</a> 自主管理金鑰與帳號權限。</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>7. 零追蹤、零數據分析與無廣告（Zero Telemetry）</h3>
+      <ul>
+        <li><strong>無任何廣告 SDK</strong>：AKeyboard 絕無內嵌任何第三方廣告元件或廣告追蹤程式碼。</li>
+        <li><strong>無任何使用者追蹤或分析 SDK</strong>：本軟體不含任何使用者行為追蹤、統計分析或遙測工具（例如：無 Google Analytics、無 Firebase Analytics、無 Facebook SDK 等）。</li>
+        <li><strong>僅限本機揮發性診斷</strong>：除錯日誌（<code>DiagnosticLog</code>）僅於記憶體內的暫態環形緩衝區運作，供使用者於本機自我排查異常，絕不主動對外回傳。</li>
+      </ul>
+
+      <h3>8. 資料保留、使用者控制與刪除機制 (Data Retention & Deletion)</h3>
+      <ul>
+        <li><strong>即時且徹底的資料刪除</strong>：本應用程式的所有使用者資料（加密金鑰、語言設定、偏好設定）皆僅存於使用者本機裝置。您可以透過以下任一方式永久銷毀所有個人設定與金鑰：
+          <ol>
+            <li>在 AKeyboard 設定介面中點選「<strong>清除 API Key</strong>」；或</li>
+            <li>至 Android <strong>系統設定 > 應用程式 > AKeyboard > 儲存空間 > 清除所有資料</strong>；或</li>
+            <li>直接從裝置中 <strong>解除安裝 AKeyboard</strong>。</li>
+          </ol>
+        </li>
+        <li><strong>無伺服器端資料留存</strong>：由於開發者未營運伺服器，因此本專案不存在任何伺服器端使用者資料可供保留或需提出刪除請求。</li>
+      </ul>
+
+      <h3>9. 兒童隱私保護 (Children's Privacy)</h3>
+      <p>本應用程式並非針對 13 歲（或您所在司法管轄區法定年齡）以下之兒童所設計，我們亦絕不蓄意收集任何兒童之個人資訊。</p>
+
+      <h3>10. 隱私權政策修訂 (Policy Changes)</h3>
+      <p>本隱私權政策如有任何修訂，將公布於開源專案儲存庫與本頁面，並更新本文件頂部之最後更新日期。</p>
+
+      <h3>11. 聯絡開發者 (Contact Us)</h3>
+      <ul>
+        <li><strong>開發者</strong>：Max97k</li>
+        <li><strong>電子信箱</strong>：<a href="mailto:Max97k@users.noreply.github.com">Max97k@users.noreply.github.com</a></li>
+        <li><strong>專案儲存庫與 Issue 追蹤</strong>：<a href="https://github.com/Max97k/echokey/issues" target="_blank" rel="noopener">https://github.com/Max97k/echokey/issues</a></li>
+      </ul>
+    </main>
+
+    <!-- 英文版 -->
+    <main class="card" id="en">
+      <h2>English Version</h2>
+
+      <div class="callout">
+        <strong>Core Principle:</strong> AKeyboard enforces a strict Zero Telemetry, No-Intermediary-Server, Bring-Your-Own-Key (BYOK) architecture. Voice audio is streamed directly and securely to the Google Gemini API with zero local audio file persistence, zero ads, and zero user analytics.
+      </div>
+
+      <h3>1. Overview</h3>
+      <p><strong>AKeyboard</strong> is an open-source, voice-only Android Input Method Editor (IME) application designed with privacy as a foundational principle. AKeyboard operates strictly under a <strong>Bring Your Own Key (BYOK)</strong> architecture. <strong>The developer does not operate, host, or maintain any intermediary backend servers, proxy servers, databases, or cloud storage.</strong> All speech-to-text processing occurs via direct, encrypted client-to-cloud connections between your device and Google's Gemini Live API using your personal API key.</p>
+
+      <h3>2. Audio Capture &amp; Data Transmission</h3>
+      <ul>
+        <li><strong>User-Initiated Push-to-Talk</strong>: The microphone is accessed and audio is recorded <strong>only</strong> while you explicitly press and hold the microphone button on the keyboard surface. There is no background listening, hotword detection, or passive recording.</li>
+        <li><strong>Direct Encrypted Transmission</strong>: Captured audio (16 kHz, 16-bit mono PCM) is streamed in real time over an encrypted WebSocket connection (<code>wss://generativelanguage.googleapis.com</code>) directly to Google LLC's Gemini API endpoints.</li>
+        <li><strong>Zero Local Audio Storage</strong>: Audio frames are kept only in volatile memory during active streaming and are immediately discarded. AKeyboard never saves, caches, or writes audio recordings to local disk or device storage.</li>
+        <li><strong>No Keystroke or Sensitive Input Logging</strong>: AKeyboard does not track, collect, or store keystrokes, clipboard history, or input content. In sensitive fields (such as password fields, PIN inputs, or fields with <code>IME_FLAG_NO_PERSONALIZED_LEARNING</code>), voice input and microphone access are automatically disabled.</li>
+      </ul>
+
+      <h3>3. Bring Your Own Key (BYOK) &amp; Security</h3>
+      <ul>
+        <li><strong>Hardware-Backed Encryption</strong>: Your Google AI Studio API key is encrypted on your device using the <strong>Android Keystore system (AES-256-GCM)</strong>.</li>
+        <li><strong>Secure Local Storage</strong>: The encrypted key is stored exclusively in application-private storage using Jetpack DataStore.</li>
+        <li><strong>Excluded from Backups</strong>: Backups and device migration are disabled (<code>android:allowBackup="false"</code> and <code>data_extraction_rules.xml</code>). Your API key is never uploaded to Google Drive backups or transferred during device setup.</li>
+        <li><strong>Screen Protection</strong>: The settings screen enforces <code>WindowManager.LayoutParams.FLAG_SECURE</code> to prevent accidental screenshot capture or screen-recording leakage of your API key.</li>
+      </ul>
+
+      <h3>4. Bluetooth Bridge Mode (Local Remote Input)</h3>
+      <p>AKeyboard includes an optional <strong>Bluetooth Bridge</strong> feature allowing you to dictate text from your phone directly into a paired Windows PC:</p>
+      <ul>
+        <li><strong>Local Peer-to-Peer Only</strong>: Text and virtual key commands (<code>ENTER</code>, <code>BACKSPACE</code>) are transmitted strictly over standard Bluetooth RFCOMM (Serial Port Profile) directly to the paired computer running the EchoKey companion desktop utility.</li>
+        <li><strong>No Intermediary Relays</strong>: Bluetooth transmissions are purely local and near-field; no Bluetooth payload or transmitted text is routed through or uploaded to external servers or cloud services.</li>
+      </ul>
+
+      <h3>5. Android Permissions &amp; Purpose Justification</h3>
+      <p>AKeyboard requests only the minimum set of permissions necessary to deliver its core functionality:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Permission</th>
+            <th>Technical Name</th>
+            <th>Purpose &amp; Justification</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Microphone</strong></td>
+            <td><code>android.permission.RECORD_AUDIO</code></td>
+            <td>Required to record voice input when the user presses and holds the mic button for speech transcription. Microphone hardware is marked as optional (<code>android.hardware.microphone</code>, <code>required=false</code>) to support external headsets and audio devices.</td>
+          </tr>
+          <tr>
+            <td><strong>Internet Access</strong></td>
+            <td><code>android.permission.INTERNET</code></td>
+            <td>Required to establish encrypted WebSocket (<code>wss://</code>) connections to Google Gemini Live API and fetch the user's available model list (<code>models.list</code>).</td>
+          </tr>
+          <tr>
+            <td><strong>Network State</strong></td>
+            <td><code>android.permission.ACCESS_NETWORK_STATE</code></td>
+            <td>Used to inspect network connectivity status to present immediate offline/error indicators when internet access is unavailable.</td>
+          </tr>
+          <tr>
+            <td><strong>Bluetooth Connect</strong></td>
+            <td><code>android.permission.BLUETOOTH_CONNECT</code></td>
+            <td>Required on Android 12 (API 31) and higher to discover paired Bluetooth devices and send text to your own Windows PC when Bluetooth Bridge mode is activated by the user.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>6. Third-Party Services &amp; Data Processors</h3>
+      <p>When using AKeyboard, speech audio and model listing requests are transmitted directly to:</p>
+      <ul>
+        <li><strong>Google LLC (Google AI Studio / Gemini API)</strong>:
+          <ul>
+            <li>Endpoint: <code>generativelanguage.googleapis.com</code></li>
+            <li>Terms &amp; Privacy: Interactions with Google's API are governed by the <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a> and the <a href="https://ai.google.dev/terms" target="_blank" rel="noopener">Google AI Studio &amp; Gemini API Terms of Service</a>.</li>
+            <li>Data Handling: Depending on whether you use an unpaid/free tier or a paid tier in Google AI Studio, Google's handling and retention of API payloads may differ in accordance with Google's terms. You maintain direct control over your API account and usage tier at <a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio</a>.</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>7. Zero Telemetry, Analytics &amp; Advertising</h3>
+      <ul>
+        <li><strong>No Advertising SDKs</strong>: AKeyboard contains no third-party advertisements or ad networks.</li>
+        <li><strong>No Tracking or Analytics SDKs</strong>: There are zero tracking, behavioral analysis, or telemetry libraries (e.g., no Google Analytics, Firebase Analytics, Facebook SDK, Mixpanel, etc.).</li>
+        <li><strong>Local Diagnostics Only</strong>: Diagnostic logs (<code>DiagnosticLog</code>) reside strictly in a transient in-memory ring buffer for voluntary on-device troubleshooting by the user and are never transmitted automatically.</li>
+      </ul>
+
+      <h3>8. Data Retention, Control &amp; Deletion</h3>
+      <ul>
+        <li><strong>Instant Deletion upon Clear / Uninstall</strong>: Because all user data (encrypted API key, language preferences, model selection) is stored locally on-device, you can permanently delete all data at any time by:
+          <ol>
+            <li>Opening <strong>Settings</strong> in AKeyboard and clicking <strong>Clear API Key</strong>; or</li>
+            <li>Going to Android <strong>System Settings > Apps > AKeyboard > Storage > Clear Data</strong>; or</li>
+            <li><strong>Uninstalling</strong> the AKeyboard application from your device.</li>
+          </ol>
+        </li>
+        <li><strong>No Server-Side Retention</strong>: Since the developer operates no servers, there is no server-side user data to retain or delete.</li>
+      </ul>
+
+      <h3>9. Children's Privacy</h3>
+      <p>AKeyboard is not directed toward children under the age of 13 (or the applicable legal age in your jurisdiction). We do not knowingly collect, request, or solicit personal information from children.</p>
+
+      <h3>10. Changes to This Privacy Policy</h3>
+      <p>Any updates to this policy will be posted to our open-source repository and reflected on this hosted page. Significant changes will be noted with an updated "Last updated" date at the top of this document.</p>
+
+      <h3>11. Contact Us</h3>
+      <ul>
+        <li><strong>Developer / Maintainer</strong>: Max97k</li>
+        <li><strong>Email</strong>: <a href="mailto:Max97k@users.noreply.github.com">Max97k@users.noreply.github.com</a></li>
+        <li><strong>Repository &amp; Issues</strong>: <a href="https://github.com/Max97k/echokey/issues" target="_blank" rel="noopener">https://github.com/Max97k/echokey/issues</a></li>
+      </ul>
+    </main>
+
+    <footer>
+      <p>&copy; 2026 Max97k &bull; AKeyboard (EchoKey) &bull; Open Source under MIT License</p>
+    </footer>
+  </div>
+</body>
+</html>

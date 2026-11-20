@@ -11,9 +11,10 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-7F52FF?style=flat-square&logo=kotlin&logoColor=white)](https://kotlinlang.org)
 [![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20%7C%20Material%203-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
 [![BYOK](https://img.shields.io/badge/Privacy-BYOK%20Direct%20%7C%20No%20Backend-success?style=flat-square&logo=shield&logoColor=white)](#-隱私與安全設計)
+[![Privacy Policy](https://img.shields.io/badge/Privacy%20Policy-線上網頁-blue?style=flat-square&logo=githubpages&logoColor=white)](https://max97k.github.io/echokey/privacy.html)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
-[English](README.md) • [繁體中文](README_zh.md) • [下載 APK](https://github.com/Max97k/echokey/releases/latest) • [設計文件](docs/designs/akeyboard_voice_ime.md)
+[English](README.md) • [繁體中文](README_zh.md) • [隱私權政策 (Privacy Policy)](https://max97k.github.io/echokey/privacy.html) ([Markdown](PRIVACY.md)) • [下載 APK](https://github.com/Max97k/echokey/releases/latest) • [設計文件](docs/designs/akeyboard_voice_ime.md)
 
 </div>
 
