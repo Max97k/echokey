@@ -1,7 +1,9 @@
 package com.akeyboard.ui
 
 import android.view.HapticFeedbackConstants
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.widget.inline.InlineContentView
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -13,6 +15,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,9 +42,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -60,6 +68,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.akeyboard.R
 import com.akeyboard.ime.ImeErrorReason
 import com.akeyboard.ime.ImeState
@@ -76,12 +85,14 @@ fun KeyboardScreen(
     isMultilineFlow: StateFlow<Boolean>,
     showSwitchImeFlow: StateFlow<Boolean>,
     imeActionFlow: StateFlow<Int>,
+    inlineSuggestionsFlow: StateFlow<List<InlineContentView>>,
     onMicPress: () -> Unit,
     onMicRelease: () -> Unit,
     onBackspace: () -> Unit,
     onEnter: () -> Unit,
     onSwitchIme: () -> Unit,
     onDpadKey: (Int) -> Unit,
+    onPaste: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
     val state by imeStateFlow.collectAsState()
@@ -90,8 +101,17 @@ fun KeyboardScreen(
     val isMultiline by isMultilineFlow.collectAsState()
     val showSwitchIme by showSwitchImeFlow.collectAsState()
     val imeAction by imeActionFlow.collectAsState()
+    val inlineSuggestions by inlineSuggestionsFlow.collectAsState()
     val haptic = LocalHapticFeedback.current
     val view = LocalView.current
+    var isMicHeld by remember { mutableStateOf(false) }
+    val keepScreenOn = isMicHeld || state is ImeState.Recording || state is ImeState.Finalizing
+    DisposableEffect(view, keepScreenOn) {
+        view.keepScreenOn = keepScreenOn
+        onDispose {
+            view.keepScreenOn = false
+        }
+    }
     val coroutineScope = rememberCoroutineScope()
     val density = LocalDensity.current
     val windowHeightDp = with(density) { LocalWindowInfo.current.containerSize.height.toDp() }
@@ -115,7 +135,12 @@ fun KeyboardScreen(
                     .height(panelHeight)
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
-                StatusBar(state = state, onOpenSettings = onOpenSettings)
+                StatusBar(
+                    state = state,
+                    inlineSuggestions = inlineSuggestions,
+                    onPaste = onPaste,
+                    onOpenSettings = onOpenSettings
+                )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
@@ -215,10 +240,15 @@ fun KeyboardScreen(
                                         if (isDisabled) return@pointerInput
                                         awaitEachGesture {
                                             awaitFirstDown(requireUnconsumed = false)
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            onMicPress()
-                                            waitForUpOrCancellation()
-                                            onMicRelease()
+                                            isMicHeld = true
+                                            try {
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                onMicPress()
+                                                waitForUpOrCancellation()
+                                                onMicRelease()
+                                            } finally {
+                                                isMicHeld = false
+                                            }
                                         }
                                     }
                             ) {
@@ -353,6 +383,8 @@ fun KeyboardScreen(
 @Composable
 private fun StatusBar(
     state: ImeState,
+    inlineSuggestions: List<InlineContentView>,
+    onPaste: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
     val errorState = state as? ImeState.Error
@@ -387,26 +419,81 @@ private fun StatusBar(
             .padding(start = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-            color = if (errorState != null) {
-                MaterialTheme.colorScheme.error
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
+        if (inlineSuggestions.isNotEmpty() && errorState == null) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .weight(1f)
+                    .horizontalScroll(rememberScrollState())
+                    .testTag("ime_inline_suggestions")
+            ) {
+                inlineSuggestions.forEach { suggestion ->
+                    AndroidView(
+                        factory = {
+                            // A reused InlineContentView must be detached from its old parent first.
+                            (suggestion.parent as? ViewGroup)?.removeView(suggestion)
+                            suggestion
+                        }
+                    )
+                }
+            }
+        } else {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelMedium,
+                color = if (errorState != null) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .weight(1f)
+                    .then(
+                        if (isActionableError) {
+                            Modifier.clickable(onClick = onOpenSettings)
+                        } else {
+                            Modifier
+                        }
+                    )
+            )
+        }
+        val pasteEnabled = state !is ImeState.Recording && state !is ImeState.Finalizing
+        val view = LocalView.current
+        Surface(
+            onClick = {
+                view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                onPaste()
             },
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            enabled = pasteEnabled,
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier
-                .weight(1f)
-                .then(
-                    if (isActionableError) {
-                        Modifier.clickable(onClick = onOpenSettings)
-                    } else {
-                        Modifier
-                    }
+                .height(32.dp)
+                .alpha(if (pasteEnabled) 1f else 0.45f)
+                .testTag("ime_paste_btn")
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_content_paste),
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp)
                 )
-        )
+                Text(
+                    text = stringResource(R.string.btn_paste),
+                    style = MaterialTheme.typography.labelMedium,
+                    maxLines = 1
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(2.dp))
         IconButton(
             onClick = onOpenSettings,
             modifier = Modifier.size(36.dp)

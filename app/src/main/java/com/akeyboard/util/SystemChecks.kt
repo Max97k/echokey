@@ -1,6 +1,7 @@
 package com.akeyboard.util
 
 import android.content.ActivityNotFoundException
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -28,5 +29,17 @@ fun Context.openExternalUrl(url: String): Boolean {
         false
     } catch (_: SecurityException) {
         false
+    }
+}
+
+fun Context.readClipboardText(): String? {
+    return try {
+        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return null
+        if (!cm.hasPrimaryClip()) return null
+        val clip = cm.primaryClip ?: return null
+        if (clip.itemCount <= 0) return null
+        clip.getItemAt(0)?.text?.toString()?.takeIf { it.isNotBlank() }
+    } catch (_: Exception) {
+        null
     }
 }

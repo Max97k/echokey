@@ -7,6 +7,7 @@ import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import com.akeyboard.util.DiagnosticLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -46,6 +47,7 @@ open class AudioCaptureManager(
             AudioFormat.ENCODING_PCM_16BIT
         )
         if (minBuf <= 0) {
+            DiagnosticLog.record("Audio", "start_failed", "invalid_min_buf=$minBuf")
             return AudioCaptureResult.Failed(AudioFailureReason.MIC_UNAVAILABLE)
         }
         val bufferSize = maxOf(minBuf, FRAME_BYTES * 4)
@@ -58,12 +60,15 @@ open class AudioCaptureManager(
                 bufferSize
             )
         } catch (_: SecurityException) {
+            DiagnosticLog.record("Audio", "start_failed", "security_exception")
             return AudioCaptureResult.Failed(AudioFailureReason.NO_PERMISSION)
         } catch (_: IllegalArgumentException) {
+            DiagnosticLog.record("Audio", "start_failed", "illegal_arg")
             return AudioCaptureResult.Failed(AudioFailureReason.MIC_UNAVAILABLE)
         }
 
         if (recorder.state != AudioRecord.STATE_INITIALIZED) {
+            DiagnosticLog.record("Audio", "start_failed", "uninitialized")
             recorder.release()
             return AudioCaptureResult.Failed(AudioFailureReason.MIC_UNAVAILABLE)
         }
@@ -81,9 +86,11 @@ open class AudioCaptureManager(
         try {
             recorder.startRecording()
         } catch (_: IllegalStateException) {
+            DiagnosticLog.record("Audio", "start_failed", "start_recording_failed")
             recorder.release()
             return AudioCaptureResult.Failed(AudioFailureReason.MIC_UNAVAILABLE)
         } catch (_: SecurityException) {
+            DiagnosticLog.record("Audio", "start_failed", "start_recording_security")
             recorder.release()
             return AudioCaptureResult.Failed(AudioFailureReason.NO_PERMISSION)
         }
@@ -107,6 +114,7 @@ open class AudioCaptureManager(
                         read == AudioRecord.ERROR_BAD_VALUE
                     ) {
                         if (!isStopping.get()) {
+                            DiagnosticLog.record("Audio", "read_error", "code=$read")
                             onCaptureError?.invoke(AudioFailureReason.MIC_UNAVAILABLE)
                         }
                         break

@@ -14,8 +14,8 @@ android {
         applicationId = "com.max97k.akeyboard"
         minSdk = 31
         targetSdk = 37
-        versionCode = 2
-        versionName = "0.3.0"
+        versionCode = 3
+        versionName = "0.4.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -44,6 +44,9 @@ android {
             )
             if (keystorePropsFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
+            }
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
             }
         }
     }
@@ -80,6 +83,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.savedstate.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.autofill)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

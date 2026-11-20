@@ -50,3 +50,13 @@ appId: com.max97k.akeyboard
     id: "settings_check_update_btn"
 - assertVisible:
     id: "settings_check_update_btn"
+- scrollUntilVisible:
+    element:
+      id: "settings_copy_diagnostics_btn"
+    direction: DOWN
+- assertVisible:
+    id: "settings_copy_diagnostics_btn"
+- tapOn:
+    id: "settings_copy_diagnostics_btn"
+- assertVisible:
+    id: "settings_copy_diagnostics_btn"

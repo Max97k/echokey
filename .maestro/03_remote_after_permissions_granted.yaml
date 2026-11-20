@@ -23,7 +23,13 @@ appId: com.max97k.akeyboard
 - assertVisible:
     id: "remote_pc_bridge_guide_btn"
 - assertVisible:
+    id: "remote_paste_btn"
+- assertVisible:
+    id: "remote_backspace_btn"
+- assertVisible:
     id: "remote_mic_hold_btn"
+- assertVisible:
+    id: "remote_enter_btn"
 - tapOn:
     id: "remote_mic_hold_btn"
 - assertVisible:

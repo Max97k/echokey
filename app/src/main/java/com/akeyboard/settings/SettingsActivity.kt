@@ -1,6 +1,7 @@
 package com.akeyboard.settings
 
 import android.Manifest
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -64,6 +65,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -82,6 +84,7 @@ import com.akeyboard.R
 import com.akeyboard.data.SettingsRepository
 import com.akeyboard.remote.RemoteDictationActivity
 import com.akeyboard.ui.AKeyboardTheme
+import com.akeyboard.util.DiagnosticLog
 import com.akeyboard.util.hasPermission
 import com.akeyboard.util.openExternalUrl
 import com.google.android.play.core.appupdate.AppUpdateInfo
@@ -230,6 +233,7 @@ class SettingsActivity : ComponentActivity() {
                 }
             }
             .addOnFailureListener {
+                DiagnosticLog.record("Update", "check_failed", it::class.simpleName.orEmpty())
                 pendingUpdateInfo = null
                 if (userInitiated) {
                     appUpdateState.value = AppUpdateUiState.Unavailable
@@ -246,10 +250,12 @@ class SettingsActivity : ComponentActivity() {
                 AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build()
             )
             if (!started) {
+                DiagnosticLog.record("Update", "start_failed", "not_started")
                 pendingUpdateInfo = null
                 appUpdateState.value = AppUpdateUiState.Unavailable
             }
         } catch (_: Exception) {
+            DiagnosticLog.record("Update", "start_failed", "exception")
             pendingUpdateInfo = null
             appUpdateState.value = AppUpdateUiState.Unavailable
         }
@@ -850,6 +856,36 @@ private fun SettingsContent(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.testTag("settings_update_status")
                     )
+                }
+                Text(
+                    text = stringResource(R.string.diagnostics_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                OutlinedButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            val report = DiagnosticLog.buildReport(
+                                context = context,
+                                appVersionName = appVersionName,
+                                appVersionCode = appVersionCode,
+                                selectedModelId = state.settings.selectedModelId,
+                                smartModeEnabled = state.settings.smartModeEnabled,
+                                languageCodes = state.settings.languageCodes
+                            )
+                            clipboard.setClipEntry(
+                                ClipEntry(ClipData.newPlainText("AKeyboard Diagnostics", report))
+                            )
+                            Toast.makeText(
+                                context,
+                                R.string.diagnostics_copied,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    },
+                    modifier = Modifier.testTag("settings_copy_diagnostics_btn")
+                ) {
+                    Text(stringResource(R.string.btn_copy_diagnostics))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

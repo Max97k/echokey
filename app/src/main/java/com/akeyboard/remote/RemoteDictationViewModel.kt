@@ -55,6 +55,11 @@ enum class RemoteConnectNotice {
     DEVICE_UNAVAILABLE
 }
 
+data class RecentTranscriptItem(
+    val id: Long,
+    val text: String
+)
+
 internal data class PendingConnect(
     val address: String,
     val expiresAtElapsedMs: Long
@@ -94,6 +99,11 @@ class RemoteDictationViewModel(
 
     private val _pendingResendText = MutableStateFlow("")
     val pendingResendText: StateFlow<String> = _pendingResendText.asStateFlow()
+
+    private val _recentTranscripts = MutableStateFlow<List<RecentTranscriptItem>>(emptyList())
+    val recentTranscripts: StateFlow<List<RecentTranscriptItem>> = _recentTranscripts.asStateFlow()
+
+    private var nextRecentId = 1L
 
     private val _deliveryError = MutableStateFlow<BridgeDeliveryError?>(null)
     val deliveryError: StateFlow<BridgeDeliveryError?> = _deliveryError.asStateFlow()
@@ -330,27 +340,45 @@ class RemoteDictationViewModel(
         }
     }
 
+    fun sendClipboardText(text: String): Boolean {
+        val sanitized = prepareClipboardTextForPc(text)
+        if (sanitized.isEmpty()) return false
+        if (connectionState.value !is ConnectionState.Connected) return false
+        if (resendJob?.isActive == true) return true
+        _deliveryError.value = null
+        _connectNotice.value = null
+        resendJob = viewModelScope.launch {
+            var remaining = sanitized
+            val result = sendChunksLoop(
+                readRemaining = { remaining },
+                onChunkAcked = { chunk ->
+                    remaining = trimAcknowledgedPrefix(remaining, chunk)
+                }
+            )
+            if (result.error != null) {
+                _deliveryError.value = mapDeliveryError(result.error)
+            }
+        }
+        return true
+    }
+
     fun resendPending() {
         if (_pendingResendText.value.isEmpty()) return
         if (resendJob?.isActive == true) return
         _deliveryError.value = null
         _connectNotice.value = null
         resendJob = viewModelScope.launch {
-            while (_pendingResendText.value.isNotEmpty()) {
-                val chunk = nextPendingChunk(_pendingResendText.value)
-                if (chunk.isEmpty()) break
-                val safeChunk = VoiceDictationSession.sanitizeSingleLine(chunk)
-                if (safeChunk.isEmpty()) {
+            val result = sendChunksLoop(
+                readRemaining = { _pendingResendText.value },
+                onChunkAcked = { chunk ->
                     _pendingResendText.value = trimAcknowledgedPrefix(_pendingResendText.value, chunk)
-                    continue
                 }
-                val result = bridgeClient.sendCommand(BridgeCommand.text(safeChunk))
-                if (result.isSuccess) {
-                    _pendingResendText.value = trimAcknowledgedPrefix(_pendingResendText.value, chunk)
-                } else {
-                    _deliveryError.value = mapDeliveryError(result.exceptionOrNull())
-                    break
-                }
+            )
+            if (result.sentText.isNotEmpty()) {
+                recordRecentTranscript(result.sentText)
+            }
+            if (result.error != null) {
+                _deliveryError.value = mapDeliveryError(result.error)
             }
         }
     }
@@ -359,6 +387,31 @@ class RemoteDictationViewModel(
         resendJob?.cancel()
         _pendingResendText.value = ""
         _deliveryError.value = null
+    }
+
+    fun resendRecent(item: RecentTranscriptItem) {
+        if (connectionState.value !is ConnectionState.Connected) return
+        if (resendJob?.isActive == true) return
+        val sanitized = VoiceDictationSession.sanitizeSingleLine(item.text)
+        if (sanitized.isEmpty()) return
+        _deliveryError.value = null
+        _connectNotice.value = null
+        resendJob = viewModelScope.launch {
+            var remaining = sanitized
+            val result = sendChunksLoop(
+                readRemaining = { remaining },
+                onChunkAcked = { chunk ->
+                    remaining = trimAcknowledgedPrefix(remaining, chunk)
+                }
+            )
+            if (result.error != null) {
+                _deliveryError.value = mapDeliveryError(result.error)
+            }
+        }
+    }
+
+    fun clearRecent() {
+        _recentTranscripts.value = emptyList()
     }
 
     @SuppressLint("MissingPermission")
@@ -463,18 +516,64 @@ class RemoteDictationViewModel(
 
         viewModelScope.launch {
             var remaining = sanitized
-            while (remaining.isNotEmpty()) {
-                val chunk = nextPendingChunk(remaining)
-                if (chunk.isEmpty()) break
-                val result = bridgeClient.sendCommand(BridgeCommand.text(chunk))
-                if (result.isSuccess) {
+            val result = sendChunksLoop(
+                readRemaining = { remaining },
+                onChunkAcked = { chunk ->
                     remaining = trimAcknowledgedPrefix(remaining, chunk)
-                } else {
-                    appendPendingText(remaining)
-                    _deliveryError.value = mapDeliveryError(result.exceptionOrNull())
-                    break
                 }
+            )
+            if (result.sentText.isNotEmpty()) {
+                recordRecentTranscript(result.sentText)
             }
+            if (result.error != null) {
+                if (remaining.isNotEmpty()) {
+                    appendPendingText(remaining)
+                }
+                _deliveryError.value = mapDeliveryError(result.error)
+            }
+        }
+    }
+
+    private data class SendChunksResult(
+        val sentText: String,
+        val error: Throwable?
+    )
+
+    private suspend fun sendChunksLoop(
+        readRemaining: () -> String,
+        onChunkAcked: (String) -> Unit
+    ): SendChunksResult {
+        val sentText = StringBuilder()
+        while (true) {
+            val current = readRemaining()
+            if (current.isEmpty()) break
+            val chunk = nextPendingChunk(current)
+            if (chunk.isEmpty()) break
+            val safeChunk = VoiceDictationSession.sanitizeSingleLine(chunk)
+            if (safeChunk.isEmpty()) {
+                onChunkAcked(chunk)
+                continue
+            }
+            val result = bridgeClient.sendCommand(BridgeCommand.text(safeChunk))
+            if (result.isSuccess) {
+                sentText.append(safeChunk)
+                onChunkAcked(chunk)
+            } else {
+                return SendChunksResult(
+                    sentText = sentText.toString(),
+                    error = result.exceptionOrNull()
+                )
+            }
+        }
+        return SendChunksResult(sentText = sentText.toString(), error = null)
+    }
+
+    private fun recordRecentTranscript(text: String) {
+        val nextId = nextRecentId
+        val updated = appendRecentTranscript(_recentTranscripts.value, nextId, text)
+        if (updated !== _recentTranscripts.value) {
+            nextRecentId = nextId + 1L
+            _recentTranscripts.value = updated
         }
     }
 
@@ -511,6 +610,30 @@ class RemoteDictationViewModel(
         const val PENDING_CONNECT_TTL_MS = 15_000L
         const val BT_ENABLE_WAIT_TIMEOUT_MS = 5_000L
         const val MAX_RESEND_CHUNK_BYTES = 16_384
+        const val MAX_RECENT_TRANSCRIPTS = 3
+
+        fun shouldKeepScreenOn(
+            isMicHeld: Boolean,
+            isListening: Boolean,
+            isFinalizing: Boolean
+        ): Boolean = isMicHeld || isListening || isFinalizing
+
+        fun appendRecentTranscript(
+            current: List<RecentTranscriptItem>,
+            nextId: Long,
+            text: String,
+            maxItems: Int = MAX_RECENT_TRANSCRIPTS
+        ): List<RecentTranscriptItem> {
+            val sanitized = VoiceDictationSession.sanitizeSingleLine(text).trim()
+            if (sanitized.isEmpty() || maxItems <= 0) return current
+            return (listOf(RecentTranscriptItem(id = nextId, text = sanitized)) + current)
+                .take(maxItems)
+        }
+
+        fun prepareClipboardTextForPc(text: String?): String {
+            if (text.isNullOrBlank()) return ""
+            return VoiceDictationSession.sanitizeSingleLine(text)
+        }
 
         internal fun deriveRemoteBlocker(
             readiness: BluetoothReadiness,

@@ -14,6 +14,7 @@
     <string name="cd_enter">Enter or send</string>
     <string name="cd_switch_ime">Switch keyboard</string>
     <string name="open_settings">Open Settings</string>
+    <string name="btn_paste">Paste</string>
 
     <!-- Keyboard Errors -->
     <string name="err_no_key">API key not set. Open Settings to add your key.</string>
@@ -104,6 +105,7 @@
     <string name="remote_status_error">Connection error: %1$s</string>
     <string name="remote_preview_placeholder">Hold the mic button to speak. Final text is sent to your PC cursor.</string>
     <string name="remote_pending_label">Pending to send:</string>
+    <string name="remote_recent_label">Recent sent (last 3):</string>
     <string name="remote_resend">Resend</string>
     <string name="remote_clear">Clear</string>
     <string name="remote_backspace">Backspace</string>
@@ -142,6 +144,9 @@
     <string name="btn_check_update">Check for updates</string>
     <string name="cd_release_notes">View release notes on GitHub</string>
     <string name="release_notes_no_browser">No browser found. Open github.com/Max97k/echokey/releases manually.</string>
+    <string name="btn_copy_diagnostics">Copy debug diagnostics</string>
+    <string name="diagnostics_desc">Copies version, device info, recent crash exit reasons, and sanitized technical logs (never includes voice, typed text, or your API key).</string>
+    <string name="diagnostics_copied">Diagnostics copied to clipboard.</string>
     <string name="btn_update_now">Update</string>
     <string name="btn_restart_to_install">Restart to install</string>
     <string name="update_status_checking">Checking Google Play for updates…</string>

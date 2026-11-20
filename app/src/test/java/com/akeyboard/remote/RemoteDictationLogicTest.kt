@@ -252,4 +252,59 @@ class RemoteDictationLogicTest {
         )
         assertNull(resolveRemoteErrorBannerRes(null, null, null))
     }
+
+    @Test
+    fun shouldKeepScreenOnMatchesHoldListeningAndFinalizingStates() {
+        for (held in listOf(false, true)) {
+            for (listening in listOf(false, true)) {
+                for (finalizing in listOf(false, true)) {
+                    assertEquals(
+                        held || listening || finalizing,
+                        RemoteDictationViewModel.shouldKeepScreenOn(
+                            isMicHeld = held,
+                            isListening = listening,
+                            isFinalizing = finalizing
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    @Test
+    fun appendRecentTranscriptKeepsNewestThreeAndIgnoresBlank() {
+        val initial = emptyList<RecentTranscriptItem>()
+        val one = RemoteDictationViewModel.appendRecentTranscript(initial, 1L, "first\nsentence")
+        assertEquals(listOf(RecentTranscriptItem(1L, "first sentence")), one)
+        assertEquals(
+            one,
+            RemoteDictationViewModel.appendRecentTranscript(one, 99L, "  \n\t ")
+        )
+
+        val two = RemoteDictationViewModel.appendRecentTranscript(one, 2L, "second")
+        val three = RemoteDictationViewModel.appendRecentTranscript(two, 3L, "third")
+        val four = RemoteDictationViewModel.appendRecentTranscript(three, 4L, "  fourth  ")
+
+        assertEquals(
+            listOf(
+                RecentTranscriptItem(4L, "fourth"),
+                RecentTranscriptItem(3L, "third"),
+                RecentTranscriptItem(2L, "second")
+            ),
+            four
+        )
+    }
+
+    @Test
+    fun prepareClipboardTextForPcRejectsBlankAndSanitizesLineBreaks() {
+        assertEquals("", RemoteDictationViewModel.prepareClipboardTextForPc(null))
+        assertEquals("", RemoteDictationViewModel.prepareClipboardTextForPc(""))
+        assertEquals("", RemoteDictationViewModel.prepareClipboardTextForPc("  \t\n "))
+        assertEquals("hello world", RemoteDictationViewModel.prepareClipboardTextForPc("hello world"))
+        assertEquals(
+            "line1 line2 line3",
+            RemoteDictationViewModel.prepareClipboardTextForPc("line1\r\nline2\nline3")
+        )
+        assertEquals("hello", RemoteDictationViewModel.prepareClipboardTextForPc("\n\nhello\n\n"))
+    }
 }

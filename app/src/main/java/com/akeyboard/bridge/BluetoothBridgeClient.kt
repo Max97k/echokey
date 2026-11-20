@@ -11,6 +11,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.core.content.ContextCompat
+import com.akeyboard.util.DiagnosticLog
 import com.akeyboard.util.hasPermission
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
@@ -299,6 +300,13 @@ class BluetoothBridgeClient internal constructor(
                 Result.success(Unit)
             } catch (e: IOException) {
                 closeQuietly(transport)
+                if (!connectCancelled) {
+                    DiagnosticLog.record(
+                        "Bridge",
+                        "connect_error",
+                        "${e::class.simpleName}: ${e.message.orEmpty()}"
+                    )
+                }
                 _connectionState.value = if (connectCancelled) {
                     ConnectionState.Disconnected
                 } else {
@@ -307,6 +315,11 @@ class BluetoothBridgeClient internal constructor(
                 Result.failure(e)
             } catch (e: SecurityException) {
                 closeQuietly(transport)
+                DiagnosticLog.record(
+                    "Bridge",
+                    "connect_error",
+                    "${e::class.simpleName}: ${e.message.orEmpty()}"
+                )
                 _connectionState.value = ConnectionState.Error(e.message ?: "Permission denied")
                 Result.failure(e)
             } finally {
@@ -360,6 +373,7 @@ class BluetoothBridgeClient internal constructor(
             }
         }
         if (writeError != null) {
+            DiagnosticLog.record("Bridge", "write_error", writeError::class.simpleName.orEmpty())
             synchronized(stateLock) {
                 if (pendingAck === ackDeferred) {
                     pendingAck = null
@@ -390,6 +404,7 @@ class BluetoothBridgeClient internal constructor(
         }
 
         if (!completedInTime) {
+            DiagnosticLog.record("Bridge", "ack_timeout")
             val jobToAwait = synchronized(stateLock) { readerJob }
             // Close active socket so the dedicated reader coroutine unblocks and finishes cleanup.
             closeQuietly(activeSocket)
@@ -415,6 +430,7 @@ class BluetoothBridgeClient internal constructor(
             if (response.ok) {
                 Result.success(Unit)
             } else {
+                DiagnosticLog.record("Bridge", "nack", "err=${response.err ?: "unknown"}")
                 val mapped = mapErrorCode(response.err)
                 Result.failure(
                     BridgeDeliveryException(

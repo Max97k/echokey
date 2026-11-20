@@ -34,4 +34,20 @@ class ImeActionResolverTest {
             )
         )
     }
+
+    @Test
+    fun chunkTextForCommitPreservesMultilineAndSurrogatePairs() {
+        assertEquals(emptyList<String>(), AKeyboardImeService.chunkTextForCommit(""))
+        assertEquals(
+            listOf("line1\nline2"),
+            AKeyboardImeService.chunkTextForCommit("line1\nline2")
+        )
+
+        val surrogateBoundaryText = "ab\uD83D\uDE00cd"
+        val chunks = AKeyboardImeService.chunkTextForCommit(surrogateBoundaryText, maxChunkChars = 3)
+        assertEquals(listOf("ab", "\uD83D\uDE00c", "d"), chunks)
+        assertEquals(surrogateBoundaryText, chunks.joinToString(""))
+        assertEquals(false, Character.isHighSurrogate(chunks[0].last()))
+        assertEquals(false, Character.isLowSurrogate(chunks[1].first()))
+    }
 }

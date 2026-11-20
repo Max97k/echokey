@@ -4,13 +4,24 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.inputmethodservice.InputMethodService
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.text.InputType
+import android.util.Size
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InlineSuggestionsRequest
+import android.view.inputmethod.InlineSuggestionsResponse
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
+import android.widget.inline.InlineContentView
+import android.widget.inline.InlinePresentationSpec
+import androidx.autofill.inline.UiVersions
+import androidx.autofill.inline.v1.InlineSuggestionUi
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.Lifecycle
@@ -25,6 +36,7 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.akeyboard.AKeyboardApp
+import com.akeyboard.R
 import com.akeyboard.audio.AudioCaptureManager
 import com.akeyboard.data.SettingsRepository
 import com.akeyboard.live.GeminiLiveClient
@@ -35,6 +47,7 @@ import com.akeyboard.settings.SettingsActivity
 import com.akeyboard.ui.KeyboardScreen
 import com.akeyboard.util.hasPermission
 import com.akeyboard.util.isNetworkAvailable
+import com.akeyboard.util.readClipboardText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -87,6 +100,51 @@ class AKeyboardImeService :
     private var voiceAllowed = true
     private var currentEditorInfo: EditorInfo? = null
 
+    private val _inlineSuggestions = MutableStateFlow<List<InlineContentView>>(emptyList())
+    val inlineSuggestions: StateFlow<List<InlineContentView>> = _inlineSuggestions.asStateFlow()
+    private var inlineGeneration = 0
+
+    override fun onCreateInlineSuggestionsRequest(uiExtras: Bundle): InlineSuggestionsRequest {
+        val density = resources.displayMetrics.density
+        val style = InlineSuggestionUi.newStyleBuilder().build()
+        val stylesBundle = UiVersions.newStylesBuilder().addStyle(style).build()
+        val spec = InlinePresentationSpec.Builder(
+            Size((INLINE_MIN_WIDTH_DP * density).toInt(), (INLINE_HEIGHT_DP * density).toInt()),
+            Size(resources.displayMetrics.widthPixels, (INLINE_HEIGHT_DP * density).toInt())
+        ).setStyle(stylesBundle).build()
+        return InlineSuggestionsRequest.Builder(listOf(spec))
+            .setMaxSuggestionCount(INLINE_MAX_SUGGESTIONS)
+            .build()
+    }
+
+    override fun onInlineSuggestionsResponse(response: InlineSuggestionsResponse): Boolean {
+        val suggestions = response.inlineSuggestions
+        val generation = ++inlineGeneration
+        if (suggestions.isEmpty()) {
+            _inlineSuggestions.value = emptyList()
+            return false
+        }
+        val inflated = arrayOfNulls<InlineContentView>(suggestions.size)
+        var pending = suggestions.size
+        val wrap = Size(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        suggestions.forEachIndexed { index, suggestion ->
+            suggestion.inflate(this, wrap, mainExecutor) { view ->
+                if (generation != inlineGeneration) return@inflate
+                view?.setZOrderedOnTop(true)
+                inflated[index] = view
+                if (--pending == 0) {
+                    _inlineSuggestions.value = inflated.filterNotNull()
+                }
+            }
+        }
+        return true
+    }
+
+    private fun clearInlineSuggestions() {
+        inlineGeneration++
+        _inlineSuggestions.value = emptyList()
+    }
+
     override fun onCreate() {
         lifecycleDispatcher.onServicePreSuperOnCreate()
         savedStateController.performAttach()
@@ -105,6 +163,9 @@ class AKeyboardImeService :
             hasMicPermission = { hasPermission(Manifest.permission.RECORD_AUDIO) },
             isNetworkAvailable = { isNetworkAvailable() },
             onPhaseChanged = { phase ->
+                setImeKeepScreenOn(
+                    voiceAllowed && (phase == VoiceSessionPhase.RECORDING || phase == VoiceSessionPhase.FINALIZING)
+                )
                 if (voiceAllowed) {
                     _imeState.value = when (phase) {
                         VoiceSessionPhase.IDLE -> ImeState.Idle
@@ -118,6 +179,7 @@ class AKeyboardImeService :
             onFinal = { text -> currentInputConnection?.commitText(text, 1) },
             onFinishComposing = { currentInputConnection?.finishComposingText() },
             onError = { err ->
+                setImeKeepScreenOn(false)
                 _imeState.value = ImeState.Error(
                     when (err) {
                         VoiceSessionError.NO_PERMISSION -> ImeErrorReason.NO_PERMISSION
@@ -153,12 +215,14 @@ class AKeyboardImeService :
                     isMultilineFlow = isMultiline,
                     showSwitchImeFlow = showSwitchImeButton,
                     imeActionFlow = imeAction,
+                    inlineSuggestionsFlow = inlineSuggestions,
                     onMicPress = ::onMicPressed,
                     onMicRelease = ::onMicReleased,
                     onBackspace = ::performBackspace,
                     onEnter = ::performEnter,
                     onSwitchIme = ::performSwitchIme,
                     onDpadKey = ::sendDpadKey,
+                    onPaste = ::performPaste,
                     onOpenSettings = ::openSettings
                 )
             }
@@ -180,6 +244,7 @@ class AKeyboardImeService :
             abortActiveSession()
         }
         currentEditorInfo = info
+        clearInlineSuggestions()
         _isMultiline.value = isMultilineInput(info)
         _imeAction.value = resolveEffectiveImeAction(info?.imeOptions ?: 0)
         voiceAllowed = !isSensitiveInput(info)
@@ -198,23 +263,36 @@ class AKeyboardImeService :
     override fun onEvaluateFullscreenMode(): Boolean = false
 
     override fun onFinishInputView(finishingInput: Boolean) {
+        clearInlineSuggestions()
+        setImeKeepScreenOn(false)
         abortActiveSession()
         liveClient.close()
         super.onFinishInputView(finishingInput)
     }
 
     override fun onWindowHidden() {
+        setImeKeepScreenOn(false)
         abortActiveSession()
         liveClient.close()
         super.onWindowHidden()
     }
 
     override fun onDestroy() {
+        setImeKeepScreenOn(false)
         dictationSession.close()
         serviceScope.cancel()
         lifecycleDispatcher.onServicePreSuperOnDestroy()
         super.onDestroy()
         store.clear()
+    }
+
+    private fun setImeKeepScreenOn(keepOn: Boolean) {
+        val imeWindow = window?.window ?: return
+        if (keepOn) {
+            imeWindow.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            imeWindow.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
     }
 
     private fun onMicPressed() {
@@ -278,6 +356,30 @@ class AKeyboardImeService :
         ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, keyCode))
     }
 
+    private fun performPaste() {
+        if (_imeState.value == ImeState.Recording || _imeState.value == ImeState.Finalizing) return
+        if (_imeState.value is ImeState.Error && voiceAllowed) {
+            _imeState.value = ImeState.Idle
+        }
+        val text = readClipboardText()
+        if (text == null) {
+            Toast.makeText(this, R.string.api_key_clipboard_empty, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val ic = currentInputConnection ?: return
+        ic.beginBatchEdit()
+        try {
+            ic.finishComposingText()
+            for (chunk in chunkTextForCommit(text)) {
+                if (!ic.commitText(chunk, 1)) break
+            }
+        } catch (_: RuntimeException) {
+            // Guard against Binder transaction failures on oversized clipboard text.
+        } finally {
+            ic.endBatchEdit()
+        }
+    }
+
     private fun openSettings() {
         mainHandler.post {
             val intent = Intent(this, SettingsActivity::class.java).apply {
@@ -313,6 +415,30 @@ class AKeyboardImeService :
     }
 
     companion object {
+        private const val INLINE_MIN_WIDTH_DP = 100
+        private const val INLINE_HEIGHT_DP = 32
+        private const val INLINE_MAX_SUGGESTIONS = 5
+        const val MAX_COMMIT_CHUNK_CHARS = 4_096
+
+        fun chunkTextForCommit(
+            text: String,
+            maxChunkChars: Int = MAX_COMMIT_CHUNK_CHARS
+        ): List<String> {
+            if (text.isEmpty() || maxChunkChars <= 0) return emptyList()
+            if (text.length <= maxChunkChars) return listOf(text)
+            val chunks = ArrayList<String>((text.length + maxChunkChars - 1) / maxChunkChars)
+            var start = 0
+            while (start < text.length) {
+                var end = (start + maxChunkChars).coerceAtMost(text.length)
+                if (end < text.length && Character.isHighSurrogate(text[end - 1])) {
+                    end = if (end - start > 1) end - 1 else (end + 1).coerceAtMost(text.length)
+                }
+                chunks.add(text.substring(start, end))
+                start = end
+            }
+            return chunks
+        }
+
         fun resolveEffectiveImeAction(imeOptions: Int): Int {
             return if ((imeOptions and EditorInfo.IME_FLAG_NO_ENTER_ACTION) != 0) {
                 EditorInfo.IME_ACTION_NONE

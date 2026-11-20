@@ -11,6 +11,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -43,9 +45,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -57,12 +61,14 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -84,12 +90,14 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Lifecycle
@@ -106,6 +114,7 @@ import com.akeyboard.settings.SettingsActivity
 import com.akeyboard.ui.AKeyboardTheme
 import com.akeyboard.util.hasPermission
 import com.akeyboard.util.openExternalUrl
+import com.akeyboard.util.readClipboardText
 
 internal const val PC_BRIDGE_SCRIPT_URL =
     "https://github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py"
@@ -133,6 +142,7 @@ class RemoteDictationActivity : ComponentActivity() {
 private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
+    val view = LocalView.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val haptic = LocalHapticFeedback.current
 
@@ -140,6 +150,7 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
     val dictationState by viewModel.dictationState.collectAsState()
     val interimText by viewModel.interimText.collectAsState()
     val pendingText by viewModel.pendingResendText.collectAsState()
+    val recentTranscripts by viewModel.recentTranscripts.collectAsState()
     val deliveryError by viewModel.deliveryError.collectAsState()
     val connectNotice by viewModel.connectNotice.collectAsState()
     val readiness by viewModel.readiness.collectAsState()
@@ -149,6 +160,28 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
     val offlineTargetName by viewModel.offlineTargetName.collectAsState()
     val preferBuiltInMic by viewModel.preferBuiltInMic.collectAsState()
     val pendingConnectActive by viewModel.pendingConnectActive.collectAsState()
+
+    var isMicHeld by remember { mutableStateOf(false) }
+    val isListening = dictationState is DictationState.Listening
+    val isFinalizing = dictationState is DictationState.Finalizing
+    val keepScreenOn = RemoteDictationViewModel.shouldKeepScreenOn(
+        isMicHeld = isMicHeld,
+        isListening = isListening,
+        isFinalizing = isFinalizing
+    )
+    DisposableEffect(view, activity, keepScreenOn) {
+        view.keepScreenOn = keepScreenOn
+        val window = activity?.window
+        if (keepScreenOn) {
+            window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+        onDispose {
+            view.keepScreenOn = false
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
 
     var hasBtPerm by remember {
         mutableStateOf(context.hasPermission(Manifest.permission.BLUETOOTH_CONNECT))
@@ -498,7 +531,7 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
                                 text = interimText,
                                 style = MaterialTheme.typography.bodyLarge
                             )
-                        } else if (pendingText.isEmpty()) {
+                        } else if (pendingText.isEmpty() && recentTranscripts.isEmpty()) {
                             Text(
                                 text = stringResource(R.string.remote_preview_placeholder),
                                 style = MaterialTheme.typography.bodyMedium,
@@ -529,6 +562,65 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
                                 }
                             }
                         }
+
+                        if (recentTranscripts.isNotEmpty()) {
+                            if (pendingText.isNotEmpty()) {
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.remote_recent_label),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.testTag("remote_recent_label")
+                                )
+                                TextButton(
+                                    onClick = { viewModel.clearRecent() },
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                    modifier = Modifier.testTag("remote_recent_clear_btn")
+                                ) {
+                                    Text(stringResource(R.string.remote_clear))
+                                }
+                            }
+                            recentTranscripts.forEachIndexed { index, item ->
+                                Surface(
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = MaterialTheme.colorScheme.surface,
+                                    tonalElevation = 1.dp,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .testTag("remote_recent_item_$index")
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = item.text,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        OutlinedButton(
+                                            onClick = { viewModel.resendRecent(item) },
+                                            enabled = connectionState is ConnectionState.Connected,
+                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                                            modifier = Modifier.testTag("remote_recent_resend_btn_$index")
+                                        ) {
+                                            Text(stringResource(R.string.remote_resend))
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -550,21 +642,58 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    OutlinedButton(
-                        onClick = { viewModel.sendKey(BridgeKey.BACKSPACE) },
-                        enabled = connectionState is ConnectionState.Connected
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_backspace),
-                            contentDescription = stringResource(R.string.remote_backspace)
-                        )
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    val clipboardText = context.readClipboardText()
+                                    if (RemoteDictationViewModel.prepareClipboardTextForPc(clipboardText).isEmpty()) {
+                                        Toast.makeText(
+                                            context,
+                                            R.string.api_key_clipboard_empty,
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else if (clipboardText != null) {
+                                        viewModel.sendClipboardText(clipboardText)
+                                    }
+                                },
+                                enabled = connectionState is ConnectionState.Connected,
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                                modifier = Modifier.testTag("remote_paste_btn")
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_content_paste),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = stringResource(R.string.btn_paste),
+                                    maxLines = 1
+                                )
+                            }
+                            OutlinedButton(
+                                onClick = { viewModel.sendKey(BridgeKey.BACKSPACE) },
+                                enabled = connectionState is ConnectionState.Connected,
+                                modifier = Modifier.testTag("remote_backspace_btn")
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_backspace),
+                                    contentDescription = stringResource(R.string.remote_backspace)
+                                )
+                            }
+                        }
                     }
 
-                    val isListening = dictationState is DictationState.Listening
-                    val isFinalizing = dictationState is DictationState.Finalizing
                     val micCd = stringResource(R.string.remote_mic_hold)
                     val micBg = when {
                         isListening -> MaterialTheme.colorScheme.error
@@ -626,10 +755,15 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
                                     if (isFinalizing) return@pointerInput
                                     awaitEachGesture {
                                         awaitFirstDown(requireUnconsumed = false)
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        viewModel.onMicPressed()
-                                        waitForUpOrCancellation()
-                                        viewModel.onMicReleased()
+                                        isMicHeld = true
+                                        try {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            viewModel.onMicPressed()
+                                            waitForUpOrCancellation()
+                                            viewModel.onMicReleased()
+                                        } finally {
+                                            isMicHeld = false
+                                        }
                                     }
                                 }
                         ) {
@@ -650,14 +784,20 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
                         }
                     }
 
-                    OutlinedButton(
-                        onClick = { viewModel.sendKey(BridgeKey.ENTER) },
-                        enabled = connectionState is ConnectionState.Connected
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_keyboard_return),
-                            contentDescription = stringResource(R.string.remote_enter)
-                        )
+                        OutlinedButton(
+                            onClick = { viewModel.sendKey(BridgeKey.ENTER) },
+                            enabled = connectionState is ConnectionState.Connected,
+                            modifier = Modifier.testTag("remote_enter_btn")
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_keyboard_return),
+                                contentDescription = stringResource(R.string.remote_enter)
+                            )
+                        }
                     }
                 }
             }

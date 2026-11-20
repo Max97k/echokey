@@ -1,6 +1,7 @@
 package com.akeyboard.live
 
 import android.util.Base64
+import com.akeyboard.util.DiagnosticLog
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -115,6 +116,7 @@ class GeminiLiveClient(
         streamJob = scope.launch(Dispatchers.IO) {
             val ready = withTimeoutOrNull(SETUP_TIMEOUT_MS) { deferred.await() } == true
             if (!ready) {
+                DiagnosticLog.record("Live", "setup_timeout")
                 isUtteranceActive = false
                 return@launch
             }
@@ -199,6 +201,7 @@ class GeminiLiveClient(
 
         val cleanModel = modelId.removePrefix("models/")
         val isTranscribe = cleanModel.contains("transcribe", ignoreCase = true)
+        DiagnosticLog.record("Live", "connect", "model=$cleanModel transcribe=$isTranscribe")
         val setupEnvelope = BidiSetupEnvelope(
             setup = BidiSetup(
                 model = "models/$cleanModel",
@@ -237,6 +240,7 @@ class GeminiLiveClient(
 
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
                 if (code != 1000) {
+                    DiagnosticLog.record("Live", "ws_closing", "code=$code reason=$reason")
                     val err = mapCloseError(code, reason)
                     deferred.complete(false)
                     _events.tryEmit(LiveEvent.Failed(err))
@@ -250,6 +254,11 @@ class GeminiLiveClient(
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                DiagnosticLog.record(
+                    "Live",
+                    "ws_failure",
+                    "http=${response?.code ?: 0} ${t.message ?: t::class.simpleName.orEmpty()}"
+                )
                 val err = mapFailure(t, response)
                 deferred.complete(false)
                 synchronized(this@GeminiLiveClient) {
@@ -272,6 +281,11 @@ class GeminiLiveClient(
         if (envelope.error != null) {
             val code = envelope.error.code ?: 0
             val msg = sanitizeKey(envelope.error.message.orEmpty())
+            DiagnosticLog.record(
+                "Live",
+                "server_error",
+                "code=$code status=${envelope.error.status.orEmpty()} $msg"
+            )
             val err = when {
                 code == 401 || code == 403 || msg.contains("API_KEY_INVALID", ignoreCase = true) ->
                     LiveError.InvalidKey
