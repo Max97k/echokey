@@ -7,6 +7,10 @@
 - [x] Password and `IME_FLAG_NO_PERSONALIZED_LEARNING` fields disable voice input.
 - [x] `allowBackup="false"` and `data_extraction_rules.xml` exclude `files/datastore/`.
 - [x] Host privacy policy at a public HTTPS URL and enter it in Play Console: [https://max97k.github.io/echokey/privacy.html](https://max97k.github.io/echokey/privacy.html) (source: [PRIVACY.md](../PRIVACY.md)).
+- [x] Store listing visual assets generated and compliant with Play Console specifications (under `play_store_assets/`):
+  - [x] App Icon: `play_store_assets/icon_512x512.png` (512x512 px, PNG, full-bleed, no fake corners/shadows, 198 KB <= 1 MB).
+  - [x] Feature Graphic: `play_store_assets/feature_graphic_1024x500.png` (1024x500 px, PNG, 15% safe margins, centered focus, 534 KB <= 15 MB).
+  - [x] Phone Screenshots: `play_store_assets/screenshots/phone_01.png` ~ `phone_04.png` (1080x2400 px, non-AI real emulator captures covering PC Bluetooth Remote, System IME Settings, Keyboard Touchpad Surface, and Typing Results).
 - [ ] Complete Play Console **Data Safety** form:
   - Audio: Collected & shared with third party (Google Gemini API), App functionality, User-initiated.
 - [ ] Provide a test Google AI Studio API key in **App access** instructions for Play reviewers.
