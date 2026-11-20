@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AKeyboard</string>
+    <string name="ime_name">AKeyboard Suara</string>
+    <string name="ime_subtype_voice">Suara</string>
+
+    <!-- Keyboard UI -->
+    <string name="hold_to_speak">Tahan untuk berbicara</string>
+    <string name="listening">Mendengarkan…</string>
+    <string name="finalizing">Menyelesaikan…</string>
+    <string name="touchpad_hint">Geser di sini untuk memindahkan kursor</string>
+    <string name="cd_mic_button">Tahan untuk merekam input suara</string>
+    <string name="cd_backspace">Hapus</string>
+    <string name="cd_enter">Enter atau kirim</string>
+    <string name="cd_switch_ime">Ganti keyboard</string>
+    <string name="open_settings">Buka Pengaturan</string>
+    <string name="btn_paste">Tempel</string>
+
+    <!-- Keyboard Errors -->
+    <string name="err_no_key">Kunci API belum diatur. Buka Pengaturan untuk menambahkannya.</string>
+    <string name="err_invalid_key">Kunci API tidak valid. Periksa kunci Anda di Pengaturan.</string>
+    <string name="err_no_permission">Izin mikrofon diperlukan. Berikan di Pengaturan.</string>
+    <string name="err_no_network">Tidak ada koneksi jaringan.</string>
+    <string name="err_quota">Kuota API terlampaui. Coba lagi nanti.</string>
+    <string name="err_password_field">Input suara dinonaktifkan di kolom kata sandi.</string>
+    <string name="err_mic_busy">Mikrofon tidak tersedia atau sedang digunakan aplikasi lain.</string>
+    <string name="err_max_duration">Batas rekaman 60 detik tercapai.</string>
+    <string name="err_generic">Kesalahan koneksi. Tahan mikrofon untuk mencoba lagi.</string>
+
+    <!-- Settings & Disclosure -->
+    <string name="disclosure_title">Pemberitahuan Suara &amp; Data</string>
+    <string name="disclosure_body">AKeyboard adalah keyboard khusus suara. Audio hanya direkam saat Anda menahan tombol mikrofon dan dikirim langsung ke Google Gemini API menggunakan kunci API Anda sendiri.\n\nAKeyboard tidak menyimpan audio di perangkat dan tidak memiliki server backend pengembang. Google memproses audio sesuai ketentuan akun Google AI Studio Anda.</string>
+    <string name="disclosure_setup_hint">Menggunakan AKeyboard memerlukan kunci API Google AI Studio Anda sendiri (tingkat gratis tersedia di wilayah yang memenuhi syarat; lihat langkah pengaturan di layar berikutnya). Penanganan data bergantung pada paket Google AI Studio yang Anda pilih (gratis atau berbayar) sesuai ketentuan Gemini API Google.</string>
+    <string name="disclosure_agree">Setuju dan Lanjutkan</string>
+
+    <string name="settings_title">Pengaturan AKeyboard</string>
+    <string name="setup_checklist_title">Mulai</string>
+    <string name="setup_step_api_key">Dapatkan dan simpan kunci API Google AI Studio Anda</string>
+    <string name="setup_step_keyboard">Aktifkan AKeyboard di pengaturan sistem</string>
+    <string name="setup_step_mic">Izinkan akses mikrofon</string>
+    <string name="section_permissions">1. Pengaturan Sistem</string>
+    <string name="perm_mic_granted">Izin mikrofon: Diizinkan</string>
+    <string name="perm_mic_missing">Izin mikrofon: Diperlukan</string>
+    <string name="btn_grant_mic">Berikan Izin Mikrofon</string>
+    <string name="btn_open_app_info">Buka Pengaturan Aplikasi</string>
+    <string name="btn_enable_ime">Aktifkan AKeyboard di Pengaturan Sistem</string>
+    <string name="btn_switch_ime">Ganti Keyboard Sekarang</string>
+    <string name="ime_status_enabled">Keyboard diaktifkan di sistem: Ya</string>
+    <string name="ime_status_disabled">Keyboard diaktifkan di sistem: Tidak</string>
+    <string name="ime_status_selected">Keyboard default saat ini: AKeyboard</string>
+    <string name="ime_status_not_selected">Keyboard default saat ini: Lainnya</string>
+
+    <string name="section_api_key">2. Kunci API Google AI Studio</string>
+    <string name="api_key_help">Google AI Studio menyediakan tingkat kunci API gratis di wilayah yang memenuhi syarat. Masuk dengan akun Google, buat kunci, salin, lalu kembali ke sini dan ketuk Tempel. Batas bervariasi menurut model dan wilayah; periksa AI Studio untuk batas saat ini.</string>
+    <string name="btn_get_api_key">Dapatkan kunci di Google AI Studio</string>
+    <string name="btn_paste_key">Tempel dari papan klip</string>
+    <string name="api_key_no_browser">Browser tidak ditemukan. Buka aistudio.google.com/apikey secara manual.</string>
+    <string name="api_key_clipboard_empty">Papan klip tidak memiliki teks untuk ditempel.</string>
+    <string name="api_key_label">Kunci API</string>
+    <string name="api_key_saved_hint">Kunci dienkripsi dan disimpan di perangkat ini</string>
+    <string name="btn_validate_save">Validasi &amp; Simpan Kunci</string>
+    <string name="btn_clear_key">Hapus Kunci</string>
+    <string name="validating">Memvalidasi…</string>
+    <string name="key_valid_status">Kunci terverifikasi. Model Live tersedia: %1$d</string>
+    <string name="key_cleared_status">Kunci API dihapus.</string>
+    <string name="key_storage_error">Gagal menyimpan kunci API dengan aman di perangkat ini. Silakan coba lagi.</string>
+
+    <string name="section_model">3. Model Transkripsi Langsung</string>
+    <string name="model_label">Model Terpilih</string>
+    <string name="no_models_loaded">Validasi kunci API Anda untuk memuat model yang tersedia.</string>
+    <string name="model_badge_transcribe">[Transkripsi]</string>
+    <string name="model_badge_live">[Live]</string>
+
+    <string name="section_transcription">4. Bahasa &amp; Transkripsi</string>
+    <string name="lang_label">Bahasa Transkripsi</string>
+    <string name="lang_zh_tw">Mandarin Tradisional (zh-TW)</string>
+    <string name="lang_zh_tw_en">Mandarin Tradisional + Inggris</string>
+    <string name="lang_auto">Deteksi otomatis (85+ bahasa)</string>
+    <string name="lang_zh_cn">Mandarin Sederhana (zh-CN)</string>
+    <string name="lang_en_us">Inggris (en-US)</string>
+    <string name="lang_ja_jp">Jepang (ja-JP)</string>
+    <string name="lang_ko_kr">Korea (ko-KR)</string>
+    <string name="smart_mode_title">Mode Transkripsi Cerdas</string>
+    <string name="smart_mode_desc">Menghapus kata pengisi dan pengulangan secara otomatis (didukung oleh model transkripsi).</string>
+    <string name="model_non_transcribe_hint">Model Live yang dipilih tidak mendukung kode bahasa transkripsi atau penghapusan kata pengisi Mode Cerdas.</string>
+
+    <string name="section_touchpad">5. Sensitivitas Kursor Touchpad</string>
+    <string name="step_x_label">Langkah horizontal: %1$d dp (lebih kecil = lebih cepat)</string>
+    <string name="step_y_label">Langkah vertikal: %1$d dp (lebih kecil = lebih cepat)</string>
+    <string name="show_switch_ime_title">Tampilkan Tombol Ganti Keyboard</string>
+    <string name="show_switch_ime_desc">Biarkan nonaktif pada Pixel atau perangkat yang sudah menampilkan ikon bola dunia di bilah navigasi.</string>
+
+    <string name="btn_open_pc_remote">Buka Remote Suara Bluetooth PC</string>
+    <string name="remote_title">Remote Bluetooth PC</string>
+    <string name="remote_permissions_needed">Izin mikrofon dan Bluetooth diperlukan.</string>
+    <string name="remote_grant_permissions">Izinkan</string>
+    <string name="remote_select_pc">PC Windows 11 Terpasang</string>
+    <string name="remote_no_paired_devices">Tidak ada perangkat Bluetooth terpasang</string>
+    <string name="remote_connect">Hubungkan</string>
+    <string name="remote_connecting">Menghubungkan…</string>
+    <string name="remote_disconnect">Putuskan</string>
+    <string name="remote_status_disconnected">Terputus (dikte akan diantrekan secara lokal)</string>
+    <string name="remote_status_connecting">Menghubungkan ke %1$s…</string>
+    <string name="remote_status_connected">Terhubung ke %1$s</string>
+    <string name="remote_status_error">Kesalahan koneksi: %1$s</string>
+    <string name="remote_preview_placeholder">Tahan tombol mikrofon untuk berbicara. Teks akhir dikirim ke kursor PC Anda.</string>
+    <string name="remote_pending_label">Menunggu dikirim:</string>
+    <string name="remote_recent_label">Baru saja dikirim (3 terakhir):</string>
+    <string name="remote_resend">Kirim ulang</string>
+    <string name="remote_clear">Hapus</string>
+    <string name="remote_backspace">Hapus</string>
+    <string name="remote_enter">Enter</string>
+    <string name="remote_mic_hold">Tahan untuk dikte ke PC</string>
+    <string name="remote_error_uipi">Jendela PC berjalan dengan hak akses tinggi (Admin/UAC). Beralih ke jendela biasa lalu ketuk Kirim ulang.</string>
+    <string name="remote_error_no_focus">Tidak ada kolom teks atau jendela aktif di PC (atau layar terkunci). Klik kolom teks lalu ketuk Kirim ulang.</string>
+    <string name="remote_error_send_failed">Gagal mengirim teks ke PC. Periksa koneksi lalu ketuk Kirim ulang.</string>
+    <string name="remote_error_pc_disconnected">Bridge PC terputus. Hubungkan kembali lalu ketuk Kirim ulang.</string>
+    <string name="remote_error_bt_enable_timeout">Waktu habis saat menunggu Bluetooth aktif. Coba hubungkan kembali.</string>
+    <string name="remote_error_bt_enable_denied">Bluetooth tidak diaktifkan. Aktifkan Bluetooth untuk menghubungkan.</string>
+    <string name="remote_error_no_key">Atur kunci API Gemini Anda di Pengaturan terlebih dahulu.</string>
+    <string name="remote_error_no_network">Tidak ada koneksi jaringan.</string>
+    <string name="remote_error_invalid_key">Kunci API Gemini tidak valid.</string>
+    <string name="remote_error_quota">Kuota Gemini API terlampaui.</string>
+    <string name="remote_error_max_duration">Dihentikan pada durasi maksimal 60 detik.</string>
+    <string name="remote_error_generic">Terjadi kesalahan transkripsi.</string>
+    <string name="remote_blocker_no_hardware">Perangkat ini tidak mendukung Bluetooth.</string>
+    <string name="remote_blocker_bt_off">Bluetooth nonaktif. Aktifkan untuk menghubungkan ke PC Anda.</string>
+    <string name="remote_blocker_bt_turning_on">Mengaktifkan Bluetooth…</string>
+    <string name="remote_blocker_no_paired">Tidak ada PC terpasang ditemukan. Pasangkan PC Windows Anda di pengaturan Bluetooth terlebih dahulu.</string>
+    <string name="remote_blocker_no_key">Kunci API Gemini belum diatur. Buka Pengaturan untuk mengonfigurasinya.</string>
+    <string name="remote_btn_enable_bt">Aktifkan Bluetooth</string>
+    <string name="remote_btn_pair_bt">Pengaturan Bluetooth</string>
+    <string name="remote_btn_open_settings">Buka Pengaturan</string>
+    <string name="remote_btn_cancel">Batal</string>
+    <string name="remote_mic_built_in">Mikrofon ponsel</string>
+    <string name="remote_mic_system">Default sistem (Headset kabel/USB)</string>
+    <string name="remote_windows_ime_tip">Tips: Ubah metode input Windows ke Bahasa Inggris sebelum mendikte — IME Zhuyin (Bopomofo) Windows dapat mengacaukan tanda baca.</string>
+    <string name="remote_pc_bridge_guide">Baru pertama kali menghubungkan ke PC? Salin dan jalankan akeyboard_bridge.py di Windows 10/11 (Python 3.10+, tanpa pip install).</string>
+    <string name="remote_btn_pc_bridge_code">Buka skrip Python di GitHub</string>
+    <string name="remote_pc_bridge_no_browser">Browser tidak ditemukan. Buka github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py secara manual.</string>
+
+    <string name="section_app_update">6. Pembaruan Aplikasi</string>
+    <string name="app_version_label">Versi saat ini: %1$s (%2$d)</string>
+    <string name="btn_check_update">Periksa pembaruan</string>
+    <string name="cd_release_notes">Lihat catatan rilis di GitHub</string>
+    <string name="release_notes_no_browser">Browser tidak ditemukan. Buka github.com/Max97k/echokey/releases secara manual.</string>
+    <string name="btn_copy_diagnostics">Salin diagnostik debug</string>
+    <string name="diagnostics_desc">Menyalin versi, info perangkat, alasan crash terbaru, dan log teknis yang telah dibersihkan (tidak pernah menyertakan suara, teks ketikan, atau kunci API Anda).</string>
+    <string name="diagnostics_copied">Diagnostik disalin ke papan klip.</string>
+    <string name="btn_update_now">Perbarui</string>
+    <string name="btn_restart_to_install">Mulai ulang untuk memasang</string>
+    <string name="update_status_checking">Memeriksa pembaruan di Google Play…</string>
+    <string name="update_status_available">Versi baru AKeyboard tersedia di Google Play.</string>
+    <string name="update_status_downloading">Mengunduh pembaruan di latar belakang…</string>
+    <string name="update_status_downloaded">Pembaruan diunduh. Mulai ulang AKeyboard untuk menyelesaikan pemasangan.</string>
+    <string name="update_status_up_to_date">Anda sudah menggunakan versi terbaru.</string>
+    <string name="update_status_unavailable">Pembaruan Play Store hanya tersedia untuk pemasangan dari Google Play.</string>
+</resources>

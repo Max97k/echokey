@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AKeyboard</string>
+    <string name="ime_name">AKeyboard Voz</string>
+    <string name="ime_subtype_voice">Voz</string>
+
+    <!-- Keyboard UI -->
+    <string name="hold_to_speak">Segure para falar</string>
+    <string name="listening">Ouvindo…</string>
+    <string name="finalizing">Finalizando…</string>
+    <string name="touchpad_hint">Deslize aqui para mover o cursor</string>
+    <string name="cd_mic_button">Segure para gravar entrada de voz</string>
+    <string name="cd_backspace">Backspace</string>
+    <string name="cd_enter">Enter ou enviar</string>
+    <string name="cd_switch_ime">Trocar teclado</string>
+    <string name="open_settings">Abrir configurações</string>
+    <string name="btn_paste">Colar</string>
+
+    <!-- Keyboard Errors -->
+    <string name="err_no_key">Chave de API não definida. Abra Configurações para adicionar sua chave.</string>
+    <string name="err_invalid_key">Chave de API inválida. Verifique sua chave em Configurações.</string>
+    <string name="err_no_permission">Permissão de microfone necessária. Conceda em Configurações.</string>
+    <string name="err_no_network">Sem conexão de rede.</string>
+    <string name="err_quota">Cota da API excedida. Tente novamente mais tarde.</string>
+    <string name="err_password_field">A entrada de voz é desativada em campos de senha.</string>
+    <string name="err_mic_busy">Microfone indisponível ou em uso por outro app.</string>
+    <string name="err_max_duration">Limite de gravação de 60s atingido.</string>
+    <string name="err_generic">Erro de conexão. Segure o microfone para tentar novamente.</string>
+
+    <!-- Settings & Disclosure -->
+    <string name="disclosure_title">Aviso de Voz e Dados</string>
+    <string name="disclosure_body">O AKeyboard é um teclado somente por voz. O áudio é capturado apenas enquanto você segura o botão do microfone e transmitido diretamente para a Google Gemini API usando sua própria chave de API.\n\nO AKeyboard não salva áudio no dispositivo e não possui servidor próprio do desenvolvedor. O Google processa o áudio conforme os termos da sua conta do Google AI Studio.</string>
+    <string name="disclosure_setup_hint">Usar o AKeyboard requer sua própria chave de API do Google AI Studio (nível gratuito disponível em regiões elegíveis; veja os passos na próxima tela). O tratamento de dados depende do plano do Google AI Studio escolhido (gratuito ou pago) sob os termos da Gemini API do Google.</string>
+    <string name="disclosure_agree">Concordar e continuar</string>
+
+    <string name="settings_title">Configurações do AKeyboard</string>
+    <string name="setup_checklist_title">Primeiros passos</string>
+    <string name="setup_step_api_key">Obtenha e salve sua chave de API do Google AI Studio</string>
+    <string name="setup_step_keyboard">Ative o AKeyboard nas configurações do sistema</string>
+    <string name="setup_step_mic">Permita o acesso ao microfone</string>
+    <string name="section_permissions">1. Configuração do sistema</string>
+    <string name="perm_mic_granted">Permissão de microfone: Concedida</string>
+    <string name="perm_mic_missing">Permissão de microfone: Necessária</string>
+    <string name="btn_grant_mic">Conceder permissão de microfone</string>
+    <string name="btn_open_app_info">Abrir configurações do app</string>
+    <string name="btn_enable_ime">Ativar AKeyboard nas configurações do sistema</string>
+    <string name="btn_switch_ime">Trocar teclado agora</string>
+    <string name="ime_status_enabled">Teclado ativado no sistema: Sim</string>
+    <string name="ime_status_disabled">Teclado ativado no sistema: Não</string>
+    <string name="ime_status_selected">Teclado padrão atual: AKeyboard</string>
+    <string name="ime_status_not_selected">Teclado padrão atual: Outro</string>
+
+    <string name="section_api_key">2. Chave de API do Google AI Studio</string>
+    <string name="api_key_help">O Google AI Studio oferece um nível gratuito de chave de API em regiões elegíveis. Entre com uma conta Google, crie uma chave, copie-a, volte aqui e toque em Colar. Os limites variam por modelo e região; consulte o AI Studio.</string>
+    <string name="btn_get_api_key">Obter chave no Google AI Studio</string>
+    <string name="btn_paste_key">Colar da área de transferência</string>
+    <string name="api_key_no_browser">Nenhum navegador encontrado. Abra aistudio.google.com/apikey manualmente.</string>
+    <string name="api_key_clipboard_empty">Não há texto na área de transferência para colar.</string>
+    <string name="api_key_label">Chave de API</string>
+    <string name="api_key_saved_hint">A chave é criptografada e salva neste dispositivo</string>
+    <string name="btn_validate_save">Validar e salvar chave</string>
+    <string name="btn_clear_key">Limpar chave</string>
+    <string name="validating">Validando…</string>
+    <string name="key_valid_status">Chave verificada. Modelos Live disponíveis: %1$d</string>
+    <string name="key_cleared_status">Chave de API removida.</string>
+    <string name="key_storage_error">Falha ao salvar a chave de API com segurança neste dispositivo. Tente novamente.</string>
+
+    <string name="section_model">3. Modelo de transcrição ao vivo</string>
+    <string name="model_label">Modelo selecionado</string>
+    <string name="no_models_loaded">Valide sua chave de API para carregar os modelos disponíveis.</string>
+    <string name="model_badge_transcribe">[Transcrever]</string>
+    <string name="model_badge_live">[Live]</string>
+
+    <string name="section_transcription">4. Idioma e transcrição</string>
+    <string name="lang_label">Idioma de transcrição</string>
+    <string name="lang_zh_tw">Chinês tradicional (zh-TW)</string>
+    <string name="lang_zh_tw_en">Chinês tradicional + Inglês</string>
+    <string name="lang_auto">Detecção automática (85+ idiomas)</string>
+    <string name="lang_zh_cn">Chinês simplificado (zh-CN)</string>
+    <string name="lang_en_us">Inglês (en-US)</string>
+    <string name="lang_ja_jp">Japonês (ja-JP)</string>
+    <string name="lang_ko_kr">Coreano (ko-KR)</string>
+    <string name="smart_mode_title">Modo de transcrição inteligente</string>
+    <string name="smart_mode_desc">Remove automaticamente vícios de linguagem e repetições (compatível com modelos de transcrição).</string>
+    <string name="model_non_transcribe_hint">O modelo Live selecionado não oferece suporte a códigos de idioma de transcrição ou remoção de vícios do Modo inteligente.</string>
+
+    <string name="section_touchpad">5. Sensibilidade do cursor no touchpad</string>
+    <string name="step_x_label">Passo horizontal: %1$d dp (menor = mais rápido)</string>
+    <string name="step_y_label">Passo vertical: %1$d dp (menor = mais rápido)</string>
+    <string name="show_switch_ime_title">Mostrar tecla de troca de teclado</string>
+    <string name="show_switch_ime_desc">Mantenha desativado em Pixel ou dispositivos que já mostram um ícone de globo na barra de navegação.</string>
+
+    <string name="btn_open_pc_remote">Abrir controle remoto de voz Bluetooth para PC</string>
+    <string name="remote_title">Controle remoto Bluetooth PC</string>
+    <string name="remote_permissions_needed">Permissões de microfone e Bluetooth são necessárias.</string>
+    <string name="remote_grant_permissions">Conceder</string>
+    <string name="remote_select_pc">PC Windows 11 pareado</string>
+    <string name="remote_no_paired_devices">Nenhum dispositivo Bluetooth pareado</string>
+    <string name="remote_connect">Conectar</string>
+    <string name="remote_connecting">Conectando…</string>
+    <string name="remote_disconnect">Desconectar</string>
+    <string name="remote_status_disconnected">Desconectado (o ditado ficará na fila local)</string>
+    <string name="remote_status_connecting">Conectando a %1$s…</string>
+    <string name="remote_status_connected">Conectado a %1$s</string>
+    <string name="remote_status_error">Erro de conexão: %1$s</string>
+    <string name="remote_preview_placeholder">Segure o botão do microfone para falar. O texto final será enviado ao cursor do seu PC.</string>
+    <string name="remote_pending_label">Pendente de envio:</string>
+    <string name="remote_recent_label">Enviados recentemente (últimos 3):</string>
+    <string name="remote_resend">Reenviar</string>
+    <string name="remote_clear">Limpar</string>
+    <string name="remote_backspace">Backspace</string>
+    <string name="remote_enter">Enter</string>
+    <string name="remote_mic_hold">Segure para ditar no PC</string>
+    <string name="remote_error_uipi">A janela do PC está elevada (Admin/UAC). Alterne para uma janela normal e toque em Reenviar.</string>
+    <string name="remote_error_no_focus">Nenhum campo de texto ou janela ativa no PC (ou tela bloqueada). Clique em um campo de texto e toque em Reenviar.</string>
+    <string name="remote_error_send_failed">Falha ao enviar texto ao PC. Verifique a conexão e toque em Reenviar.</string>
+    <string name="remote_error_pc_disconnected">Ponte do PC desconectada. Reconecte e toque em Reenviar.</string>
+    <string name="remote_error_bt_enable_timeout">Tempo esgotado aguardando o Bluetooth ligar. Tente conectar novamente.</string>
+    <string name="remote_error_bt_enable_denied">O Bluetooth não foi ativado. Ative o Bluetooth para conectar.</string>
+    <string name="remote_error_no_key">Configure sua chave de API do Gemini em Configurações primeiro.</string>
+    <string name="remote_error_no_network">Sem conexão de rede.</string>
+    <string name="remote_error_invalid_key">Chave de API do Gemini inválida.</string>
+    <string name="remote_error_quota">Cota da Gemini API excedida.</string>
+    <string name="remote_error_max_duration">Interrompido no limite máximo de 60s.</string>
+    <string name="remote_error_generic">Ocorreu um erro de transcrição.</string>
+    <string name="remote_blocker_no_hardware">Este dispositivo não suporta Bluetooth.</string>
+    <string name="remote_blocker_bt_off">O Bluetooth está desligado. Ligue-o para conectar ao seu PC.</string>
+    <string name="remote_blocker_bt_turning_on">Ligando Bluetooth…</string>
+    <string name="remote_blocker_no_paired">Nenhum PC pareado encontrado. Pareie seu PC Windows primeiro nas configurações de Bluetooth.</string>
+    <string name="remote_blocker_no_key">A chave de API do Gemini ainda não foi definida. Abra Configurações para configurá-la.</string>
+    <string name="remote_btn_enable_bt">Ligar Bluetooth</string>
+    <string name="remote_btn_pair_bt">Configurações de Bluetooth</string>
+    <string name="remote_btn_open_settings">Abrir configurações</string>
+    <string name="remote_btn_cancel">Cancelar</string>
+    <string name="remote_mic_built_in">Microfone do telefone</string>
+    <string name="remote_mic_system">Padrão do sistema (fone com fio/USB)</string>
+    <string name="remote_windows_ime_tip">Dica: Mude o método de entrada do Windows para inglês antes de ditar — o IME Zhuyin (Bopomofo) pode corromper a pontuação.</string>
+    <string name="remote_pc_bridge_guide">Primeira vez conectando ao PC? Copie e execute akeyboard_bridge.py no Windows 10/11 (Python 3.10+, sem pip install).</string>
+    <string name="remote_btn_pc_bridge_code">Abrir script Python no GitHub</string>
+    <string name="remote_pc_bridge_no_browser">Nenhum navegador encontrado. Abra github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py manualmente.</string>
+
+    <string name="section_app_update">6. Atualizações do app</string>
+    <string name="app_version_label">Versão atual: %1$s (%2$d)</string>
+    <string name="btn_check_update">Verificar atualizações</string>
+    <string name="cd_release_notes">Ver notas da versão no GitHub</string>
+    <string name="release_notes_no_browser">Nenhum navegador encontrado. Abra github.com/Max97k/echokey/releases manualmente.</string>
+    <string name="btn_copy_diagnostics">Copiar diagnóstico de depuração</string>
+    <string name="diagnostics_desc">Copia versão, dados do dispositivo, motivos de falhas recentes e logs técnicos limpos (nunca inclui voz, texto digitado ou sua chave de API).</string>
+    <string name="diagnostics_copied">Diagnóstico copiado para a área de transferência.</string>
+    <string name="btn_update_now">Atualizar</string>
+    <string name="btn_restart_to_install">Reiniciar para instalar</string>
+    <string name="update_status_checking">Verificando atualizações no Google Play…</string>
+    <string name="update_status_available">Uma nova versão do AKeyboard está disponível no Google Play.</string>
+    <string name="update_status_downloading">Baixando atualização em segundo plano…</string>
+    <string name="update_status_downloaded">Atualização baixada. Reinicie o AKeyboard para concluir a instalação.</string>
+    <string name="update_status_up_to_date">Você já está na versão mais recente.</string>
+    <string name="update_status_unavailable">As atualizações da Play Store só estão disponíveis para instalações feitas pelo Google Play.</string>
+</resources>

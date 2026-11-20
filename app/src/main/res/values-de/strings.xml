@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AKeyboard</string>
+    <string name="ime_name">AKeyboard Sprache</string>
+    <string name="ime_subtype_voice">Sprache</string>
+
+    <!-- Keyboard UI -->
+    <string name="hold_to_speak">Zum Sprechen gedrückt halten</string>
+    <string name="listening">Hört zu…</string>
+    <string name="finalizing">Wird abgeschlossen…</string>
+    <string name="touchpad_hint">Zum Bewegen des Cursors hier wischen</string>
+    <string name="cd_mic_button">Gedrückt halten für Spracheingabe</string>
+    <string name="cd_backspace">Rücktaste</string>
+    <string name="cd_enter">Eingabe oder Senden</string>
+    <string name="cd_switch_ime">Tastatur wechseln</string>
+    <string name="open_settings">Einstellungen öffnen</string>
+    <string name="btn_paste">Einfügen</string>
+
+    <!-- Keyboard Errors -->
+    <string name="err_no_key">API-Schlüssel nicht festgelegt. Füge ihn in den Einstellungen hinzu.</string>
+    <string name="err_invalid_key">Ungültiger API-Schlüssel. Prüfe ihn in den Einstellungen.</string>
+    <string name="err_no_permission">Mikrofonberechtigung erforderlich. In den Einstellungen gewähren.</string>
+    <string name="err_no_network">Keine Netzwerkverbindung.</string>
+    <string name="err_quota">API-Kontingent überschritten. Später erneut versuchen.</string>
+    <string name="err_password_field">Spracheingabe ist in Passwortfeldern deaktiviert.</string>
+    <string name="err_mic_busy">Mikrofon nicht verfügbar oder von einer anderen App belegt.</string>
+    <string name="err_max_duration">Aufnahmelimit von 60 s erreicht.</string>
+    <string name="err_generic">Verbindungsfehler. Mikrofon zum Wiederholen gedrückt halten.</string>
+
+    <!-- Settings & Disclosure -->
+    <string name="disclosure_title">Hinweis zu Sprache und Daten</string>
+    <string name="disclosure_body">AKeyboard ist eine reine Sprachtastatur. Audio wird nur aufgenommen, während du die Mikrofontaste gedrückt hältst, und mit deinem eigenen API-Schlüssel direkt an die Google Gemini API gestreamt.\n\nAKeyboard speichert kein Audio auf dem Gerät und betreibt keinen Entwickler-Backend-Server. Google verarbeitet die Audiodaten gemäß deinen Google AI Studio-Kontobedingungen.</string>
+    <string name="disclosure_setup_hint">Für AKeyboard ist dein eigener Google AI Studio API-Schlüssel erforderlich (kostenlose Stufe in unterstützten Regionen verfügbar; Einrichtungsschritte auf dem nächsten Bildschirm). Die Datenverarbeitung hängt vom gewählten Google AI Studio-Tarif (kostenlos oder kostenpflichtig) gemäß Googles Gemini API-Bedingungen ab.</string>
+    <string name="disclosure_agree">Zustimmen und fortfahren</string>
+
+    <string name="settings_title">AKeyboard-Einstellungen</string>
+    <string name="setup_checklist_title">Erste Schritte</string>
+    <string name="setup_step_api_key">Google AI Studio API-Schlüssel abrufen und speichern</string>
+    <string name="setup_step_keyboard">AKeyboard in den Systemeinstellungen aktivieren</string>
+    <string name="setup_step_mic">Mikrofonzugriff erlauben</string>
+    <string name="section_permissions">1. Systemeinrichtung</string>
+    <string name="perm_mic_granted">Mikrofonberechtigung: Erteilt</string>
+    <string name="perm_mic_missing">Mikrofonberechtigung: Erforderlich</string>
+    <string name="btn_grant_mic">Mikrofonberechtigung erteilen</string>
+    <string name="btn_open_app_info">App-Einstellungen öffnen</string>
+    <string name="btn_enable_ime">AKeyboard in Systemeinstellungen aktivieren</string>
+    <string name="btn_switch_ime">Tastatur jetzt wechseln</string>
+    <string name="ime_status_enabled">Tastatur im System aktiviert: Ja</string>
+    <string name="ime_status_disabled">Tastatur im System aktiviert: Nein</string>
+    <string name="ime_status_selected">Aktuelle Standardtastatur: AKeyboard</string>
+    <string name="ime_status_not_selected">Aktuelle Standardtastatur: Andere</string>
+
+    <string name="section_api_key">2. Google AI Studio API-Schlüssel</string>
+    <string name="api_key_help">Google AI Studio bietet in unterstützten Regionen eine kostenlose API-Schlüssel-Stufe. Melde dich mit einem Google-Konto an, erstelle und kopiere einen Schlüssel, kehre hierher zurück und tippe auf Einfügen. Limits variieren je nach Modell und Region; prüfe sie im AI Studio.</string>
+    <string name="btn_get_api_key">Schlüssel im Google AI Studio abrufen</string>
+    <string name="btn_paste_key">Aus Zwischenablage einfügen</string>
+    <string name="api_key_no_browser">Kein Browser gefunden. Öffne aistudio.google.com/apikey manuell.</string>
+    <string name="api_key_clipboard_empty">Die Zwischenablage enthält keinen Text zum Einfügen.</string>
+    <string name="api_key_label">API-Schlüssel</string>
+    <string name="api_key_saved_hint">Schlüssel ist verschlüsselt auf diesem Gerät gespeichert</string>
+    <string name="btn_validate_save">Prüfen &amp; Schlüssel speichern</string>
+    <string name="btn_clear_key">Schlüssel löschen</string>
+    <string name="validating">Wird geprüft…</string>
+    <string name="key_valid_status">Schlüssel bestätigt. Verfügbare Live-Modelle: %1$d</string>
+    <string name="key_cleared_status">API-Schlüssel gelöscht.</string>
+    <string name="key_storage_error">API-Schlüssel konnte nicht sicher auf diesem Gerät gespeichert werden. Bitte erneut versuchen.</string>
+
+    <string name="section_model">3. Live-Transkriptionsmodell</string>
+    <string name="model_label">Ausgewähltes Modell</string>
+    <string name="no_models_loaded">Prüfe deinen API-Schlüssel, um verfügbare Modelle zu laden.</string>
+    <string name="model_badge_transcribe">[Transkription]</string>
+    <string name="model_badge_live">[Live]</string>
+
+    <string name="section_transcription">4. Sprache &amp; Transkription</string>
+    <string name="lang_label">Transkriptionssprache</string>
+    <string name="lang_zh_tw">Traditionelles Chinesisch (zh-TW)</string>
+    <string name="lang_zh_tw_en">Traditionelles Chinesisch + Englisch</string>
+    <string name="lang_auto">Automatische Erkennung (85+ Sprachen)</string>
+    <string name="lang_zh_cn">Vereinfachtes Chinesisch (zh-CN)</string>
+    <string name="lang_en_us">Englisch (en-US)</string>
+    <string name="lang_ja_jp">Japanisch (ja-JP)</string>
+    <string name="lang_ko_kr">Koreanisch (ko-KR)</string>
+    <string name="smart_mode_title">Intelligenter Transkriptionsmodus</string>
+    <string name="smart_mode_desc">Entfernt automatisch Füllwörter und Wiederholungen (von Transkriptionsmodellen unterstützt).</string>
+    <string name="model_non_transcribe_hint">Das ausgewählte Live-Modell unterstützt keine Transkriptions-Sprachcodes und keine Füllwort-Entfernung im intelligenten Modus.</string>
+
+    <string name="section_touchpad">5. Touchpad-Cursorempfindlichkeit</string>
+    <string name="step_x_label">Horizontaler Schritt: %1$d dp (kleiner = schneller)</string>
+    <string name="step_y_label">Vertikaler Schritt: %1$d dp (kleiner = schneller)</string>
+    <string name="show_switch_ime_title">Taste zum Tastaturwechsel anzeigen</string>
+    <string name="show_switch_ime_desc">Auf Pixel- oder Geräten deaktiviert lassen, die bereits ein Globus-Symbol in der Navigationsleiste zeigen.</string>
+
+    <string name="btn_open_pc_remote">PC-Bluetooth-Sprachfernbedienung öffnen</string>
+    <string name="remote_title">PC-Bluetooth-Fernbedienung</string>
+    <string name="remote_permissions_needed">Mikrofon- und Bluetooth-Berechtigungen sind erforderlich.</string>
+    <string name="remote_grant_permissions">Erteilen</string>
+    <string name="remote_select_pc">Gekoppelter Windows 11-PC</string>
+    <string name="remote_no_paired_devices">Keine gekoppelten Bluetooth-Geräte</string>
+    <string name="remote_connect">Verbinden</string>
+    <string name="remote_connecting">Verbinde…</string>
+    <string name="remote_disconnect">Trennen</string>
+    <string name="remote_status_disconnected">Getrennt (Diktat wird lokal zwischengespeichert)</string>
+    <string name="remote_status_connecting">Verbinde mit %1$s…</string>
+    <string name="remote_status_connected">Verbunden mit %1$s</string>
+    <string name="remote_status_error">Verbindungsfehler: %1$s</string>
+    <string name="remote_preview_placeholder">Mikrofontaste zum Sprechen gedrückt halten. Der fertige Text wird an den PC-Cursor gesendet.</string>
+    <string name="remote_pending_label">Ausstehend zum Senden:</string>
+    <string name="remote_recent_label">Zuletzt gesendet (letzte 3):</string>
+    <string name="remote_resend">Erneut senden</string>
+    <string name="remote_clear">Löschen</string>
+    <string name="remote_backspace">Rücktaste</string>
+    <string name="remote_enter">Enter</string>
+    <string name="remote_mic_hold">Gedrückt halten zum Diktieren an den PC</string>
+    <string name="remote_error_uipi">Das PC-Fenster läuft mit erhöhten Rechten (Admin/UAC). Wechsle zu einem normalen Fenster und tippe auf Erneut senden.</string>
+    <string name="remote_error_no_focus">Kein aktives Textfeld oder Fenster auf dem PC (oder Bildschirm gesperrt). Klicke in ein Textfeld und tippe auf Erneut senden.</string>
+    <string name="remote_error_send_failed">Text konnte nicht an den PC gesendet werden. Prüfe die Verbindung und tippe auf Erneut senden.</string>
+    <string name="remote_error_pc_disconnected">PC-Bridge getrennt. Erneut verbinden und auf Erneut senden tippen.</string>
+    <string name="remote_error_bt_enable_timeout">Zeitüberschreitung beim Aktivieren von Bluetooth. Bitte erneut verbinden.</string>
+    <string name="remote_error_bt_enable_denied">Bluetooth wurde nicht aktiviert. Aktiviere Bluetooth zum Verbinden.</string>
+    <string name="remote_error_no_key">Lege zuerst deinen Gemini API-Schlüssel in den Einstellungen fest.</string>
+    <string name="remote_error_no_network">Keine Netzwerkverbindung.</string>
+    <string name="remote_error_invalid_key">Ungültiger Gemini API-Schlüssel.</string>
+    <string name="remote_error_quota">Gemini API-Kontingent überschritten.</string>
+    <string name="remote_error_max_duration">Bei maximaler Dauer von 60 s gestoppt.</string>
+    <string name="remote_error_generic">Transkriptionsfehler aufgetreten.</string>
+    <string name="remote_blocker_no_hardware">Dieses Gerät unterstützt kein Bluetooth.</string>
+    <string name="remote_blocker_bt_off">Bluetooth ist ausgeschaltet. Schalte es ein, um dich mit deinem PC zu verbinden.</string>
+    <string name="remote_blocker_bt_turning_on">Bluetooth wird eingeschaltet…</string>
+    <string name="remote_blocker_no_paired">Kein gekoppelter PC gefunden. Kopple deinen Windows-PC zuerst in den Bluetooth-Einstellungen.</string>
+    <string name="remote_blocker_no_key">Gemini API-Schlüssel ist noch nicht festgelegt. Öffne die Einstellungen zum Konfigurieren.</string>
+    <string name="remote_btn_enable_bt">Bluetooth einschalten</string>
+    <string name="remote_btn_pair_bt">Bluetooth-Einstellungen</string>
+    <string name="remote_btn_open_settings">Einstellungen öffnen</string>
+    <string name="remote_btn_cancel">Abbrechen</string>
+    <string name="remote_mic_built_in">Telefonmikrofon</string>
+    <string name="remote_mic_system">Systemstandard (Kabel-/USB-Headset)</string>
+    <string name="remote_windows_ime_tip">Tipp: Stelle die Windows-Eingabemethode vor dem Diktieren auf Englisch um — Windows Zhuyin (Bopomofo) IME kann Satzzeichen verzerren.</string>
+    <string name="remote_pc_bridge_guide">Erste Verbindung zum PC? Kopiere und starte akeyboard_bridge.py unter Windows 10/11 (Python 3.10+, kein pip install).</string>
+    <string name="remote_btn_pc_bridge_code">Python-Skript auf GitHub öffnen</string>
+    <string name="remote_pc_bridge_no_browser">Kein Browser gefunden. Öffne github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py manuell.</string>
+
+    <string name="section_app_update">6. App-Updates</string>
+    <string name="app_version_label">Aktuelle Version: %1$s (%2$d)</string>
+    <string name="btn_check_update">Nach Updates suchen</string>
+    <string name="cd_release_notes">Versionshinweise auf GitHub ansehen</string>
+    <string name="release_notes_no_browser">Kein Browser gefunden. Öffne github.com/Max97k/echokey/releases manuell.</string>
+    <string name="btn_copy_diagnostics">Debug-Diagnose kopieren</string>
+    <string name="diagnostics_desc">Kopiert Version, Gerätedaten, aktuelle Absturzursachen und bereinigte technische Protokolle (enthält niemals Sprache, getippten Text oder deinen API-Schlüssel).</string>
+    <string name="diagnostics_copied">Diagnose in die Zwischenablage kopiert.</string>
+    <string name="btn_update_now">Aktualisieren</string>
+    <string name="btn_restart_to_install">Zum Installieren neu starten</string>
+    <string name="update_status_checking">Suche auf Google Play nach Updates…</string>
+    <string name="update_status_available">Eine neuere Version von AKeyboard ist bei Google Play verfügbar.</string>
+    <string name="update_status_downloading">Update wird im Hintergrund heruntergeladen…</string>
+    <string name="update_status_downloaded">Update heruntergeladen. Starte AKeyboard neu, um die Installation abzuschließen.</string>
+    <string name="update_status_up_to_date">Du verwendest bereits die neueste Version.</string>
+    <string name="update_status_unavailable">Play Store-Updates sind nur für Installationen über Google Play verfügbar.</string>
+</resources>

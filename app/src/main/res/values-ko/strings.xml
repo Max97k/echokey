@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AKeyboard</string>
+    <string name="ime_name">AKeyboard 음성 키보드</string>
+    <string name="ime_subtype_voice">음성</string>
+
+    <!-- Keyboard UI -->
+    <string name="hold_to_speak">길게 눌러 말하기</string>
+    <string name="listening">듣는 중…</string>
+    <string name="finalizing">마무리 중…</string>
+    <string name="touchpad_hint">여기를 밀어 커서 이동</string>
+    <string name="cd_mic_button">길게 눌러 음성 입력 녹음</string>
+    <string name="cd_backspace">백스페이스</string>
+    <string name="cd_enter">줄바꿈 또는 전송</string>
+    <string name="cd_switch_ime">키보드 전환</string>
+    <string name="open_settings">설정 열기</string>
+    <string name="btn_paste">붙여넣기</string>
+
+    <!-- Keyboard Errors -->
+    <string name="err_no_key">API 키가 설정되지 않았습니다. 설정에서 키를 추가하세요.</string>
+    <string name="err_invalid_key">유효하지 않은 API 키입니다. 설정에서 키를 확인하세요.</string>
+    <string name="err_no_permission">마이크 권한이 필요합니다. 설정에서 허용해 주세요.</string>
+    <string name="err_no_network">네트워크 연결이 없습니다.</string>
+    <string name="err_quota">API 할당량을 초과했습니다. 나중에 다시 시도하세요.</string>
+    <string name="err_password_field">비밀번호 입력란에서는 음성 입력이 비활성화됩니다.</string>
+    <string name="err_mic_busy">마이크를 사용할 수 없거나 다른 앱에서 사용 중입니다.</string>
+    <string name="err_max_duration">최대 녹음 시간(60초)에 도달했습니다.</string>
+    <string name="err_generic">연결 오류가 발생했습니다. 마이크를 길게 눌러 다시 시도하세요.</string>
+
+    <!-- Settings & Disclosure -->
+    <string name="disclosure_title">음성 및 데이터 공개 안내</string>
+    <string name="disclosure_body">AKeyboard는 음성 전용 키보드입니다. 마이크 버튼을 길게 누르고 있는 동안에만 오디오를 수집하며, 사용자의 API 키를 사용해 Google Gemini API로 직접 스트리밍합니다.\n\nAKeyboard는 오디오를 기기에 저장하지 않으며 개발자 백엔드 서버를 운영하지 않습니다. Google은 사용자의 Google AI Studio 계정 약관에 따라 오디오를 처리합니다.</string>
+    <string name="disclosure_setup_hint">AKeyboard를 사용하려면 본인의 Google AI Studio API 키가 필요합니다(지원 지역에서는 무료 등급 제공, 다음 화면에서 설정 단계 안내). 데이터 처리는 Google의 Gemini API 약관에 따라 선택한 Google AI Studio 요금제(무료 또는 유료)를 따릅니다.</string>
+    <string name="disclosure_agree">동의 및 계속</string>
+
+    <string name="settings_title">AKeyboard 설정</string>
+    <string name="setup_checklist_title">시작하기</string>
+    <string name="setup_step_api_key">Google AI Studio API 키 발급 및 저장</string>
+    <string name="setup_step_keyboard">시스템 설정에서 AKeyboard 활성화</string>
+    <string name="setup_step_mic">마이크 액세스 허용</string>
+    <string name="section_permissions">1. 시스템 설정</string>
+    <string name="perm_mic_granted">마이크 권한: 허용됨</string>
+    <string name="perm_mic_missing">마이크 권한: 필요함</string>
+    <string name="btn_grant_mic">마이크 권한 허용</string>
+    <string name="btn_open_app_info">앱 설정 열기</string>
+    <string name="btn_enable_ime">시스템 설정에서 AKeyboard 활성화</string>
+    <string name="btn_switch_ime">지금 키보드 전환</string>
+    <string name="ime_status_enabled">시스템 설정에서 키보드 활성화됨: 예</string>
+    <string name="ime_status_disabled">시스템 설정에서 키보드 활성화됨: 아니요</string>
+    <string name="ime_status_selected">현재 기본 키보드: AKeyboard</string>
+    <string name="ime_status_not_selected">현재 기본 키보드: 기타</string>
+
+    <string name="section_api_key">2. Google AI Studio API 키</string>
+    <string name="api_key_help">Google AI Studio는 지원 지역에서 무료 API 키 등급을 제공합니다. Google 계정으로 로그인해 키를 생성하고 복사한 뒤, 여기로 돌아와 붙여넣기를 탭하세요. 한도는 모델과 지역에 따라 다르므로 AI Studio에서 확인하세요.</string>
+    <string name="btn_get_api_key">Google AI Studio에서 키 받기</string>
+    <string name="btn_paste_key">클립보드에서 붙여넣기</string>
+    <string name="api_key_no_browser">브라우저를 찾을 수 없습니다. aistudio.google.com/apikey 를 직접 열어주세요.</string>
+    <string name="api_key_clipboard_empty">클립보드에 붙여넣을 텍스트가 없습니다.</string>
+    <string name="api_key_label">API 키</string>
+    <string name="api_key_saved_hint">키는 암호화되어 이 기기에 저장됩니다</string>
+    <string name="btn_validate_save">키 확인 및 저장</string>
+    <string name="btn_clear_key">키 지우기</string>
+    <string name="validating">확인 중…</string>
+    <string name="key_valid_status">키 확인 완료. 사용 가능한 Live 모델: %1$d</string>
+    <string name="key_cleared_status">API 키가 삭제되었습니다.</string>
+    <string name="key_storage_error">이 기기에 API 키를 안전하게 저장하지 못했습니다. 다시 시도해 주세요.</string>
+
+    <string name="section_model">3. 실시간 받아쓰기 모델</string>
+    <string name="model_label">선택된 모델</string>
+    <string name="no_models_loaded">사용 가능한 모델을 불러오려면 API 키를 확인하세요.</string>
+    <string name="model_badge_transcribe">[받아쓰기]</string>
+    <string name="model_badge_live">[Live]</string>
+
+    <string name="section_transcription">4. 언어 및 받아쓰기</string>
+    <string name="lang_label">받아쓰기 언어</string>
+    <string name="lang_zh_tw">중국어 번체 (zh-TW)</string>
+    <string name="lang_zh_tw_en">중국어 번체 + 영어</string>
+    <string name="lang_auto">자동 감지 (85개 이상 언어)</string>
+    <string name="lang_zh_cn">중국어 간체 (zh-CN)</string>
+    <string name="lang_en_us">영어 (en-US)</string>
+    <string name="lang_ja_jp">일본어 (ja-JP)</string>
+    <string name="lang_ko_kr">한국어 (ko-KR)</string>
+    <string name="smart_mode_title">스마트 받아쓰기 모드</string>
+    <string name="smart_mode_desc">추임새와 반복 표현을 자동으로 제거합니다(받아쓰기 모델 지원).</string>
+    <string name="model_non_transcribe_hint">선택한 Live 모델은 받아쓰기 언어 코드 또는 스마트 모드의 추임새 제거를 지원하지 않습니다.</string>
+
+    <string name="section_touchpad">5. 터치패드 커서 감도</string>
+    <string name="step_x_label">가로 이동 단위: %1$d dp (작을수록 빠름)</string>
+    <string name="step_y_label">세로 이동 단위: %1$d dp (작을수록 빠름)</string>
+    <string name="show_switch_ime_title">키보드 전환 키 표시</string>
+    <string name="show_switch_ime_desc">Pixel 등 탐색 표시줄에 지구본 아이콘이 이미 표시되는 기기에서는 꺼 두세요.</string>
+
+    <string name="btn_open_pc_remote">PC 블루투스 음성 리모컨 열기</string>
+    <string name="remote_title">PC 블루투스 리모컨</string>
+    <string name="remote_permissions_needed">마이크 및 블루투스 권한이 필요합니다.</string>
+    <string name="remote_grant_permissions">허용</string>
+    <string name="remote_select_pc">페어링된 Windows 11 PC</string>
+    <string name="remote_no_paired_devices">페어링된 블루투스 기기가 없습니다</string>
+    <string name="remote_connect">연결</string>
+    <string name="remote_connecting">연결 중…</string>
+    <string name="remote_disconnect">연결 해제</string>
+    <string name="remote_status_disconnected">연결 끊김 (받아쓰기 내용이 로컬 대기열에 저장됩니다)</string>
+    <string name="remote_status_connecting">%1$s에 연결 중…</string>
+    <string name="remote_status_connected">%1$s에 연결됨</string>
+    <string name="remote_status_error">연결 오류: %1$s</string>
+    <string name="remote_preview_placeholder">마이크 버튼을 길게 눌러 말하세요. 완료된 텍스트가 PC 커서 위치로 전송됩니다.</string>
+    <string name="remote_pending_label">전송 대기 중:</string>
+    <string name="remote_recent_label">최근 전송 (최근 3개):</string>
+    <string name="remote_resend">재전송</string>
+    <string name="remote_clear">지우기</string>
+    <string name="remote_backspace">백스페이스</string>
+    <string name="remote_enter">Enter</string>
+    <string name="remote_mic_hold">길게 눌러 PC로 음성 입력</string>
+    <string name="remote_error_uipi">PC 창이 관리자 권한(UAC)으로 실행 중입니다. 일반 창으로 전환한 후 재전송을 누르세요.</string>
+    <string name="remote_error_no_focus">PC에 활성화된 입력란이나 창이 없거나 화면이 잠겨 있습니다. 입력란을 클릭한 후 재전송을 누르세요.</string>
+    <string name="remote_error_send_failed">PC로 텍스트를 전송하지 못했습니다. 연결을 확인하고 재전송을 누르세요.</string>
+    <string name="remote_error_pc_disconnected">PC 브리지 연결이 끊어졌습니다. 다시 연결한 후 재전송을 누르세요.</string>
+    <string name="remote_error_bt_enable_timeout">블루투스가 켜지기를 기다리는 중 시간이 초과되었습니다. 다시 연결해 보세요.</string>
+    <string name="remote_error_bt_enable_denied">블루투스가 활성화되지 않았습니다. 연결하려면 블루투스를 켜세요.</string>
+    <string name="remote_error_no_key">먼저 설정에서 Gemini API 키를 설정하세요.</string>
+    <string name="remote_error_no_network">네트워크 연결이 없습니다.</string>
+    <string name="remote_error_invalid_key">유효하지 않은 Gemini API 키입니다.</string>
+    <string name="remote_error_quota">Gemini API 할당량을 초과했습니다.</string>
+    <string name="remote_error_max_duration">최대 시간(60초)에 도달하여 중지되었습니다.</string>
+    <string name="remote_error_generic">받아쓰기 오류가 발생했습니다.</string>
+    <string name="remote_blocker_no_hardware">이 기기는 블루투스를 지원하지 않습니다.</string>
+    <string name="remote_blocker_bt_off">블루투스가 꺼져 있습니다. PC에 연결하려면 켜세요.</string>
+    <string name="remote_blocker_bt_turning_on">블루투스를 켜는 중…</string>
+    <string name="remote_blocker_no_paired">페어링된 PC를 찾을 수 없습니다. 먼저 블루투스 설정에서 Windows PC를 페어링하세요.</string>
+    <string name="remote_blocker_no_key">Gemini API 키가 아직 설정되지 않았습니다. 설정을 열어 구성하세요.</string>
+    <string name="remote_btn_enable_bt">블루투스 켜기</string>
+    <string name="remote_btn_pair_bt">블루투스 설정</string>
+    <string name="remote_btn_open_settings">설정 열기</string>
+    <string name="remote_btn_cancel">취소</string>
+    <string name="remote_mic_built_in">휴대전화 마이크</string>
+    <string name="remote_mic_system">시스템 기본값 (유선/USB 헤드셋)</string>
+    <string name="remote_windows_ime_tip">팁: 받아쓰기 전에 Windows 입력기를 영어로 전환하세요. 일부 IME에서는 문장 부호가 깨질 수 있습니다.</string>
+    <string name="remote_pc_bridge_guide">PC에 처음 연결하시나요? Windows 10/11에서 akeyboard_bridge.py를 복사해 실행하세요 (Python 3.10+, pip 설치 불필요).</string>
+    <string name="remote_btn_pc_bridge_code">GitHub에서 Python 스크립트 열기</string>
+    <string name="remote_pc_bridge_no_browser">브라우저를 찾을 수 없습니다. github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py 를 직접 열어주세요.</string>
+
+    <string name="section_app_update">6. 앱 업데이트</string>
+    <string name="app_version_label">현재 버전: %1$s (%2$d)</string>
+    <string name="btn_check_update">업데이트 확인</string>
+    <string name="cd_release_notes">GitHub에서 릴리스 노트 보기</string>
+    <string name="release_notes_no_browser">브라우저를 찾을 수 없습니다. github.com/Max97k/echokey/releases 를 직접 열어주세요.</string>
+    <string name="btn_copy_diagnostics">디버그 진단 정보 복사</string>
+    <string name="diagnostics_desc">버전, 기기 정보, 최근 비정상 종료 원인 및 정제된 기술 로그를 복사합니다(음성, 입력 텍스트, API 키는 절대 포함되지 않음).</string>
+    <string name="diagnostics_copied">진단 정보가 클립보드에 복사되었습니다.</string>
+    <string name="btn_update_now">업데이트</string>
+    <string name="btn_restart_to_install">재시작하여 설치</string>
+    <string name="update_status_checking">Google Play에서 업데이트 확인 중…</string>
+    <string name="update_status_available">Google Play에 새 버전의 AKeyboard가 있습니다.</string>
+    <string name="update_status_downloading">백그라운드에서 업데이트 다운로드 중…</string>
+    <string name="update_status_downloaded">업데이트가 다운로드되었습니다. AKeyboard를 재시작하여 설치를 완료하세요.</string>
+    <string name="update_status_up_to_date">이미 최신 버전을 사용 중입니다.</string>
+    <string name="update_status_unavailable">Play 스토어 업데이트는 Google Play에서 설치한 경우에만 사용할 수 있습니다.</string>
+</resources>
