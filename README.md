@@ -5,7 +5,7 @@
 **A minimalist, BYOK Android voice-only Input Method (IME) powered by Google AI Studio's Gemini Live API (`gemini-3.5-transcribe-live`), with a built-in 2D touchpad for cursor control.**
 
 [![Platform](https://img.shields.io/badge/Platform-Android%2012%2B%20(API%2031--37)-3DDC84?style=flat-square&logo=android&logoColor=white)](https://android.com)
-[![Version](https://img.shields.io/badge/Version-v0.2.0-blue?style=flat-square)](https://github.com/Max97k/echokey)
+[![Version](https://img.shields.io/badge/Version-v0.3.0-blue?style=flat-square)](https://github.com/Max97k/echokey)
 [![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen?style=flat-square)](https://github.com/Max97k/echokey)
 [![Target Device](https://img.shields.io/badge/Tested%20On-Google%20Pixel%208%20Pro-4285F4?style=flat-square&logo=google&logoColor=white)](https://store.google.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-7F52FF?style=flat-square&logo=kotlin&logoColor=white)](https://kotlinlang.org)
@@ -92,7 +92,7 @@ Android InputConnection  <--->  AKeyboardImeService (Compose + Lifecycle)
 For restricted corporate PCs that block `generativelanguage.googleapis.com` or unsigned `.exe` installers, AKeyboard includes a zero-dependency Python 3.10+ receiver (`tools/akeyboard_bridge.py`) for Windows 10/11 and an in-app **PC Bluetooth Remote** screen:
 
 1. Pair your Android phone and Windows 10/11 PC over Bluetooth.
-2. On Windows 10/11, run `python tools/akeyboard_bridge.py` (uses official Python 3.10+ standard library only; no `pip install` or admin rights required).
+2. On Windows 10/11, switch your input method to **English** before dictating (Windows Zhuyin/Bopomofo IME can garble punctuation) and run `python tools/akeyboard_bridge.py` (uses official Python 3.10+ standard library only; no `pip install` or admin rights required).
 3. On your phone, open **AKeyboard Settings → Open PC Bluetooth Voice Remote**, connect to your PC, and hold the mic button to dictate directly to your PC cursor.
 
 *(Limitations: requires official CPython 3.10+ with Bluetooth socket support on Windows 10/11, corporate GPO must allow Bluetooth RFCOMM, a target window must have focus, and UIPI blocks `SendInput` into elevated Admin/UAC windows.)*

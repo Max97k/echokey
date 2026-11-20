@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -104,6 +105,10 @@ import com.akeyboard.live.VoiceSessionError
 import com.akeyboard.settings.SettingsActivity
 import com.akeyboard.ui.AKeyboardTheme
 import com.akeyboard.util.hasPermission
+import com.akeyboard.util.openExternalUrl
+
+internal const val PC_BRIDGE_SCRIPT_URL =
+    "https://github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py"
 
 class RemoteDictationActivity : ComponentActivity() {
 
@@ -196,6 +201,7 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
     }
 
     var menuExpanded by remember { mutableStateOf(false) }
+    var showNoBrowserHint by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.semantics { testTagsAsResourceId = true },
@@ -425,6 +431,53 @@ private fun RemoteDictationScreen(viewModel: RemoteDictationViewModel) {
                     },
                     modifier = Modifier.testTag("remote_connection_status")
                 )
+
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("remote_windows_ime_tip")
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.remote_windows_ime_tip),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = stringResource(R.string.remote_pc_bridge_guide),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        TextButton(
+                            onClick = {
+                                showNoBrowserHint = !context.openExternalUrl(PC_BRIDGE_SCRIPT_URL)
+                            },
+                            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+                            modifier = Modifier.testTag("remote_pc_bridge_guide_btn")
+                        ) {
+                            Text(
+                                text = stringResource(R.string.remote_btn_pc_bridge_code),
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                        if (showNoBrowserHint) {
+                            Text(
+                                text = stringResource(R.string.remote_pc_bridge_no_browser),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.testTag("remote_no_browser_hint")
+                            )
+                        }
+                    }
+                }
 
                 Card(
                     modifier = Modifier

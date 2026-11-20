@@ -1,4 +1,4 @@
-appId: com.akeyboard
+appId: com.max97k.akeyboard
 ---
 - launchApp:
     clearState: true
@@ -18,6 +18,10 @@ appId: com.akeyboard
     id: "remote_pair_bt_btn"
 - assertVisible:
     id: "remote_connection_status"
+- assertVisible:
+    id: "remote_windows_ime_tip"
+- assertVisible:
+    id: "remote_pc_bridge_guide_btn"
 - assertVisible:
     id: "remote_mic_hold_btn"
 - tapOn:

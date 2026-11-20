@@ -1,10 +1,11 @@
 package com.akeyboard.settings
 
 import android.Manifest
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.WindowManager
@@ -14,6 +15,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +44,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -71,7 +74,6 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -81,8 +83,57 @@ import com.akeyboard.data.SettingsRepository
 import com.akeyboard.remote.RemoteDictationActivity
 import com.akeyboard.ui.AKeyboardTheme
 import com.akeyboard.util.hasPermission
+import com.akeyboard.util.openExternalUrl
+import com.google.android.play.core.appupdate.AppUpdateInfo
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.InstallStateUpdatedListener
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.InstallStatus
+import com.google.android.play.core.install.model.UpdateAvailability
 import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+
+internal sealed interface AppUpdateUiState {
+    data object Idle : AppUpdateUiState
+    data object Checking : AppUpdateUiState
+    data object UpToDate : AppUpdateUiState
+    data class Available(val availableVersionCode: Int) : AppUpdateUiState
+    data object Downloading : AppUpdateUiState
+    data object Downloaded : AppUpdateUiState
+    data object Unavailable : AppUpdateUiState
+}
+
+internal fun resolveAppUpdateUiState(
+    updateAvailability: Int,
+    installStatus: Int,
+    flexibleAllowed: Boolean,
+    availableVersionCode: Int,
+    userInitiated: Boolean
+): AppUpdateUiState = when {
+    installStatus == InstallStatus.DOWNLOADED -> AppUpdateUiState.Downloaded
+    installStatus == InstallStatus.DOWNLOADING ||
+        installStatus == InstallStatus.PENDING ||
+        installStatus == InstallStatus.INSTALLING -> AppUpdateUiState.Downloading
+    updateAvailability == UpdateAvailability.UPDATE_AVAILABLE && flexibleAllowed ->
+        AppUpdateUiState.Available(availableVersionCode)
+    userInitiated -> AppUpdateUiState.UpToDate
+    else -> AppUpdateUiState.Idle
+}
+
+internal fun mapInstallStatusToUiState(
+    installStatus: Int,
+    current: AppUpdateUiState
+): AppUpdateUiState = when (installStatus) {
+    InstallStatus.DOWNLOADED -> AppUpdateUiState.Downloaded
+    InstallStatus.DOWNLOADING, InstallStatus.PENDING, InstallStatus.INSTALLING ->
+        AppUpdateUiState.Downloading
+    InstallStatus.INSTALLED, InstallStatus.CANCELED, InstallStatus.FAILED ->
+        AppUpdateUiState.Idle
+    else -> current
+}
 
 class SettingsActivity : ComponentActivity() {
 
@@ -95,24 +146,61 @@ class SettingsActivity : ComponentActivity() {
         )
     }
 
+    private lateinit var appUpdateManager: AppUpdateManager
+    private var pendingUpdateInfo: AppUpdateInfo? = null
+    private val appUpdateState = MutableStateFlow<AppUpdateUiState>(AppUpdateUiState.Idle)
+
+    private val updateResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode != RESULT_OK && appUpdateState.value is AppUpdateUiState.Downloading) {
+            checkForAppUpdate(userInitiated = false)
+        }
+    }
+
+    private val installStateListener = InstallStateUpdatedListener { state ->
+        appUpdateState.value = mapInstallStatusToUiState(state.installStatus(), appUpdateState.value)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        appUpdateManager = AppUpdateManagerFactory.create(applicationContext)
+        appUpdateManager.registerListener(installStateListener)
+        val (versionName, versionCode) = readAppVersion()
         setContent {
             AKeyboardTheme {
                 val state by viewModel.uiState.collectAsState()
+                val updateState by appUpdateState.collectAsState()
                 if (!state.settings.disclosureAccepted) {
                     DisclosureScreen(onAgree = viewModel::acceptDisclosure)
                 } else {
                     SettingsContent(
                         state = state,
                         viewModel = viewModel,
-                        onRefreshImeStatus = ::refreshSystemImeStatus
+                        onRefreshImeStatus = ::refreshSystemImeStatus,
+                        appUpdateState = updateState,
+                        appVersionName = versionName,
+                        appVersionCode = versionCode,
+                        onCheckForUpdate = { checkForAppUpdate(userInitiated = true) },
+                        onStartUpdate = ::startFlexibleUpdate,
+                        onCompleteUpdate = ::completeFlexibleUpdate
                     )
                 }
             }
         }
+        checkForAppUpdate(userInitiated = false)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkForAppUpdate(userInitiated = false)
+    }
+
+    override fun onDestroy() {
+        appUpdateManager.unregisterListener(installStateListener)
+        super.onDestroy()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -120,6 +208,67 @@ class SettingsActivity : ComponentActivity() {
         if (hasFocus) {
             refreshSystemImeStatus()
         }
+    }
+
+    private fun checkForAppUpdate(userInitiated: Boolean) {
+        if (userInitiated) {
+            appUpdateState.value = AppUpdateUiState.Checking
+        }
+        appUpdateManager.appUpdateInfo
+            .addOnSuccessListener { info ->
+                val next = resolveAppUpdateUiState(
+                    updateAvailability = info.updateAvailability(),
+                    installStatus = info.installStatus(),
+                    flexibleAllowed = info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE),
+                    availableVersionCode = info.availableVersionCode(),
+                    userInitiated = userInitiated
+                )
+                pendingUpdateInfo = if (next is AppUpdateUiState.Available) info else null
+                appUpdateState.value = next
+                if (userInitiated && next is AppUpdateUiState.Available) {
+                    startFlexibleUpdate()
+                }
+            }
+            .addOnFailureListener {
+                pendingUpdateInfo = null
+                if (userInitiated) {
+                    appUpdateState.value = AppUpdateUiState.Unavailable
+                }
+            }
+    }
+
+    private fun startFlexibleUpdate() {
+        val info = pendingUpdateInfo ?: return
+        try {
+            val started = appUpdateManager.startUpdateFlowForResult(
+                info,
+                updateResultLauncher,
+                AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build()
+            )
+            if (!started) {
+                pendingUpdateInfo = null
+                appUpdateState.value = AppUpdateUiState.Unavailable
+            }
+        } catch (_: Exception) {
+            pendingUpdateInfo = null
+            appUpdateState.value = AppUpdateUiState.Unavailable
+        }
+    }
+
+    private fun completeFlexibleUpdate() {
+        appUpdateManager.completeUpdate()
+    }
+
+    private fun readAppVersion(): Pair<String, Long> = try {
+        val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            packageManager.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0))
+        } else {
+            @Suppress("DEPRECATION")
+            packageManager.getPackageInfo(packageName, 0)
+        }
+        (info.versionName ?: "") to info.longVersionCode
+    } catch (_: PackageManager.NameNotFoundException) {
+        "" to 0L
     }
 
     private fun refreshSystemImeStatus() {
@@ -187,7 +336,13 @@ private fun DisclosureScreen(onAgree: () -> Unit) {
 private fun SettingsContent(
     state: SettingsUiState,
     viewModel: SettingsViewModel,
-    onRefreshImeStatus: () -> Unit
+    onRefreshImeStatus: () -> Unit,
+    appUpdateState: AppUpdateUiState,
+    appVersionName: String,
+    appVersionCode: Long,
+    onCheckForUpdate: () -> Unit,
+    onStartUpdate: () -> Unit,
+    onCompleteUpdate: () -> Unit
 ) {
     val context = LocalContext.current
     val clipboard = LocalClipboard.current
@@ -198,6 +353,7 @@ private fun SettingsContent(
         mutableStateOf(context.hasPermission(Manifest.permission.RECORD_AUDIO))
     }
     var showNoBrowserHint by rememberSaveable { mutableStateOf(false) }
+    var showReleaseNotesNoBrowserHint by rememberSaveable { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner, context) {
         val observer = LifecycleEventObserver { _, event ->
@@ -246,6 +402,17 @@ private fun SettingsContent(
                         .testTag("btn_open_pc_remote")
                 ) {
                     Text(stringResource(R.string.btn_open_pc_remote))
+                }
+
+                if (appUpdateState is AppUpdateUiState.Available ||
+                    appUpdateState is AppUpdateUiState.Downloading ||
+                    appUpdateState is AppUpdateUiState.Downloaded
+                ) {
+                    AppUpdateBanner(
+                        state = appUpdateState,
+                        onStartUpdate = onStartUpdate,
+                        onCompleteUpdate = onCompleteUpdate
+                    )
                 }
 
                 if (!isSetupComplete(
@@ -361,7 +528,7 @@ private fun SettingsContent(
                 }
                 OutlinedButton(
                     onClick = {
-                        showNoBrowserHint = !openAiStudioApiKeyPage(context)
+                        showNoBrowserHint = !context.openExternalUrl(AI_STUDIO_API_KEY_URL)
                     },
                     modifier = Modifier.testTag("settings_get_key_btn")
                 ) {
@@ -624,7 +791,126 @@ private fun SettingsContent(
                     )
                 }
 
+                HorizontalDivider()
+
+                // 6. App Updates
+                Text(
+                    text = stringResource(R.string.section_app_update),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = stringResource(R.string.app_version_label, appVersionName, appVersionCode),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.testTag("settings_version_label")
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedButton(
+                        onClick = onCheckForUpdate,
+                        enabled = appUpdateState !is AppUpdateUiState.Checking &&
+                            appUpdateState !is AppUpdateUiState.Downloading,
+                        modifier = Modifier.testTag("settings_check_update_btn")
+                    ) {
+                        Text(stringResource(R.string.btn_check_update))
+                    }
+                    IconButton(
+                        onClick = {
+                            showReleaseNotesNoBrowserHint =
+                                !context.openExternalUrl(buildReleaseNotesUrl(appVersionName))
+                        },
+                        modifier = Modifier.testTag("settings_release_notes_btn")
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_info),
+                            contentDescription = stringResource(R.string.cd_release_notes),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                if (showReleaseNotesNoBrowserHint) {
+                    Text(
+                        text = stringResource(R.string.release_notes_no_browser),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.testTag("settings_release_notes_no_browser_hint")
+                    )
+                }
+                val updateStatusRes = when (appUpdateState) {
+                    AppUpdateUiState.Checking -> R.string.update_status_checking
+                    AppUpdateUiState.UpToDate -> R.string.update_status_up_to_date
+                    AppUpdateUiState.Unavailable -> R.string.update_status_unavailable
+                    else -> null
+                }
+                if (updateStatusRes != null) {
+                    Text(
+                        text = stringResource(updateStatusRes),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.testTag("settings_update_status")
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppUpdateBanner(
+    state: AppUpdateUiState,
+    onStartUpdate: () -> Unit,
+    onCompleteUpdate: () -> Unit
+) {
+    val isDownloaded = state is AppUpdateUiState.Downloaded
+    val containerColor = if (isDownloaded) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.secondaryContainer
+    }
+    val messageRes = when (state) {
+        is AppUpdateUiState.Available -> R.string.update_status_available
+        AppUpdateUiState.Downloading -> R.string.update_status_downloading
+        AppUpdateUiState.Downloaded -> R.string.update_status_downloaded
+        else -> return
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("settings_update_banner")
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(messageRes),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            when (state) {
+                is AppUpdateUiState.Available -> {
+                    Button(
+                        onClick = onStartUpdate,
+                        modifier = Modifier.testTag("settings_update_now_btn")
+                    ) {
+                        Text(stringResource(R.string.btn_update_now))
+                    }
+                }
+                AppUpdateUiState.Downloaded -> {
+                    Button(
+                        onClick = onCompleteUpdate,
+                        modifier = Modifier.testTag("settings_install_update_btn")
+                    ) {
+                        Text(stringResource(R.string.btn_restart_to_install))
+                    }
+                }
+                else -> Unit
             }
         }
     }
@@ -658,23 +944,23 @@ private fun KeyStatusText(status: KeyValidationStatus) {
 }
 
 internal const val AI_STUDIO_API_KEY_URL = "https://aistudio.google.com/apikey"
+internal const val GITHUB_RELEASES_BASE_URL = "https://github.com/Max97k/echokey/releases"
+private val SEMVER_TAG_REGEX = Regex("""^\d+\.\d+\.\d+(?:[-.][0-9A-Za-z.]+)?$""")
+
+internal fun buildReleaseNotesUrl(versionName: String): String {
+    val normalized = versionName.trim().removePrefix("v").removePrefix("V")
+    return if (SEMVER_TAG_REGEX.matches(normalized)) {
+        "$GITHUB_RELEASES_BASE_URL/tag/v$normalized"
+    } else {
+        GITHUB_RELEASES_BASE_URL
+    }
+}
 
 internal fun isSetupComplete(
     hasKey: Boolean,
     imeEnabled: Boolean,
     micGranted: Boolean
 ): Boolean = hasKey && imeEnabled && micGranted
-
-private fun openAiStudioApiKeyPage(context: Context): Boolean {
-    return try {
-        context.startActivity(Intent(Intent.ACTION_VIEW, AI_STUDIO_API_KEY_URL.toUri()))
-        true
-    } catch (_: ActivityNotFoundException) {
-        false
-    } catch (_: SecurityException) {
-        false
-    }
-}
 
 @Composable
 private fun SetupChecklistCard(

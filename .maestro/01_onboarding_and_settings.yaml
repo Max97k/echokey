@@ -1,4 +1,4 @@
-appId: com.akeyboard
+appId: com.max97k.akeyboard
 ---
 - launchApp:
     clearState: true
@@ -36,3 +36,17 @@ appId: com.akeyboard
     id: "settings_smart_mode_switch"
 - assertNotVisible:
     id: "settings_non_transcribe_hint"
+- scrollUntilVisible:
+    element:
+      id: "settings_check_update_btn"
+    direction: DOWN
+- assertVisible:
+    id: "settings_version_label"
+- assertVisible:
+    id: "settings_check_update_btn"
+- assertVisible:
+    id: "settings_release_notes_btn"
+- tapOn:
+    id: "settings_check_update_btn"
+- assertVisible:
+    id: "settings_check_update_btn"

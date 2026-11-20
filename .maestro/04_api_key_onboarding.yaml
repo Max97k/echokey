@@ -1,4 +1,4 @@
-appId: com.akeyboard
+appId: com.max97k.akeyboard
 ---
 - launchApp:
     clearState: true

@@ -162,30 +162,36 @@ class RemoteDictationLogicTest {
     }
 
     @Test
-    fun `resendPending splits by newline and trims each acknowledged prefix`() {
-        val original = "第一句\n第二句\n第三句"
-        val chunks = RemoteDictationViewModel.splitPendingForResend(original)
-        assertEquals(listOf("第一句\n", "第二句\n", "第三句"), chunks)
+    fun `appendPendingUtterance joins with space and strips newlines across chunks`() {
+        var queued = ""
+        queued = RemoteDictationViewModel.appendPendingUtterance(queued, "第一句\n")
+        queued = RemoteDictationViewModel.appendPendingUtterance(queued, "第二句\r\n第三句")
+        queued = RemoteDictationViewModel.appendPendingUtterance(queued, "\n\r\n")
+        assertEquals("第一句 第二句 第三句", queued)
+        assertFalse(queued.contains("\n"))
+        assertFalse(queued.contains("\r"))
 
-        var pending = original
-        pending = RemoteDictationViewModel.trimAcknowledgedPrefix(pending, chunks[0])
-        assertEquals("第二句\n第三句", pending)
+        val chunks = RemoteDictationViewModel.splitPendingForResend(queued)
+        assertEquals(listOf("第一句 第二句 第三句"), chunks)
+        val trimmed = RemoteDictationViewModel.trimAcknowledgedPrefix(queued, chunks[0])
+        assertEquals("", trimmed)
 
-        // Newly appended text while resending must stay intact
-        pending = "$pending\n第四句"
-        pending = RemoteDictationViewModel.trimAcknowledgedPrefix(pending, chunks[1])
-        assertEquals("第三句\n第四句", pending)
+        // Newly appended utterance stays intact after trimming acknowledged prefix
+        var pending = "第一句 第二句"
+        val firstChunk = RemoteDictationViewModel.nextPendingChunk(pending, maxBytes = 9)
+        pending = RemoteDictationViewModel.appendPendingUtterance(pending, "第三句")
+        pending = RemoteDictationViewModel.trimAcknowledgedPrefix(pending, firstChunk)
+        assertEquals(" 第二句 第三句", pending)
     }
 
     @Test
-    fun `resendPending chunks oversized lines under 16 KB without splitting surrogate pairs`() {
-        val hugeAsciiLine = "a".repeat(20_000) + "\nnext"
-        val asciiChunks = RemoteDictationViewModel.splitPendingForResend(hugeAsciiLine)
-        assertEquals(3, asciiChunks.size)
+    fun `resendPending chunks oversized text under 16 KB without splitting surrogate pairs`() {
+        val hugeAsciiText = "a".repeat(20_000) + " next"
+        val asciiChunks = RemoteDictationViewModel.splitPendingForResend(hugeAsciiText)
+        assertEquals(2, asciiChunks.size)
         assertEquals(16_384, asciiChunks[0].toByteArray(Charsets.UTF_8).size)
-        assertEquals("a".repeat(3_616) + "\n", asciiChunks[1])
-        assertEquals("next", asciiChunks[2])
-        assertEquals(hugeAsciiLine, asciiChunks.joinToString(""))
+        assertEquals("a".repeat(3_616) + " next", asciiChunks[1])
+        assertEquals(hugeAsciiText, asciiChunks.joinToString(""))
 
         // Surrogate pair boundary check: emoji is 4 UTF-8 bytes (2 UTF-16 chars)
         val emoji = "\uD83D\uDE00"

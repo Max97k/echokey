@@ -15,7 +15,7 @@ description: Autonomous Android build, headless emulator lifecycle, and Maestro 
 
 1. Expose stable selectors on new/updated Compose elements via `Modifier.testTag("<screen>_<element>")` under a container with `Modifier.semantics { testTagsAsResourceId = true }`.
 2. Add or update `.maestro/<nn>_<feature>.yaml` using `id: "..."` selectors so flows pass across `en`, `zh-rTW`, and `zh-rCN`.
-   - `RemoteDictationActivity` is `android:exported="false"`: launch `SettingsActivity` (`com.akeyboard`) and tap `btn_open_pc_remote` rather than deep-linking directly.
+   - `RemoteDictationActivity` is `android:exported="false"`: launch `SettingsActivity` (`com.max97k.akeyboard`) and tap `btn_open_pc_remote` rather than deep-linking directly.
    - `SettingsActivity` keeps `FLAG_SECURE`: screenshots appear black, while Maestro accessibility/resource-id queries work normally.
 3. Run unit tests + lint:
    ```powershell

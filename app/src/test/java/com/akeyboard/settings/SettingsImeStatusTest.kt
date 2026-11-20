@@ -25,6 +25,10 @@ class SettingsImeStatusTest {
             SettingsViewModel.parseDefaultImePackage("com.akeyboard/com.akeyboard.ime.AKeyboardImeService")
         )
         assertEquals(
+            "com.max97k.akeyboard",
+            SettingsViewModel.parseDefaultImePackage("com.max97k.akeyboard/com.akeyboard.ime.AKeyboardImeService")
+        )
+        assertEquals(
             "com.google.android.inputmethod.latin",
             SettingsViewModel.parseDefaultImePackage(
                 "com.google.android.inputmethod.latin/com.android.inputmethod.latin.LatinIME"

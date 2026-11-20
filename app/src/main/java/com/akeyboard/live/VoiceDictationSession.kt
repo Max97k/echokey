@@ -194,9 +194,12 @@ class VoiceDictationSession(
                     }
                     is LiveEvent.Interim -> {
                         if (phase == VoiceSessionPhase.RECORDING || phase == VoiceSessionPhase.FINALIZING) {
-                            runningComposingText.clear()
-                            runningComposingText.append(event.text)
-                            onInterim(event.text)
+                            val clean = sanitizeSingleLine(event.text)
+                            if (clean.isNotEmpty()) {
+                                runningComposingText.clear()
+                                runningComposingText.append(clean)
+                                onInterim(clean)
+                            }
                         }
                     }
                     is LiveEvent.Final -> {
@@ -275,10 +278,26 @@ class VoiceDictationSession(
         if (hasCommittedCurrentTurn) return
         hasCommittedCurrentTurn = true
         runningComposingText.clear()
-        onFinal(text)
+        val clean = sanitizeSingleLine(text)
+        if (clean.isNotEmpty()) {
+            onFinal(clean)
+        } else {
+            onFinishComposing()
+        }
     }
 
     companion object {
         private const val MAX_HOLD_DURATION_MS = 60_000L
+        private val EDGE_LINE_BREAK_REGEX = Regex(
+            """^(?:[ \t]*[\r\n\u000B\u000C\u0085\u2028\u2029]+[ \t]*)+|(?:[ \t]*[\r\n\u000B\u000C\u0085\u2028\u2029]+[ \t]*)+$"""
+        )
+        private val INNER_LINE_BREAK_REGEX = Regex(
+            """[ \t]*[\r\n\u000B\u000C\u0085\u2028\u2029]+[ \t]*"""
+        )
+
+        internal fun sanitizeSingleLine(text: String): String {
+            val trimmedEdges = EDGE_LINE_BREAK_REGEX.replace(text, "")
+            return INNER_LINE_BREAK_REGEX.replace(trimmedEdges, " ")
+        }
     }
 }

@@ -23,3 +23,11 @@
 -keepclasseswithmembers class com.akeyboard.data.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
+
+-keep,includedescriptorclasses class com.akeyboard.bridge.**$$serializer { *; }
+-keepclassmembers class com.akeyboard.bridge.** {
+    *** Companion;
+}
+-keepclasseswithmembers class com.akeyboard.bridge.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}

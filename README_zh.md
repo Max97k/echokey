@@ -5,7 +5,7 @@
 **一款採用 BYOK（自带金鑰）模式的極簡 Android 語音輸入法，直連 Google AI Studio Gemini Live API（`gemini-3.5-transcribe-live`），並將非錄音區域化為 2D 游標觸控板。**
 
 [![Platform](https://img.shields.io/badge/Platform-Android%2012%2B%20(API%2031--37)-3DDC84?style=flat-square&logo=android&logoColor=white)](https://android.com)
-[![Version](https://img.shields.io/badge/Version-v0.2.0-blue?style=flat-square)](https://github.com/Max97k/echokey)
+[![Version](https://img.shields.io/badge/Version-v0.3.0-blue?style=flat-square)](https://github.com/Max97k/echokey)
 [![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen?style=flat-square)](https://github.com/Max97k/echokey)
 [![Target Device](https://img.shields.io/badge/Tested%20On-Google%20Pixel%208%20Pro-4285F4?style=flat-square&logo=google&logoColor=white)](https://store.google.com)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-7F52FF?style=flat-square&logo=kotlin&logoColor=white)](https://kotlinlang.org)
@@ -62,7 +62,7 @@
 針對封鎖 Google AI Studio 連線或禁止未簽章 `.exe` 的公司電腦，AKeyboard 提供 Windows 10/11 專用、免安裝且僅使用標準函式庫的 Python 3.10+ 接收腳本（`tools/akeyboard_bridge.py`）與 App 內專屬「**電腦藍牙語音遙控**」畫面：
 
 1. 先將手機與 Windows 10/11 電腦完成藍牙配對。
-2. 在 Windows 10/11 執行 `python tools/akeyboard_bridge.py`（僅使用官方 CPython 3.10+ 標準函式庫，免 `pip install`、免系統管理員權限）。
+2. 使用前請先將 Windows 輸入法切換為**英文**（若使用 Windows 注音輸入法會導致標點符號跑掉），並在 Windows 10/11 執行 `python tools/akeyboard_bridge.py`（僅使用官方 CPython 3.10+ 標準函式庫，免 `pip install`、免系統管理員權限）。
 3. 在手機打開 **AKeyboard 設定 → 開啟電腦藍牙語音遙控輸入**，連上電腦後按住麥克風說話，即可將繁體中文與中英混雜文字直接打在電腦游標處。
 
 *（限制：Windows 10/11 需安裝具備藍牙 Socket 支援的官方 Python 3.10+、公司群組原則須允許藍牙 RFCOMM；目標視窗須處於前景焦點，且一般權限腳本受 UIPI 限制無法輸入至系統管理員 UAC 提權視窗。）*

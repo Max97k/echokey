@@ -11,11 +11,11 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.akeyboard"
+        applicationId = "com.max97k.akeyboard"
         minSdk = 31
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -90,6 +90,14 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.play.app.update)
+    implementation(libs.play.app.update.ktx)
+
+    constraints {
+        implementation(libs.androidx.fragment) {
+            because("play-app-update transitively brings fragment 1.1.0, which triggers InvalidFragmentVersionForActivityResult")
+        }
+    }
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

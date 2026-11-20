@@ -64,7 +64,7 @@ class AKeyboardBridgeTests(unittest.TestCase):
         self.assertEqual(len(chunks[0]), 31)
         self.assertEqual(len(chunks[1]), 2)
 
-    def test_process_line_unicode_and_newline(self):
+    def test_process_line_unicode_strips_newlines_without_vk_return(self):
         captured: list[list[bridge.INPUT]] = []
 
         def fake_send(inputs):
@@ -78,11 +78,28 @@ class AKeyboardBridgeTests(unittest.TestCase):
             map_vk_fn=lambda vk: 0x1C,
         )
         self.assertEqual(resp, {"ok": True})
-        # Batch 1: "繁體中文" (4 chars * 2 events = 8), Batch 2: VK_RETURN (2), Batch 3: "OK" (4)
-        self.assertEqual([len(b) for b in captured], [8, 2, 4])
-        self.assertEqual(captured[1][0].union.ki.wVk, bridge.VK_RETURN)
-        self.assertEqual(captured[1][0].union.ki.wScan, 0x1C)
-        self.assertEqual(captured[0][0].union.ki.dwFlags, bridge.KEYEVENTF_UNICODE)
+        # "繁體中文 OK" -> 7 BMP UTF-16 code units * 2 (down + up) = 14 events in 1 batch, no VK_RETURN.
+        self.assertEqual([len(b) for b in captured], [14])
+        all_events = [ev for batch in captured for ev in batch]
+        self.assertTrue(all(ev.union.ki.wVk == 0 for ev in all_events))
+        self.assertTrue(all((ev.union.ki.dwFlags & bridge.KEYEVENTF_UNICODE) != 0 for ev in all_events))
+        decoded = "".join(chr(ev.union.ki.wScan) for ev in all_events[::2])
+        self.assertEqual(decoded, "繁體中文 OK")
+
+    def test_sanitize_unicode_text_and_newline_only_payload(self):
+        self.assertEqual(bridge.sanitize_unicode_text("\r\n你好\r\n"), "你好")
+        self.assertEqual(bridge.sanitize_unicode_text(" \n  \t "), "")
+        self.assertEqual(bridge.sanitize_unicode_text("A\u2028B\u2029C\x85D"), "A B C D")
+        self.assertEqual(bridge.sanitize_unicode_text("hello "), "hello ")
+
+        captured: list[list[bridge.INPUT]] = []
+        resp = bridge.process_line(
+            '{"type":"text","value":"\\r\\n\\n"}',
+            send_input_fn=lambda inputs: captured.append(inputs) or len(inputs),
+            has_focus_fn=lambda: True,
+        )
+        self.assertEqual(resp, {"ok": True})
+        self.assertEqual(captured, [])
 
     def test_process_line_keys_and_uipi_failure(self):
         resp = bridge.process_line(
@@ -558,6 +575,8 @@ class AKeyboardBridgeTests(unittest.TestCase):
         )
         logs = out.getvalue()
         # Consecutive identical WSASetServiceW 10050 error logs only once.
+        self.assertIn("[tip]", logs)
+        self.assertIn("English", logs)
         self.assertEqual(logs.count("WSASetServiceW registration failed"), 1)
         self.assertEqual(logs.count("[ready]"), 3)
         self.assertIn("invalid channel 0", logs)

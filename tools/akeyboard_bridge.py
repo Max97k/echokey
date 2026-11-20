@@ -1,6 +1,6 @@
 """Standalone Windows 10/11 Bluetooth RFCOMM receiver for AKeyboard Voice Bridge.
 
-Uses only Python 3.10+ standard library (socket, select, json, ctypes, threading).
+Uses only Python 3.10+ standard library (socket, select, re, json, ctypes, threading).
 """
 
 from __future__ import annotations
@@ -8,6 +8,7 @@ from __future__ import annotations
 import ctypes
 from ctypes import wintypes
 import json
+import re
 import select
 import socket
 import sys
@@ -322,28 +323,33 @@ def send_virtual_key(
     return "send_failed"
 
 
+_EDGE_LINE_BREAK_RE = re.compile(
+    r"^(?:[ \t]*[\r\n\x0b\x0c\x85\u2028\u2029]+[ \t]*)+|(?:[ \t]*[\r\n\x0b\x0c\x85\u2028\u2029]+[ \t]*)+$"
+)
+_INNER_LINE_BREAK_RE = re.compile(r"[ \t]*[\r\n\x0b\x0c\x85\u2028\u2029]+[ \t]*")
+
+
+def sanitize_unicode_text(text: str) -> str:
+    cleaned = _EDGE_LINE_BREAK_RE.sub("", text)
+    return _INNER_LINE_BREAK_RE.sub(" ", cleaned)
+
+
 def send_unicode_text(
     text: str,
     send_input_fn=_default_send_input,
     max_units: int = UNICODE_CHUNK_UNITS,
-    map_vk_fn=_default_map_vk,
 ) -> str | None:
-    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
-    segments = normalized.split("\n")
-    for seg_index, segment in enumerate(segments):
-        if segment:
-            for chunk in chunk_utf16_units(segment, max_units=max_units):
-                inputs: list[INPUT] = []
-                for unit in chunk:
-                    inputs.append(_make_key_input(vk=0, scan=unit, flags=KEYEVENTF_UNICODE))
-                    inputs.append(_make_key_input(vk=0, scan=unit, flags=KEYEVENTF_UNICODE | KEYEVENTF_KEYUP))
-                sent = int(send_input_fn(inputs))
-                if sent != len(inputs):
-                    return "uipi" if sent == 0 else "send_failed"
-        if seg_index < len(segments) - 1:
-            err = send_virtual_key(VK_RETURN, send_input_fn=send_input_fn, map_vk_fn=map_vk_fn)
-            if err is not None:
-                return err
+    cleaned = sanitize_unicode_text(text)
+    if not cleaned:
+        return None
+    for chunk in chunk_utf16_units(cleaned, max_units=max_units):
+        inputs: list[INPUT] = []
+        for unit in chunk:
+            inputs.append(_make_key_input(vk=0, scan=unit, flags=KEYEVENTF_UNICODE))
+            inputs.append(_make_key_input(vk=0, scan=unit, flags=KEYEVENTF_UNICODE | KEYEVENTF_KEYUP))
+        sent = int(send_input_fn(inputs))
+        if sent != len(inputs):
+            return "uipi" if sent == 0 else "send_failed"
     return None
 
 
@@ -371,7 +377,7 @@ def process_line(
             return {"ok": False, "err": "bad_value"}
         if not has_focus_fn():
             return {"ok": False, "err": "no_focus"}
-        err = send_unicode_text(value, send_input_fn=send_input_fn, map_vk_fn=map_vk_fn)
+        err = send_unicode_text(value, send_input_fn=send_input_fn)
         return {"ok": True} if err is None else {"ok": False, "err": err}
 
     if msg_type == "key":
@@ -571,6 +577,12 @@ def serve_forever(
         handler_registered = bool(_kernel32.SetConsoleCtrlHandler(_CONSOLE_CTRL_HANDLER, True))
 
     print("AKeyboard Windows 10/11 Bluetooth Bridge starting...", flush=True)
+    print(
+        "[tip] Switch Windows input method to English before dictating "
+        "(Windows Zhuyin/Bopomofo IME may garble punctuation). "
+        "使用前請先將 Windows 輸入法切換為英文（使用 Windows 注音輸入法會導致標點符號跑掉）。",
+        flush=True,
+    )
     backoff_index = 0
     last_error_key: tuple[object, ...] | None = None
 

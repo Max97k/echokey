@@ -312,4 +312,115 @@ class VoiceDictationSessionTest {
             kotlinx.coroutines.delay(100)
         }
     }
+
+    @Test
+    fun `sanitizeSingleLine strips edge and inner line breaks while preserving plain spaces`() {
+        assertEquals("你好世界", VoiceDictationSession.sanitizeSingleLine("你好世界\n"))
+        assertEquals("你好世界", VoiceDictationSession.sanitizeSingleLine("\r\n  你好世界  \r\n"))
+        assertEquals("第一句 第二句", VoiceDictationSession.sanitizeSingleLine("第一句 \n 第二句"))
+        assertEquals("A B C D", VoiceDictationSession.sanitizeSingleLine("A\u2028B\u2029C\u0085D"))
+        assertEquals("", VoiceDictationSession.sanitizeSingleLine(" \r\n\t\n "))
+        assertEquals("hello ", VoiceDictationSession.sanitizeSingleLine("hello "))
+    }
+
+    @Test
+    fun `strips line breaks from Gemini interim and final transcripts`() = runBlocking {
+        server.enqueue(
+            MockResponse.Builder()
+                .webSocketUpgrade(object : WebSocketListener() {
+                    override fun onOpen(webSocket: WebSocket, response: okhttp3.Response) {
+                        serverSockets += webSocket
+                    }
+
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        if (text.contains("\"setup\"")) {
+                            webSocket.send("{\"setupComplete\":{}}".encodeUtf8())
+                        } else if (text.contains("activityStart")) {
+                            webSocket.send(
+                                "{\"serverContent\":{\"interimInputTranscription\":{\"text\":\"早安\\n\"}}}".encodeUtf8()
+                            )
+                        } else if (text.contains("activityEnd")) {
+                            webSocket.send(
+                                "{\"serverContent\":{\"inputTranscription\":{\"text\":\"早安\\n大家\\r\\n\"},\"turnComplete\":true}}".encodeUtf8()
+                            )
+                        }
+                    }
+
+                    override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                        webSocket.close(code, reason)
+                    }
+                })
+                .build()
+        )
+
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val dataStore = PreferenceDataStoreFactory.create(scope = scope) {
+            File(tempFolder.root, "sanitize_transcript_test.preferences_pb")
+        }
+        val apiKeyStore = ApiKeyStore(dataStore)
+        val settingsRepo = SettingsRepository(dataStore)
+
+        val fakeAudio = object : AudioCaptureManager() {
+            private var ch: Channel<ByteArray>? = null
+            override fun start(scope: CoroutineScope): AudioCaptureResult {
+                ch = Channel<ByteArray>(capacity = 4).also { it.trySend(ByteArray(32)) }
+                return AudioCaptureResult.Started(ch!!)
+            }
+
+            override fun stop() {
+                ch?.close()
+                ch = null
+            }
+        }
+
+        val okHttpClient = OkHttpClient()
+        val liveClient = GeminiLiveClient(
+            okHttpClient = okHttpClient,
+            baseWsUrl = server.url("/ws").toString().replace("http://", "ws://"),
+            base64Encoder = { bytes -> Base64.getEncoder().encodeToString(bytes) }
+        )
+
+        val interims = CopyOnWriteArrayList<String>()
+        val finals = CopyOnWriteArrayList<String>()
+        val interimDeferred = CompletableDeferred<Unit>()
+        val finalDeferred = CompletableDeferred<Unit>()
+
+        val session = VoiceDictationSession(
+            scope = scope,
+            audioManager = fakeAudio,
+            liveClient = liveClient,
+            apiKeyStore = apiKeyStore,
+            settingsRepository = settingsRepo,
+            hasMicPermission = { true },
+            isNetworkAvailable = { true },
+            onPhaseChanged = {},
+            onInterim = { text ->
+                interims += text
+                interimDeferred.complete(Unit)
+            },
+            onFinal = { text ->
+                finals += text
+                finalDeferred.complete(Unit)
+            },
+            onFinishComposing = {},
+            onError = { err -> throw AssertionError("Unexpected error: $err") },
+            loadApiKey = { "test-key" }
+        )
+
+        try {
+            session.onMicPressed()
+            withTimeout(3_000) { interimDeferred.await() }
+            session.onMicReleased()
+            withTimeout(3_000) { finalDeferred.await() }
+
+            assertEquals(listOf("早安"), interims)
+            assertEquals(listOf("早安 大家"), finals)
+        } finally {
+            session.close()
+            scope.cancel()
+            okHttpClient.dispatcher.executorService.shutdown()
+            okHttpClient.connectionPool.evictAll()
+            kotlinx.coroutines.delay(100)
+        }
+    }
 }

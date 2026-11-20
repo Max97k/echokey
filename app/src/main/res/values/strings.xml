@@ -132,4 +132,22 @@
     <string name="remote_btn_cancel">Cancel</string>
     <string name="remote_mic_built_in">Phone mic</string>
     <string name="remote_mic_system">System default (Wired/USB headset)</string>
+    <string name="remote_windows_ime_tip">Tip: Switch your Windows input method to English before dictating—Windows Zhuyin (Bopomofo) IME can garble punctuation.</string>
+    <string name="remote_pc_bridge_guide">First time connecting to PC? Copy and run akeyboard_bridge.py on Windows 10/11 (Python 3.10+, no pip install).</string>
+    <string name="remote_btn_pc_bridge_code">Open Python script on GitHub</string>
+    <string name="remote_pc_bridge_no_browser">No browser found. Open github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py manually.</string>
+
+    <string name="section_app_update">6. App Updates</string>
+    <string name="app_version_label">Current version: %1$s (%2$d)</string>
+    <string name="btn_check_update">Check for updates</string>
+    <string name="cd_release_notes">View release notes on GitHub</string>
+    <string name="release_notes_no_browser">No browser found. Open github.com/Max97k/echokey/releases manually.</string>
+    <string name="btn_update_now">Update</string>
+    <string name="btn_restart_to_install">Restart to install</string>
+    <string name="update_status_checking">Checking Google Play for updates…</string>
+    <string name="update_status_available">A newer version of AKeyboard is available on Google Play.</string>
+    <string name="update_status_downloading">Downloading update in the background…</string>
+    <string name="update_status_downloaded">Update downloaded. Restart AKeyboard to finish installing.</string>
+    <string name="update_status_up_to_date">You are already on the latest version.</string>
+    <string name="update_status_unavailable">Play Store updates are only available for installs from Google Play.</string>
 </resources>

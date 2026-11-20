@@ -339,7 +339,12 @@ class RemoteDictationViewModel(
             while (_pendingResendText.value.isNotEmpty()) {
                 val chunk = nextPendingChunk(_pendingResendText.value)
                 if (chunk.isEmpty()) break
-                val result = bridgeClient.sendCommand(BridgeCommand.text(chunk))
+                val safeChunk = VoiceDictationSession.sanitizeSingleLine(chunk)
+                if (safeChunk.isEmpty()) {
+                    _pendingResendText.value = trimAcknowledgedPrefix(_pendingResendText.value, chunk)
+                    continue
+                }
+                val result = bridgeClient.sendCommand(BridgeCommand.text(safeChunk))
                 if (result.isSuccess) {
                     _pendingResendText.value = trimAcknowledgedPrefix(_pendingResendText.value, chunk)
                 } else {
@@ -448,15 +453,16 @@ class RemoteDictationViewModel(
 
     private fun handleFinalTranscript(text: String) {
         _interimText.value = ""
-        if (text.isEmpty()) return
+        val sanitized = VoiceDictationSession.sanitizeSingleLine(text)
+        if (sanitized.isEmpty()) return
 
         if (connectionState.value !is ConnectionState.Connected) {
-            appendPendingText(text)
+            appendPendingText(sanitized)
             return
         }
 
         viewModelScope.launch {
-            var remaining = text
+            var remaining = sanitized
             while (remaining.isNotEmpty()) {
                 val chunk = nextPendingChunk(remaining)
                 if (chunk.isEmpty()) break
@@ -473,8 +479,7 @@ class RemoteDictationViewModel(
     }
 
     private fun appendPendingText(text: String) {
-        val current = _pendingResendText.value
-        _pendingResendText.value = if (current.isEmpty()) text else "$current\n$text"
+        _pendingResendText.value = appendPendingUtterance(_pendingResendText.value, text)
     }
 
     @SuppressLint("MissingPermission")
@@ -563,15 +568,19 @@ class RemoteDictationViewModel(
             else -> BridgeDeliveryError.SEND_FAILED
         }
 
+        internal fun appendPendingUtterance(current: String, addition: String): String {
+            val cleanAddition = VoiceDictationSession.sanitizeSingleLine(addition)
+            if (cleanAddition.isEmpty()) return current
+            val cleanCurrent = VoiceDictationSession.sanitizeSingleLine(current)
+            return if (cleanCurrent.isEmpty()) cleanAddition else "$cleanCurrent $cleanAddition"
+        }
+
         internal fun nextPendingChunk(
             text: String,
             maxBytes: Int = MAX_RESEND_CHUNK_BYTES
         ): String {
             if (text.isEmpty()) return ""
-            val newlineIdx = text.indexOf('\n')
-            val lineEnd = if (newlineIdx >= 0) newlineIdx + 1 else text.length
-            val lineSegment = text.substring(0, lineEnd)
-            return takeSafeUtf8Prefix(lineSegment, maxBytes)
+            return takeSafeUtf8Prefix(text, maxBytes)
         }
 
         internal fun trimAcknowledgedPrefix(fullText: String, ackedPrefix: String): String {

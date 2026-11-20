@@ -129,4 +129,22 @@
     <string name="remote_btn_cancel">取消</string>
     <string name="remote_mic_built_in">手機內建麥克風優先</string>
     <string name="remote_mic_system">系統預設（外接有線／USB 耳麥）</string>
+    <string name="remote_windows_ime_tip">提醒：使用前請先將 Windows 輸入法切換為英文，若使用 Windows 注音輸入法會導致標點符號跑掉。</string>
+    <string name="remote_pc_bridge_guide">首次連線電腦請先在 Windows 10/11 執行電腦端 Python 橋接腳本（akeyboard_bridge.py，免安裝套件）：</string>
+    <string name="remote_btn_pc_bridge_code">前往 GitHub 複製電腦端 Python 程式碼</string>
+    <string name="remote_pc_bridge_no_browser">找不到瀏覽器，請手動開啟 github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py。</string>
+
+    <string name="section_app_update">6. 應用程式更新</string>
+    <string name="app_version_label">目前版本：%1$s（%2$d）</string>
+    <string name="btn_check_update">檢查更新</string>
+    <string name="cd_release_notes">查看 GitHub 版本更新說明</string>
+    <string name="release_notes_no_browser">找不到瀏覽器，請手動前往 github.com/Max97k/echokey/releases。</string>
+    <string name="btn_update_now">立即更新</string>
+    <string name="btn_restart_to_install">重新啟動以安裝</string>
+    <string name="update_status_checking">正在檢查 Google Play 更新…</string>
+    <string name="update_status_available">Google Play 已有新版本可用。</string>
+    <string name="update_status_downloading">正在背景下載更新…</string>
+    <string name="update_status_downloaded">更新已下載完成，請重新啟動以完成安裝。</string>
+    <string name="update_status_up_to_date">目前已是最新版本。</string>
+    <string name="update_status_unavailable">需透過 Google Play（含內部測試）安裝才支援應用程式內更新。</string>
 </resources>
