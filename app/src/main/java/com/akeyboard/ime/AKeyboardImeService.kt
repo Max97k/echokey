@@ -3,6 +3,8 @@ package com.akeyboard.ime
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
+import android.graphics.Color
 import android.inputmethodservice.InputMethodService
 import android.os.Bundle
 import android.os.Handler
@@ -24,6 +26,8 @@ import androidx.autofill.inline.UiVersions
 import androidx.autofill.inline.v1.InlineSuggestionUi
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ServiceLifecycleDispatcher
@@ -236,6 +240,7 @@ class AKeyboardImeService :
         composeView.setViewTreeLifecycleOwner(this)
         composeView.setViewTreeViewModelStoreOwner(this)
         composeView.setViewTreeSavedStateRegistryOwner(this)
+        updateNavigationBarAppearance()
         return composeView
     }
 
@@ -276,6 +281,32 @@ class AKeyboardImeService :
         abortActiveSession()
         liveClient.close()
         super.onWindowHidden()
+    }
+
+    override fun onWindowShown() {
+        super.onWindowShown()
+        updateNavigationBarAppearance()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        updateNavigationBarAppearance(newConfig)
+    }
+
+    private fun updateNavigationBarAppearance(config: Configuration = resources.configuration) {
+        val imeWindow = window?.window ?: return
+        val isDarkTheme =
+            (config.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+
+        WindowCompat.setDecorFitsSystemWindows(imeWindow, false)
+
+        @Suppress("DEPRECATION")
+        imeWindow.navigationBarColor = Color.TRANSPARENT
+        imeWindow.isNavigationBarContrastEnforced = false
+
+        WindowInsetsControllerCompat(imeWindow, imeWindow.decorView).apply {
+            isAppearanceLightNavigationBars = !isDarkTheme
+        }
     }
 
     override fun onDestroy() {

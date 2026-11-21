@@ -1,7 +1,7 @@
 # Google Play Store Checklist (v1)
 
 - [x] `compileSdk = 37`, `minSdk = 31`, `targetSdk = 37` (meets August 31, 2026 Play requirement).
-- [x] Edge-to-edge enabled (`enableEdgeToEdge()` in `SettingsActivity`, `WindowInsets.navigationBars` in `KeyboardScreen`).
+- [x] Edge-to-edge enabled (`enableEdgeToEdge()` in `SettingsActivity`, transparent IME navigation bar & theme-adaptive icons in `AKeyboardImeService`, `navigationBars` + `mandatorySystemGestures` + `displayCutout` insets in `KeyboardScreen`).
 - [x] Prominent in-app disclosure before first use (`DisclosureScreen` in `SettingsActivity`).
 - [ ] First-run disclosure and setup hint match Google's current Gemini API terms (free vs paid data handling), and the in-app wording does not promise unconditional free usage.
 - [ ] Store listing (Play Store description) includes regional availability notice:
