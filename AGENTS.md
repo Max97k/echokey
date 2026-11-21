@@ -11,3 +11,8 @@ For any change under `app/src/main/`, complete ALL of the following before decla
 
 - **Do NOT** attempt real Windows Bluetooth Classic RFCOMM pairing, live voice streaming under `-no-audio`, or live paid Gemini API network calls in `.maestro/` tests. Keep flows focused on deterministic local UI/state, permission gates, IME selection/reconciliation, offline/BT-off Direction II UI, Settings validation, and layout checks.
 - **Do NOT** remove `WindowManager.LayoutParams.FLAG_SECURE` from `SettingsActivity` or set `android:exported="true"` on `RemoteDictationActivity` for testing convenience.
+
+## Windows Voice Bridge Dual-Script Sync Rules (雙版本同步規則)
+
+`tools/akeyboard_bridge.py` 為唯一功能基準（Single Source of Truth, SSOT）。
+**今後只要 `tools/akeyboard_bridge.py` 有任何邏輯、按鍵映射、協定或錯誤處理的變動，必須在同一次修改中同步更新 `tools/akeyboard_bridge.min.py` 與 `tools/ERROR_CODES.md`**，確保三者行為與錯誤代碼定義永遠一致。
