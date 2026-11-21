@@ -43,6 +43,9 @@ AKeyboard 是 BYOK（自帶 API Key）應用：沒有 Google AI Studio 的 API K
 ## Open Questions
 
 *   **Q1（待查證，出貨前必做）**：確認免費層在目標上架國家／地區的可用性與 Google Gemini API 最新服務條款原文，於上架前依實測與條款核對 [play-store-checklist.md](file:///c:/Users/b/akeyboard/docs/play-store-checklist.md) 項目。
+*   **地區可用性與計費防呆（已實裝）**：
+    *   在 Section 2 增加 Google AI Studio 支援地區與計費提示，並提供官方支援地區連結（`https://ai.google.dev/gemini-api/docs/available-regions`）。
+    *   在 Key 驗證失敗或執行階段報錯時，精準識別 `location is not supported` 並給予地區或 VPN 受限專屬提示。
 
 ## Critical User Journeys (CUJs)
 

@@ -25,6 +25,7 @@ enum class VoiceSessionError {
     MIC_BUSY,
     INVALID_KEY,
     QUOTA_EXCEEDED,
+    REGION_NOT_SUPPORTED,
     MAX_DURATION,
     GENERIC
 }
@@ -233,6 +234,7 @@ class VoiceDictationSession(
                             when (event.error) {
                                 LiveError.InvalidKey -> VoiceSessionError.INVALID_KEY
                                 LiveError.QuotaExceeded -> VoiceSessionError.QUOTA_EXCEEDED
+                                LiveError.RegionNotSupported -> VoiceSessionError.REGION_NOT_SUPPORTED
                                 is LiveError.Network -> VoiceSessionError.GENERIC
                             }
                         )

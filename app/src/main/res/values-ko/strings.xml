@@ -25,6 +25,7 @@
     <string name="err_password_field">비밀번호 입력란에서는 음성 입력이 비활성화됩니다.</string>
     <string name="err_mic_busy">마이크를 사용할 수 없거나 다른 앱에서 사용 중입니다.</string>
     <string name="err_max_duration">최대 녹음 시간(60초)에 도달했습니다.</string>
+    <string name="err_region_not_supported">현재 지역에서는 Google AI Studio API를 지원하지 않습니다. 위치 또는 VPN 설정을 확인하세요.</string>
     <string name="err_generic">연결 오류가 발생했습니다. 마이크를 길게 눌러 다시 시도하세요.</string>
 
     <!-- Settings & Disclosure -->
@@ -52,6 +53,8 @@
 
     <string name="section_api_key">2. Google AI Studio API 키</string>
     <string name="api_key_help">Google AI Studio는 지원 지역에서 무료 API 키 등급을 제공합니다. Google 계정으로 로그인해 키를 생성하고 복사한 뒤, 여기로 돌아와 붙여넣기를 탭하세요. 한도는 모델과 지역에 따라 다르므로 AI Studio에서 확인하세요.</string>
+    <string name="api_key_region_notice">Google AI Studio 지원 지역 필요 (EU/EEA/UK/CH는 결제 계정 연동 필수, 중국/홍콩/마카오/러시아 등 미지원).</string>
+    <string name="api_key_region_link">지원 지역 목록</string>
     <string name="btn_get_api_key">Google AI Studio에서 키 받기</string>
     <string name="btn_paste_key">클립보드에서 붙여넣기</string>
     <string name="api_key_no_browser">브라우저를 찾을 수 없습니다. aistudio.google.com/apikey 를 직접 열어주세요.</string>
@@ -122,6 +125,7 @@
     <string name="remote_error_invalid_key">유효하지 않은 Gemini API 키입니다.</string>
     <string name="remote_error_quota">Gemini API 할당량을 초과했습니다.</string>
     <string name="remote_error_max_duration">최대 시간(60초)에 도달하여 중지되었습니다.</string>
+    <string name="remote_error_region_not_supported">현재 지역에서는 Google AI Studio API를 지원하지 않습니다. 위치 또는 VPN을 확인하세요.</string>
     <string name="remote_error_generic">받아쓰기 오류가 발생했습니다.</string>
     <string name="remote_blocker_no_hardware">이 기기는 블루투스를 지원하지 않습니다.</string>
     <string name="remote_blocker_bt_off">블루투스가 꺼져 있습니다. PC에 연결하려면 켜세요.</string>

@@ -68,6 +68,13 @@ Android InputConnection  <--->  AKeyboardImeService (Compose + Lifecycle)
 * Android 12 (API 31) or higher (targetSdk 37 / Android 17)
 * A Google AI Studio API key
 
+> [!IMPORTANT]
+> **Regional Availability & Billing Notice**
+> EchoKey relies exclusively on the **Google AI Studio (Gemini API)**, which is subject to Google's regional restrictions:
+> - **Unsupported Regions:** Not available in Mainland China, Hong Kong, Macau, Russia, and several other regions (including traffic routed via VPN nodes in these locations).
+> - **EU / EEA / UK / Switzerland:** The Gemini API Free Tier is not available; you must enable billing in Google Cloud to use your API key.
+> - Check the [official list of supported regions](https://ai.google.dev/gemini-api/docs/available-regions) before setup.
+
 ### First-Time Setup
 1. Open [Google AI Studio](https://aistudio.google.com/apikey) (or tap **Get a key at Google AI Studio** in AKeyboard Settings), sign in, create an API key, and copy it.
 2. Return to AKeyboard Settings, tap **Paste from clipboard**, and tap **Validate & Save Key**.

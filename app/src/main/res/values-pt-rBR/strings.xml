@@ -25,6 +25,7 @@
     <string name="err_password_field">A entrada de voz é desativada em campos de senha.</string>
     <string name="err_mic_busy">Microfone indisponível ou em uso por outro app.</string>
     <string name="err_max_duration">Limite de gravação de 60s atingido.</string>
+    <string name="err_region_not_supported">A Google AI Studio API não está disponível na sua região. Verifique sua localização ou VPN.</string>
     <string name="err_generic">Erro de conexão. Segure o microfone para tentar novamente.</string>
 
     <!-- Settings & Disclosure -->
@@ -52,6 +53,8 @@
 
     <string name="section_api_key">2. Chave de API do Google AI Studio</string>
     <string name="api_key_help">O Google AI Studio oferece um nível gratuito de chave de API em regiões elegíveis. Entre com uma conta Google, crie uma chave, copie-a, volte aqui e toque em Colar. Os limites variam por modelo e região; consulte o AI Studio.</string>
+    <string name="api_key_region_notice">Requer uma região compatível com o Google AI Studio (faturamento obrigatório na UE/EEE/UK/CH; indisponível na China continental, HK, MO, RU).</string>
+    <string name="api_key_region_link">Regiões suportadas</string>
     <string name="btn_get_api_key">Obter chave no Google AI Studio</string>
     <string name="btn_paste_key">Colar da área de transferência</string>
     <string name="api_key_no_browser">Nenhum navegador encontrado. Abra aistudio.google.com/apikey manualmente.</string>
@@ -122,6 +125,7 @@
     <string name="remote_error_invalid_key">Chave de API do Gemini inválida.</string>
     <string name="remote_error_quota">Cota da Gemini API excedida.</string>
     <string name="remote_error_max_duration">Interrompido no limite máximo de 60s.</string>
+    <string name="remote_error_region_not_supported">A Google AI Studio API não está disponível na sua região. Verifique sua localização ou VPN.</string>
     <string name="remote_error_generic">Ocorreu um erro de transcrição.</string>
     <string name="remote_blocker_no_hardware">Este dispositivo não suporta Bluetooth.</string>
     <string name="remote_blocker_bt_off">O Bluetooth está desligado. Ligue-o para conectar ao seu PC.</string>

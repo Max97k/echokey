@@ -399,6 +399,7 @@ private fun StatusBar(
             ImeErrorReason.NO_PERMISSION -> stringResource(R.string.err_no_permission)
             ImeErrorReason.NO_NETWORK -> stringResource(R.string.err_no_network)
             ImeErrorReason.QUOTA_EXCEEDED -> stringResource(R.string.err_quota)
+            ImeErrorReason.REGION_NOT_SUPPORTED -> stringResource(R.string.err_region_not_supported)
             ImeErrorReason.PASSWORD_FIELD -> stringResource(R.string.err_password_field)
             ImeErrorReason.MIC_BUSY -> stringResource(R.string.err_mic_busy)
             ImeErrorReason.MAX_DURATION -> stringResource(R.string.err_max_duration)
@@ -409,7 +410,8 @@ private fun StatusBar(
     val isActionableError = errorState?.reason in setOf(
         ImeErrorReason.NO_KEY,
         ImeErrorReason.INVALID_KEY,
-        ImeErrorReason.NO_PERMISSION
+        ImeErrorReason.NO_PERMISSION,
+        ImeErrorReason.REGION_NOT_SUPPORTED
     )
 
     Row(

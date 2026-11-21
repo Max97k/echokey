@@ -23,6 +23,7 @@
     <string name="err_password_field">密码框不支持语音输入。</string>
     <string name="err_mic_busy">麦克风不可用或正被其他应用占用。</string>
     <string name="err_max_duration">已达单次 60 秒录音上限。</string>
+    <string name="err_region_not_supported">当前网络所在地区不支持 Google AI Studio API，请检查是否连接受限地区（如香港）的 VPN。</string>
     <string name="err_generic">连接发生错误，请重新按住麦克风。</string>
 
     <string name="disclosure_title">语音与数据披露声明</string>
@@ -49,6 +50,8 @@
 
     <string name="section_api_key">2. Google AI Studio API Key</string>
     <string name="api_key_help">Google AI Studio 在适用地区提供免费层 API Key。使用 Google 账号登录、创建并复制 Key，回到此处点按「从剪贴板粘贴」。额度因地区与模型而异，请到 AI Studio 查看当前的限制。</string>
+    <string name="api_key_region_notice">仅支持 Google AI Studio 可用地区（不支持中港澳俄；欧盟/英国无免费额度需绑定结算）。</string>
+    <string name="api_key_region_link">查看支持地区列表</string>
     <string name="btn_get_api_key">前往 Google AI Studio 申请 Key</string>
     <string name="btn_paste_key">从剪贴板粘贴</string>
     <string name="api_key_no_browser">找不到浏览器，请手动前往 aistudio.google.com/apikey。</string>
@@ -119,6 +122,7 @@
     <string name="remote_error_invalid_key">Gemini API Key 无效。</string>
     <string name="remote_error_quota">Gemini API 配额已满。</string>
     <string name="remote_error_max_duration">已达单次最长 60 秒录音上限。</string>
+    <string name="remote_error_region_not_supported">当前地区不支持 Google AI Studio API，请检查网络或受限地区（如香港）的 VPN。</string>
     <string name="remote_error_generic">语音转录发生错误。</string>
     <string name="remote_blocker_no_hardware">此设备不支持蓝牙硬件。</string>
     <string name="remote_blocker_bt_off">蓝牙尚未开启，请开启蓝牙以连接电脑。</string>

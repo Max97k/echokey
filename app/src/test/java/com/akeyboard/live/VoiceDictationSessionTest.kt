@@ -423,4 +423,78 @@ class VoiceDictationSessionTest {
             kotlinx.coroutines.delay(100)
         }
     }
+
+    @Test
+    fun mapsRegionNotSupportedLiveErrorToVoiceSessionError() = runBlocking {
+        server.enqueue(
+            MockResponse.Builder()
+                .webSocketUpgrade(object : WebSocketListener() {
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        if (text.contains("\"setup\"")) {
+                            webSocket.send(
+                                """{"error":{"code":400,"message":"User location is not supported for the API use.","status":"FAILED_PRECONDITION"}}""".encodeUtf8()
+                            )
+                        }
+                    }
+                })
+                .build()
+        )
+
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val dataStore = PreferenceDataStoreFactory.create(scope = scope) {
+            File(tempFolder.root, "test_region.preferences_pb")
+        }
+        val apiKeyStore = ApiKeyStore(dataStore)
+        val settingsRepo = SettingsRepository(dataStore)
+
+        val fakeAudio = object : AudioCaptureManager() {
+            private var ch: Channel<ByteArray>? = null
+            override fun start(scope: CoroutineScope): AudioCaptureResult {
+                ch = Channel<ByteArray>(capacity = 4).also { it.trySend(ByteArray(32)) }
+                return AudioCaptureResult.Started(ch!!)
+            }
+
+            override fun stop() {
+                ch?.close()
+                ch = null
+            }
+        }
+
+        val okHttpClient = OkHttpClient()
+        val liveClient = GeminiLiveClient(
+            okHttpClient = okHttpClient,
+            baseWsUrl = server.url("/ws").toString().replace("http://", "ws://"),
+            base64Encoder = { bytes -> Base64.getEncoder().encodeToString(bytes) }
+        )
+
+        val errorDeferred = CompletableDeferred<VoiceSessionError>()
+
+        val session = VoiceDictationSession(
+            scope = scope,
+            audioManager = fakeAudio,
+            liveClient = liveClient,
+            apiKeyStore = apiKeyStore,
+            settingsRepository = settingsRepo,
+            hasMicPermission = { true },
+            isNetworkAvailable = { true },
+            onPhaseChanged = {},
+            onInterim = {},
+            onFinal = {},
+            onFinishComposing = {},
+            onError = { err -> errorDeferred.complete(err) },
+            loadApiKey = { "test-key" }
+        )
+
+        try {
+            session.onMicPressed()
+            val err = withTimeout(3_000) { errorDeferred.await() }
+            assertEquals(VoiceSessionError.REGION_NOT_SUPPORTED, err)
+        } finally {
+            session.close()
+            scope.cancel()
+            okHttpClient.dispatcher.executorService.shutdown()
+            okHttpClient.connectionPool.evictAll()
+            kotlinx.coroutines.delay(100)
+        }
+    }
 }

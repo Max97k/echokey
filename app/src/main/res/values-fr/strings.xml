@@ -25,6 +25,7 @@
     <string name="err_password_field">La saisie vocale est désactivée dans les champs de mot de passe.</string>
     <string name="err_mic_busy">Micro indisponible ou utilisé par une autre application.</string>
     <string name="err_max_duration">Limite d\'enregistrement de 60 s atteinte.</string>
+    <string name="err_region_not_supported">Google AI Studio API n\'est pas disponible dans votre région (facturation requise dans l\'UE). Vérifiez votre position ou VPN.</string>
     <string name="err_generic">Erreur de connexion. Maintenez le micro pour réessayer.</string>
 
     <!-- Settings & Disclosure -->
@@ -52,6 +53,8 @@
 
     <string name="section_api_key">2. Clé API Google AI Studio</string>
     <string name="api_key_help">Google AI Studio propose une offre gratuite de clé API dans les régions éligibles. Connectez-vous avec un compte Google, créez une clé, copiez-la, revenez ici et appuyez sur Coller. Les limites varient selon le modèle et la région ; consultez AI Studio.</string>
+    <string name="api_key_region_notice">Nécessite une région prise en charge (facturation requise en UE/EEE/UK/CH ; non disponible en Chine continentale, HK, MO, RU).</string>
+    <string name="api_key_region_link">Régions prises en charge</string>
     <string name="btn_get_api_key">Obtenir une clé sur Google AI Studio</string>
     <string name="btn_paste_key">Coller depuis le presse-papiers</string>
     <string name="api_key_no_browser">Aucun navigateur trouvé. Ouvrez aistudio.google.com/apikey manuellement.</string>
@@ -122,6 +125,7 @@
     <string name="remote_error_invalid_key">Clé API Gemini invalide.</string>
     <string name="remote_error_quota">Quota de l\'API Gemini dépassé.</string>
     <string name="remote_error_max_duration">Arrêté à la durée maximale de 60 s.</string>
+    <string name="remote_error_region_not_supported">Google AI Studio API non disponible dans votre région (facturation requise dans l\'UE). Vérifiez localisation ou VPN.</string>
     <string name="remote_error_generic">Une erreur de transcription s\'est produite.</string>
     <string name="remote_blocker_no_hardware">Cet appareil ne prend pas en charge le Bluetooth.</string>
     <string name="remote_blocker_bt_off">Le Bluetooth est désactivé. Activez-le pour vous connecter à votre PC.</string>

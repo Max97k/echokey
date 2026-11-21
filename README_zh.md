@@ -43,6 +43,13 @@
 
 ## 🚀 快速開始
 
+> [!IMPORTANT]
+> **地區可用性與計費限制提醒**
+> 本應用程式僅支援 **Google AI Studio (Gemini API)**，使用權限受 Google 官方地區白名單規範：
+> - **不支援地區：** 中國大陸、香港、澳門、俄羅斯等地區無法使用（若身處支援地區但掛載上述地區之 VPN 節點亦會遭阻擋）。
+> - **歐盟 / EEA / 英國 / 瑞士：** 依當地法規不提供免費額度（Free Tier），須於 Google Cloud 綁定計費帳號後方可呼叫 API。
+> - 設定前請先確認 [Google 官方支援地區名單](https://ai.google.dev/gemini-api/docs/available-regions)。
+
 1. 前往 [Google AI Studio](https://aistudio.google.com/apikey)（或在 AKeyboard 設定頁點選「**前往 Google AI Studio 申請 Key**」），登入 Google 帳號、建立並複製 API Key。
 2. 回到 AKeyboard 設定頁，點選「**從剪貼簿貼上**」後按「**驗證並儲存 Key**」。
 3. 依設定頁上方的「**開始使用**」清單，在系統設定中啟用 AKeyboard 並允許麥克風權限。

@@ -188,6 +188,7 @@ class AKeyboardImeService :
                         VoiceSessionError.MIC_BUSY -> ImeErrorReason.MIC_BUSY
                         VoiceSessionError.INVALID_KEY -> ImeErrorReason.INVALID_KEY
                         VoiceSessionError.QUOTA_EXCEEDED -> ImeErrorReason.QUOTA_EXCEEDED
+                        VoiceSessionError.REGION_NOT_SUPPORTED -> ImeErrorReason.REGION_NOT_SUPPORTED
                         VoiceSessionError.MAX_DURATION -> ImeErrorReason.MAX_DURATION
                         VoiceSessionError.GENERIC -> ImeErrorReason.GENERIC
                     }

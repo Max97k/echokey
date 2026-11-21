@@ -923,6 +923,7 @@ internal fun mapVoiceErrorRes(error: VoiceSessionError): Int = when (error) {
     VoiceSessionError.MIC_BUSY -> R.string.err_mic_busy
     VoiceSessionError.INVALID_KEY -> R.string.remote_error_invalid_key
     VoiceSessionError.QUOTA_EXCEEDED -> R.string.remote_error_quota
+    VoiceSessionError.REGION_NOT_SUPPORTED -> R.string.remote_error_region_not_supported
     VoiceSessionError.MAX_DURATION -> R.string.remote_error_max_duration
     VoiceSessionError.GENERIC -> R.string.remote_error_generic
 }

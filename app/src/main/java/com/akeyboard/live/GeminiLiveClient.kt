@@ -26,6 +26,7 @@ import okio.ByteString
 sealed class LiveError {
     data object InvalidKey : LiveError()
     data object QuotaExceeded : LiveError()
+    data object RegionNotSupported : LiveError()
     data class Network(val detail: String) : LiveError()
 }
 
@@ -45,6 +46,7 @@ class GeminiLiveClient(
     private val json: Json = Json {
         ignoreUnknownKeys = true
         encodeDefaults = true
+        explicitNulls = false
     },
     private val base64Encoder: (ByteArray) -> String = { bytes ->
         Base64.encodeToString(bytes, Base64.NO_WRAP)
@@ -59,6 +61,7 @@ class GeminiLiveClient(
     private var idleTtlJob: Job? = null
     private var streamJob: Job? = null
     private var isUtteranceActive = false
+    private var hasSentActivityStart = false
 
     private val _events = MutableSharedFlow<LiveEvent>(extraBufferCapacity = 64)
     val events: Flow<LiveEvent> = _events.asSharedFlow()
@@ -105,6 +108,7 @@ class GeminiLiveClient(
         idleTtlJob?.cancel()
         streamJob?.cancel()
         isUtteranceActive = true
+        hasSentActivityStart = false
 
         val deferred = if (isWarmFor(apiKey, modelId, languageCodes, smartMode)) {
             setupCompleteDeferred!!
@@ -125,6 +129,7 @@ class GeminiLiveClient(
                 return@launch
             }
             ws.send(json.encodeToString(RealtimeActivityStartEnvelope()))
+            hasSentActivityStart = true
             for (frame in audioFrames) {
                 if (!isUtteranceActive) break
                 val b64 = base64Encoder(frame)
@@ -140,11 +145,11 @@ class GeminiLiveClient(
 
     suspend fun finishUtterance(scope: CoroutineScope): Boolean {
         isUtteranceActive = false
+        streamJob?.join()
         val ws = synchronized(this) { webSocket }
-        if (ws != null && setupCompleteDeferred?.isCompleted == true) {
+        if (ws != null && hasSentActivityStart && setupCompleteDeferred?.isCompleted == true) {
             ws.send(json.encodeToString(RealtimeActivityEndEnvelope()))
         }
-        streamJob?.join()
         resetIdleTtl(scope)
         return ws != null
     }
@@ -160,6 +165,7 @@ class GeminiLiveClient(
         if (!preserveUtteranceFlag) {
             isUtteranceActive = false
         }
+        hasSentActivityStart = false
         idleTtlJob?.cancel()
         idleTtlJob = null
         streamJob?.cancel()
@@ -280,13 +286,19 @@ class GeminiLiveClient(
         }
         if (envelope.error != null) {
             val code = envelope.error.code ?: 0
+            val status = envelope.error.status.orEmpty()
             val msg = sanitizeKey(envelope.error.message.orEmpty())
             DiagnosticLog.record(
                 "Live",
                 "server_error",
-                "code=$code status=${envelope.error.status.orEmpty()} $msg"
+                "code=$code status=$status $msg"
             )
+            val isRegion = msg.contains("location is not supported", ignoreCase = true) ||
+                msg.contains("Regional restrictions", ignoreCase = true) ||
+                (status.equals("FAILED_PRECONDITION", ignoreCase = true) && msg.contains("location", ignoreCase = true))
+
             val err = when {
+                isRegion -> LiveError.RegionNotSupported
                 code == 401 || code == 403 || msg.contains("API_KEY_INVALID", ignoreCase = true) ->
                     LiveError.InvalidKey
                 code == 429 -> LiveError.QuotaExceeded
@@ -314,6 +326,11 @@ class GeminiLiveClient(
 
     private fun mapCloseError(code: Int, reason: String): LiveError {
         val clean = sanitizeKey(reason)
+        val isRegion = clean.contains("location is not supported", ignoreCase = true) ||
+            clean.contains("Regional restrictions", ignoreCase = true) ||
+            (clean.contains("FAILED_PRECONDITION", ignoreCase = true) && clean.contains("location", ignoreCase = true))
+        if (isRegion) return LiveError.RegionNotSupported
+
         return when {
             (code == 1007 || code == 1008) &&
                 (clean.contains("API key", ignoreCase = true) ||
@@ -328,6 +345,11 @@ class GeminiLiveClient(
     private fun mapFailure(t: Throwable, response: Response?): LiveError {
         val code = response?.code
         val detail = sanitizeKey(t.message ?: t::class.simpleName.orEmpty())
+        val isRegion = detail.contains("location is not supported", ignoreCase = true) ||
+            detail.contains("Regional restrictions", ignoreCase = true) ||
+            (detail.contains("FAILED_PRECONDITION", ignoreCase = true) && detail.contains("location", ignoreCase = true))
+        if (isRegion) return LiveError.RegionNotSupported
+
         return when (code) {
             401, 403 -> LiveError.InvalidKey
             400 -> if (detail.contains("API_KEY_INVALID", ignoreCase = true)) {

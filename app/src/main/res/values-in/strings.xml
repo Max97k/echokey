@@ -25,6 +25,7 @@
     <string name="err_password_field">Input suara dinonaktifkan di kolom kata sandi.</string>
     <string name="err_mic_busy">Mikrofon tidak tersedia atau sedang digunakan aplikasi lain.</string>
     <string name="err_max_duration">Batas rekaman 60 detik tercapai.</string>
+    <string name="err_region_not_supported">Google AI Studio API tidak tersedia di wilayah Anda. Periksa lokasi atau pengaturan VPN Anda.</string>
     <string name="err_generic">Kesalahan koneksi. Tahan mikrofon untuk mencoba lagi.</string>
 
     <!-- Settings & Disclosure -->
@@ -52,6 +53,8 @@
 
     <string name="section_api_key">2. Kunci API Google AI Studio</string>
     <string name="api_key_help">Google AI Studio menyediakan tingkat kunci API gratis di wilayah yang memenuhi syarat. Masuk dengan akun Google, buat kunci, salin, lalu kembali ke sini dan ketuk Tempel. Batas bervariasi menurut model dan wilayah; periksa AI Studio untuk batas saat ini.</string>
+    <string name="api_key_region_notice">Memerlukan wilayah Google AI Studio yang didukung (penagihan diperlukan di UE/EEA/UK/CH; tidak tersedia di Tiongkok, HK, MO, RU).</string>
+    <string name="api_key_region_link">Wilayah yang didukung</string>
     <string name="btn_get_api_key">Dapatkan kunci di Google AI Studio</string>
     <string name="btn_paste_key">Tempel dari papan klip</string>
     <string name="api_key_no_browser">Browser tidak ditemukan. Buka aistudio.google.com/apikey secara manual.</string>
@@ -122,6 +125,7 @@
     <string name="remote_error_invalid_key">Kunci API Gemini tidak valid.</string>
     <string name="remote_error_quota">Kuota Gemini API terlampaui.</string>
     <string name="remote_error_max_duration">Dihentikan pada durasi maksimal 60 detik.</string>
+    <string name="remote_error_region_not_supported">Google AI Studio API tidak tersedia di wilayah Anda. Periksa lokasi atau VPN Anda.</string>
     <string name="remote_error_generic">Terjadi kesalahan transkripsi.</string>
     <string name="remote_blocker_no_hardware">Perangkat ini tidak mendukung Bluetooth.</string>
     <string name="remote_blocker_bt_off">Bluetooth nonaktif. Aktifkan untuk menghubungkan ke PC Anda.</string>

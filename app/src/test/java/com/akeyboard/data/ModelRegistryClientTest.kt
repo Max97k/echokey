@@ -96,4 +96,32 @@ class ModelRegistryClientTest {
         assertTrue(res.isFailure)
         assertTrue(res.exceptionOrNull() is ModelRegistryException.InvalidKey)
     }
+
+    @Test
+    fun maps400RegionNotSupportedToRegionNotSupported() = runTest {
+        server.enqueue(
+            MockResponse(
+                code = 400,
+                body = """{"error":{"code":400,"message":"User location is not supported for the API use.","status":"FAILED_PRECONDITION"}}"""
+            )
+        )
+
+        val res = client.fetchLiveModels("region-blocked-key")
+        assertTrue(res.isFailure)
+        assertTrue(res.exceptionOrNull() is ModelRegistryException.RegionNotSupported)
+    }
+
+    @Test
+    fun maps403RegionNotSupportedToRegionNotSupported() = runTest {
+        server.enqueue(
+            MockResponse(
+                code = 403,
+                body = """{"error":{"code":403,"message":"location is not supported in this region.","status":"PERMISSION_DENIED"}}"""
+            )
+        )
+
+        val res = client.fetchLiveModels("region-blocked-key-403")
+        assertTrue(res.isFailure)
+        assertTrue(res.exceptionOrNull() is ModelRegistryException.RegionNotSupported)
+    }
 }

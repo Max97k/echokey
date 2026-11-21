@@ -25,6 +25,7 @@
     <string name="err_password_field">Spracheingabe ist in Passwortfeldern deaktiviert.</string>
     <string name="err_mic_busy">Mikrofon nicht verfügbar oder von einer anderen App belegt.</string>
     <string name="err_max_duration">Aufnahmelimit von 60 s erreicht.</string>
+    <string name="err_region_not_supported">Google AI Studio API ist in deiner Region nicht verfügbar (in der EU ist ein Abrechnungskonto erforderlich). Prüfe Standort oder VPN.</string>
     <string name="err_generic">Verbindungsfehler. Mikrofon zum Wiederholen gedrückt halten.</string>
 
     <!-- Settings & Disclosure -->
@@ -52,6 +53,8 @@
 
     <string name="section_api_key">2. Google AI Studio API-Schlüssel</string>
     <string name="api_key_help">Google AI Studio bietet in unterstützten Regionen eine kostenlose API-Schlüssel-Stufe. Melde dich mit einem Google-Konto an, erstelle und kopiere einen Schlüssel, kehre hierher zurück und tippe auf Einfügen. Limits variieren je nach Modell und Region; prüfe sie im AI Studio.</string>
+    <string name="api_key_region_notice">Erfordert eine unterstützte Region (in EU/EWR/UK/CH ist ein Google Cloud-Abrechnungskonto erforderlich; nicht verfügbar in China, HK, MO, RU).</string>
+    <string name="api_key_region_link">Unterstützte Regionen</string>
     <string name="btn_get_api_key">Schlüssel im Google AI Studio abrufen</string>
     <string name="btn_paste_key">Aus Zwischenablage einfügen</string>
     <string name="api_key_no_browser">Kein Browser gefunden. Öffne aistudio.google.com/apikey manuell.</string>
@@ -122,6 +125,7 @@
     <string name="remote_error_invalid_key">Ungültiger Gemini API-Schlüssel.</string>
     <string name="remote_error_quota">Gemini API-Kontingent überschritten.</string>
     <string name="remote_error_max_duration">Bei maximaler Dauer von 60 s gestoppt.</string>
+    <string name="remote_error_region_not_supported">Google AI Studio API in deiner Region nicht verfügbar (in der EU ist Abrechnung erforderlich). Prüfe Standort oder VPN.</string>
     <string name="remote_error_generic">Transkriptionsfehler aufgetreten.</string>
     <string name="remote_blocker_no_hardware">Dieses Gerät unterstützt kein Bluetooth.</string>
     <string name="remote_blocker_bt_off">Bluetooth ist ausgeschaltet. Schalte es ein, um dich mit deinem PC zu verbinden.</string>

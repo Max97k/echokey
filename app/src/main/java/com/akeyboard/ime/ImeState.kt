@@ -6,6 +6,7 @@ enum class ImeErrorReason {
     NO_PERMISSION,
     NO_NETWORK,
     QUOTA_EXCEEDED,
+    REGION_NOT_SUPPORTED,
     PASSWORD_FIELD,
     MIC_BUSY,
     MAX_DURATION,

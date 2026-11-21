@@ -25,6 +25,7 @@
     <string name="err_password_field">La entrada de voz está desactivada en campos de contraseña.</string>
     <string name="err_mic_busy">Micrófono no disponible o en uso por otra aplicación.</string>
     <string name="err_max_duration">Límite de grabación de 60 s alcanzado.</string>
+    <string name="err_region_not_supported">Google AI Studio API no está disponible en tu región (en la UE se requiere facturación). Revisa tu ubicación o VPN.</string>
     <string name="err_generic">Error de conexión. Mantén el micrófono para reintentar.</string>
 
     <!-- Settings & Disclosure -->
@@ -52,6 +53,8 @@
 
     <string name="section_api_key">2. Clave API de Google AI Studio</string>
     <string name="api_key_help">Google AI Studio ofrece un nivel gratuito de clave API en regiones elegibles. Inicia sesión con una cuenta de Google, crea una clave, cópiala, vuelve aquí y toca Pegar. Los límites varían según el modelo y la región; consulta AI Studio.</string>
+    <string name="api_key_region_notice">Requiere una región admitida (facturación requerida en UE/EEE/UK/CH; no disponible en China continental, HK, MO, RU).</string>
+    <string name="api_key_region_link">Regiones admitidas</string>
     <string name="btn_get_api_key">Obtener clave en Google AI Studio</string>
     <string name="btn_paste_key">Pegar desde el portapapeles</string>
     <string name="api_key_no_browser">No se encontró navegador. Abre aistudio.google.com/apikey manualmente.</string>
@@ -122,6 +125,7 @@
     <string name="remote_error_invalid_key">Clave API de Gemini no válida.</string>
     <string name="remote_error_quota">Cuota de Gemini API superada.</string>
     <string name="remote_error_max_duration">Detenido al alcanzar el máximo de 60 s.</string>
+    <string name="remote_error_region_not_supported">Google AI Studio API no está disponible en tu región (en la UE se requiere facturación). Revisa tu ubicación o VPN.</string>
     <string name="remote_error_generic">Ocurrió un error de transcripción.</string>
     <string name="remote_blocker_no_hardware">Este dispositivo no admite Bluetooth.</string>
     <string name="remote_blocker_bt_off">Bluetooth está desactivado. Actívalo para conectar con tu PC.</string>

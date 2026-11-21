@@ -238,6 +238,7 @@ class RemoteDictationLogicTest {
         assertEquals(R.string.err_mic_busy, mapVoiceErrorRes(VoiceSessionError.MIC_BUSY))
         assertEquals(R.string.remote_error_invalid_key, mapVoiceErrorRes(VoiceSessionError.INVALID_KEY))
         assertEquals(R.string.remote_error_quota, mapVoiceErrorRes(VoiceSessionError.QUOTA_EXCEEDED))
+        assertEquals(R.string.remote_error_region_not_supported, mapVoiceErrorRes(VoiceSessionError.REGION_NOT_SUPPORTED))
         assertEquals(R.string.remote_error_max_duration, mapVoiceErrorRes(VoiceSessionError.MAX_DURATION))
         assertEquals(R.string.remote_error_generic, mapVoiceErrorRes(VoiceSessionError.GENERIC))
 

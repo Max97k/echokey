@@ -25,6 +25,7 @@
     <string name="err_password_field">パスワード欄では音声入力が無効です。</string>
     <string name="err_mic_busy">マイクが利用できないか、他のアプリが使用中です。</string>
     <string name="err_max_duration">最大録音時間（60秒）に達しました。</string>
+    <string name="err_region_not_supported">現在お使いの地域ではGoogle AI Studio APIをご利用いただけません。地域やVPN設定をご確認ください。</string>
     <string name="err_generic">接続エラーです。マイクを長押しして再試行してください。</string>
 
     <!-- Settings & Disclosure -->
@@ -52,6 +53,8 @@
 
     <string name="section_api_key">2. Google AI Studio APIキー</string>
     <string name="api_key_help">Google AI Studioでは対象地域向けに無料枠のAPIキーが提供されています。Googleアカウントでサインインしてキーを作成・コピーし、ここに戻って「貼り付け」をタップしてください。制限はモデルや地域により異なるため、AI Studioでご確認ください。</string>
+    <string name="api_key_region_notice">Google AI Studioの対象地域が必要です（EU/EEA/UK/CHでは課金設定が必要、中国本土・香港・マカオ・ロシア等は非対応）。</string>
+    <string name="api_key_region_link">対応地域一覧</string>
     <string name="btn_get_api_key">Google AI Studioでキーを取得</string>
     <string name="btn_paste_key">クリップボードから貼り付け</string>
     <string name="api_key_no_browser">ブラウザが見つかりません。手動で aistudio.google.com/apikey を開いてください。</string>
@@ -122,6 +125,7 @@
     <string name="remote_error_invalid_key">Gemini APIキーが無効です。</string>
     <string name="remote_error_quota">Gemini APIの上限に達しました。</string>
     <string name="remote_error_max_duration">最大時間（60秒）に達したため停止しました。</string>
+    <string name="remote_error_region_not_supported">現在お使いの地域ではGoogle AI Studio APIをご利用いただけません。地域やVPN設定をご確認ください。</string>
     <string name="remote_error_generic">文字起こしエラーが発生しました。</string>
     <string name="remote_blocker_no_hardware">この端末はBluetoothに対応していません。</string>
     <string name="remote_blocker_bt_off">Bluetoothがオフです。PCに接続するにはオンにしてください。</string>

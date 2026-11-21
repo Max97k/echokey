@@ -53,6 +53,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -525,6 +526,11 @@ private fun SettingsContent(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                Text(
+                    text = stringResource(R.string.api_key_region_notice),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 if (state.hasStoredKey) {
                     Text(
                         text = stringResource(R.string.api_key_saved_hint),
@@ -532,13 +538,26 @@ private fun SettingsContent(
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
-                OutlinedButton(
-                    onClick = {
-                        showNoBrowserHint = !context.openExternalUrl(AI_STUDIO_API_KEY_URL)
-                    },
-                    modifier = Modifier.testTag("settings_get_key_btn")
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(stringResource(R.string.btn_get_api_key))
+                    OutlinedButton(
+                        onClick = {
+                            showNoBrowserHint = !context.openExternalUrl(AI_STUDIO_API_KEY_URL)
+                        },
+                        modifier = Modifier.testTag("settings_get_key_btn")
+                    ) {
+                        Text(stringResource(R.string.btn_get_api_key))
+                    }
+                    TextButton(
+                        onClick = {
+                            showNoBrowserHint = !context.openExternalUrl(AI_STUDIO_REGIONS_URL)
+                        },
+                        modifier = Modifier.testTag("settings_region_link_btn")
+                    ) {
+                        Text(stringResource(R.string.api_key_region_link))
+                    }
                 }
                 if (showNoBrowserHint) {
                     Text(
@@ -960,6 +979,7 @@ private fun KeyStatusText(status: KeyValidationStatus) {
         is KeyValidationStatus.Valid -> stringResource(R.string.key_valid_status, status.modelCount)
         KeyValidationStatus.InvalidKey -> stringResource(R.string.err_invalid_key)
         KeyValidationStatus.QuotaExceeded -> stringResource(R.string.err_quota)
+        KeyValidationStatus.RegionNotSupported -> stringResource(R.string.err_region_not_supported)
         KeyValidationStatus.NetworkError -> stringResource(R.string.err_generic)
         KeyValidationStatus.StorageError -> stringResource(R.string.key_storage_error)
         KeyValidationStatus.Cleared -> stringResource(R.string.key_cleared_status)
@@ -968,6 +988,7 @@ private fun KeyStatusText(status: KeyValidationStatus) {
     val isError = status in setOf(
         KeyValidationStatus.InvalidKey,
         KeyValidationStatus.QuotaExceeded,
+        KeyValidationStatus.RegionNotSupported,
         KeyValidationStatus.NetworkError,
         KeyValidationStatus.StorageError
     )
@@ -980,6 +1001,7 @@ private fun KeyStatusText(status: KeyValidationStatus) {
 }
 
 internal const val AI_STUDIO_API_KEY_URL = "https://aistudio.google.com/apikey"
+internal const val AI_STUDIO_REGIONS_URL = "https://ai.google.dev/gemini-api/docs/available-regions"
 internal const val GITHUB_RELEASES_BASE_URL = "https://github.com/Max97k/echokey/releases"
 private val SEMVER_TAG_REGEX = Regex("""^\d+\.\d+\.\d+(?:[-.][0-9A-Za-z.]+)?$""")
 

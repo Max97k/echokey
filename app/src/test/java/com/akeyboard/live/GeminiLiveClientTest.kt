@@ -107,6 +107,53 @@ class GeminiLiveClientTest {
     }
 
     @Test
+    fun emitsFailedWithRegionNotSupportedWhenServerErrorIndicatesLocationBlock() = runBlocking {
+        server.enqueue(
+            MockResponse.Builder()
+                .webSocketUpgrade(object : WebSocketListener() {
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        if (text.contains("\"setup\"")) {
+                            webSocket.send(
+                                """{"error":{"code":400,"message":"User location is not supported for the API use.","status":"FAILED_PRECONDITION"}}""".encodeUtf8()
+                            )
+                            webSocket.close(1000, "error sent")
+                        }
+                    }
+
+                    override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                        webSocket.close(code, reason)
+                    }
+                })
+                .build()
+        )
+
+        val wsUrl = "ws://${server.hostName}:${server.port}/ws"
+        val okHttp = OkHttpClient()
+        val client = GeminiLiveClient(
+            okHttpClient = okHttp,
+            baseWsUrl = wsUrl,
+            base64Encoder = { Base64.getEncoder().encodeToString(it) }
+        )
+
+        val collected = mutableListOf<LiveEvent>()
+        withTimeout(5_000) {
+            val collectJob = launch(start = CoroutineStart.UNDISPATCHED) {
+                client.events.take(1).toList(collected)
+            }
+
+            val audio = Channel<ByteArray>(capacity = 1)
+            audio.close()
+            client.startUtterance(this, "test-key", "gemini-3.5-transcribe-live", audio)
+            collectJob.join()
+            client.close()
+        }
+        okHttp.dispatcher.executorService.shutdown()
+        okHttp.connectionPool.evictAll()
+
+        assertEquals(listOf(LiveEvent.Failed(LiveError.RegionNotSupported)), collected)
+    }
+
+    @Test
     fun sanitizeKeyRedactsQueryParam() {
         val raw = "Failed connecting to wss://example.com/ws?key=AIzaSySecret123&foo=1"
         val cleaned = GeminiLiveClient.sanitizeKey(raw)

@@ -18,6 +18,7 @@ data class ModelInfo(
 sealed class ModelRegistryException(message: String, cause: Throwable? = null) : Exception(message, cause) {
     class InvalidKey(message: String = "Invalid API key") : ModelRegistryException(message)
     class QuotaExceeded(message: String = "Quota exceeded") : ModelRegistryException(message)
+    class RegionNotSupported(message: String = "User location is not supported") : ModelRegistryException(message)
     class NetworkError(message: String, cause: Throwable? = null) : ModelRegistryException(message, cause)
 }
 
@@ -94,6 +95,12 @@ class ModelRegistryClient(
     }
 
     private fun mapHttpError(code: Int, body: String): ModelRegistryException {
+        val isRegion = body.contains("location is not supported", ignoreCase = true) ||
+            body.contains("Regional restrictions", ignoreCase = true) ||
+            (body.contains("FAILED_PRECONDITION", ignoreCase = true) && body.contains("location", ignoreCase = true))
+        if (isRegion) {
+            return ModelRegistryException.RegionNotSupported()
+        }
         return when {
             code == 401 || code == 403 -> ModelRegistryException.InvalidKey()
             code == 400 && body.contains("API_KEY_INVALID", ignoreCase = true) ->

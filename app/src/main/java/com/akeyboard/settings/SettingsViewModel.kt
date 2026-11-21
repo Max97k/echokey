@@ -25,6 +25,7 @@ sealed class KeyValidationStatus {
     data class Valid(val modelCount: Int) : KeyValidationStatus()
     data object InvalidKey : KeyValidationStatus()
     data object QuotaExceeded : KeyValidationStatus()
+    data object RegionNotSupported : KeyValidationStatus()
     data object NetworkError : KeyValidationStatus()
     data object StorageError : KeyValidationStatus()
     data object Cleared : KeyValidationStatus()
@@ -176,6 +177,7 @@ class SettingsViewModel(
                 val status = when (err) {
                     is ModelRegistryException.InvalidKey -> KeyValidationStatus.InvalidKey
                     is ModelRegistryException.QuotaExceeded -> KeyValidationStatus.QuotaExceeded
+                    is ModelRegistryException.RegionNotSupported -> KeyValidationStatus.RegionNotSupported
                     else -> KeyValidationStatus.NetworkError
                 }
                 _uiState.update { it.copy(keyStatus = status) }
