@@ -1,12 +1,15 @@
 package com.akeyboard.util
 
 import android.app.ApplicationExitInfo
+import com.akeyboard.data.ModelUsageStats
+import com.akeyboard.data.UsageStore
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.time.LocalDate
 
 class DiagnosticLogTest {
 
@@ -45,9 +48,9 @@ class DiagnosticLogTest {
         assertTrue(cleaned.contains("Bearer REDACTED"))
         assertTrue(cleaned.contains("REDACTED_KEY"))
 
-        val longDetail = "x".repeat(300)
+        val longDetail = "x".repeat(450)
         val truncated = DiagnosticLog.sanitizeDetail(longDetail)
-        assertEquals(160, truncated.length)
+        assertEquals(320, truncated.length)
         assertTrue(truncated.endsWith("…"))
     }
 
@@ -97,5 +100,60 @@ class DiagnosticLogTest {
         assertTrue(populated.contains("Languages: zh-TW,en-US"))
         assertTrue(populated.contains("2026-11-20T06:00:00Z CRASH status=1"))
         assertTrue(populated.contains("[06:01:00.000] Live/ws_failure: http=503"))
+    }
+
+    @Test
+    fun `formatUsageSummaryLines and formatReport include Usage Store snapshot`() {
+        val today = LocalDate.of(2026, 11, 23)
+        val store = UsageStore(
+            schemaVersion = 1,
+            daily = mapOf(
+                "2026-11-23" to mapOf(
+                    "gemini-3.5-transcribe-live" to ModelUsageStats(
+                        requests = 2L,
+                        promptTokens = 400L,
+                        responseTokens = 30L,
+                        totalTokens = 430L,
+                        audioInputTokens = 380L
+                    )
+                )
+            ),
+            allTime = mapOf(
+                "gemini-3.5-transcribe-live" to ModelUsageStats(
+                    requests = 5L,
+                    promptTokens = 1000L,
+                    responseTokens = 80L,
+                    thoughtsTokens = 10L,
+                    cachedTokens = 20L,
+                    totalTokens = 1090L,
+                    audioInputTokens = 900L
+                )
+            )
+        )
+
+        val lines = DiagnosticLog.formatUsageSummaryLines(store, today = today)
+        val report = DiagnosticLog.formatReport(
+            appVersionName = "0.6.1",
+            appVersionCode = 7L,
+            androidRelease = "16",
+            sdkInt = 36,
+            deviceModel = "Google Pixel 9",
+            selectedModelId = "gemini-3.5-transcribe-live",
+            smartModeEnabled = true,
+            languageCodes = listOf("zh-TW"),
+            exitSummaries = emptyList(),
+            logEntries = listOf("[11:30:00.000] Live/rx: conn=#1 active=true keys=[usageMetadata]"),
+            usageSummaryLines = lines
+        )
+
+        assertTrue(report.contains("Usage Store:"))
+        assertTrue(report.contains("Today (2026-11-23): 430 tokens (2 req)"))
+        assertTrue(report.contains("All time: 1090 tokens (5 req), schema=v1, dailyKeys=1"))
+        assertTrue(
+            report.contains(
+                "Model gemini-3.5-transcribe-live: total=1090, prompt=1000, resp=80, audioIn=900, thoughts=10, cached=20, req=5"
+            )
+        )
+        assertTrue(report.contains("Day 2026-11-23: gemini-3.5-transcribe-live=430(2)"))
     }
 }

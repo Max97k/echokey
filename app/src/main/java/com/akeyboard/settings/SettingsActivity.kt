@@ -911,7 +911,8 @@ private fun SettingsContent(
                                 appVersionCode = appVersionCode,
                                 selectedModelId = state.settings.selectedModelId,
                                 smartModeEnabled = state.settings.smartModeEnabled,
-                                languageCodes = state.settings.languageCodes
+                                languageCodes = state.settings.languageCodes,
+                                usageStore = state.usageStore
                             )
                             clipboard.setClipEntry(
                                 ClipEntry(ClipData.newPlainText("AKeyboard Diagnostics", report))

@@ -4,14 +4,17 @@ import android.app.ActivityManager
 import android.app.ApplicationExitInfo
 import android.content.Context
 import android.os.Build
+import com.akeyboard.data.UsageStore
+import com.akeyboard.data.toSummary
 import com.akeyboard.live.GeminiLiveClient
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 object DiagnosticLog {
-    const val MAX_ENTRIES = 100
-    private const val MAX_DETAIL_LEN = 160
+    const val MAX_ENTRIES = 250
+    private const val MAX_DETAIL_LEN = 320
     private const val MAX_EXITS = 5
 
     private val lock = Any()
@@ -51,7 +54,8 @@ object DiagnosticLog {
         appVersionCode: Long,
         selectedModelId: String,
         smartModeEnabled: Boolean,
-        languageCodes: List<String>
+        languageCodes: List<String>,
+        usageStore: UsageStore? = null
     ): String {
         val exitSummaries = try {
             val am = context.getSystemService(ActivityManager::class.java)
@@ -71,6 +75,8 @@ object DiagnosticLog {
             emptyList()
         }
 
+        val usageSummaryLines = usageStore?.let { formatUsageSummaryLines(it) }.orEmpty()
+
         return formatReport(
             appVersionName = appVersionName,
             appVersionCode = appVersionCode,
@@ -81,8 +87,36 @@ object DiagnosticLog {
             smartModeEnabled = smartModeEnabled,
             languageCodes = languageCodes,
             exitSummaries = exitSummaries,
-            logEntries = entries()
+            logEntries = entries(),
+            usageSummaryLines = usageSummaryLines
         )
+    }
+
+    internal fun formatUsageSummaryLines(
+        usageStore: UsageStore,
+        today: LocalDate = LocalDate.now()
+    ): List<String> = buildList {
+        val summary = usageStore.toSummary(today)
+        add("Today ($today): ${summary.todayTokens} tokens (${summary.todayRequests} req)")
+        add("Last 30d: ${summary.last30DaysTokens} tokens (${summary.last30DaysRequests} req)")
+        add(
+            "All time: ${summary.allTimeTokens} tokens (${summary.allTimeRequests} req), " +
+                "schema=v${usageStore.schemaVersion}, dailyKeys=${usageStore.daily.size}"
+        )
+        summary.modelTotals.forEach { entry ->
+            val s = entry.stats
+            add(
+                "Model ${entry.modelId}: total=${s.totalTokens}, prompt=${s.promptTokens}, " +
+                    "resp=${s.responseTokens}, audioIn=${s.audioInputTokens}, " +
+                    "thoughts=${s.thoughtsTokens}, cached=${s.cachedTokens}, req=${s.requests}"
+            )
+        }
+        summary.dailyEntries.take(7).forEach { day ->
+            val modelsDesc = day.models.joinToString(", ") {
+                "${it.modelId}=${it.stats.totalTokens}(${it.stats.requests})"
+            }
+            add("Day ${day.date}: $modelsDesc")
+        }
     }
 
     internal fun sanitizeDetail(detail: String): String {
@@ -123,7 +157,8 @@ object DiagnosticLog {
         smartModeEnabled: Boolean,
         languageCodes: List<String>,
         exitSummaries: List<String>,
-        logEntries: List<String>
+        logEntries: List<String>,
+        usageSummaryLines: List<String> = emptyList()
     ): String = buildString {
         appendLine("AKeyboard Diagnostics")
         appendLine("=====================")
@@ -136,6 +171,11 @@ object DiagnosticLog {
         appendLine("- Smart Mode: $smartModeEnabled")
         val langs = if (languageCodes.isEmpty()) "auto" else languageCodes.joinToString(",")
         appendLine("- Languages: $langs")
+        if (usageSummaryLines.isNotEmpty()) {
+            appendLine()
+            appendLine("Usage Store:")
+            usageSummaryLines.forEach { appendLine("- $it") }
+        }
         appendLine()
         appendLine("Recent Process Exits:")
         if (exitSummaries.isEmpty()) {

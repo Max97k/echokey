@@ -19,12 +19,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
+import java.util.concurrent.atomic.AtomicInteger
 
 sealed class LiveError {
     data object InvalidKey : LiveError()
@@ -126,7 +128,13 @@ class GeminiLiveClient(
     private var streamJob: Job? = null
     private var isUtteranceActive = false
     private var hasSentActivityStart = false
-    private val drainingSockets = mutableMapOf<WebSocket, Job>()
+    private val connectionSeq = AtomicInteger(0)
+    private var currentConnId = 0
+    private var currentFramesSent = AtomicInteger(0)
+
+    private data class DrainingEntry(val connId: Int, val timeoutJob: Job)
+
+    private val drainingSockets = mutableMapOf<WebSocket, DrainingEntry>()
 
     private val _events = MutableSharedFlow<LiveEvent>(extraBufferCapacity = 64)
     val events: Flow<LiveEvent> = _events.asSharedFlow()
@@ -189,10 +197,14 @@ class GeminiLiveClient(
                 isUtteranceActive = false
                 return@launch
             }
-            val ws = synchronized(this@GeminiLiveClient) { webSocket } ?: run {
+            val (ws, connId, framesSent) = synchronized(this@GeminiLiveClient) {
+                Triple(webSocket, currentConnId, currentFramesSent)
+            }
+            if (ws == null) {
                 isUtteranceActive = false
                 return@launch
             }
+            DiagnosticLog.record("Live", "activity_start", "conn=#$connId")
             ws.send(json.encodeToString(RealtimeActivityStartEnvelope()))
             hasSentActivityStart = true
             for (frame in audioFrames) {
@@ -203,7 +215,9 @@ class GeminiLiveClient(
                         audio = RealtimeAudioBlob(data = b64)
                     )
                 )
-                ws.send(json.encodeToString(envelope))
+                if (ws.send(json.encodeToString(envelope))) {
+                    framesSent.incrementAndGet()
+                }
             }
         }
     }
@@ -211,8 +225,11 @@ class GeminiLiveClient(
     suspend fun finishUtterance(scope: CoroutineScope): Boolean {
         isUtteranceActive = false
         streamJob?.join()
-        val ws = synchronized(this) { webSocket }
+        val (ws, connId, framesSentCount) = synchronized(this) {
+            Triple(webSocket, currentConnId, currentFramesSent.get())
+        }
         if (ws != null && hasSentActivityStart && setupCompleteDeferred?.isCompleted == true) {
+            DiagnosticLog.record("Live", "activity_end", "conn=#$connId frames=$framesSentCount")
             ws.send(json.encodeToString(RealtimeActivityEndEnvelope()))
         }
         resetIdleTtl(scope)
@@ -224,7 +241,10 @@ class GeminiLiveClient(
     fun drainAndDetach() {
         synchronized(this) {
             val oldWs = webSocket
+            val oldConnId = currentConnId
             webSocket = null
+            currentConnId = 0
+            currentFramesSent = AtomicInteger(0)
             isUtteranceActive = false
             hasSentActivityStart = false
             idleTtlJob?.cancel()
@@ -238,11 +258,12 @@ class GeminiLiveClient(
             currentLanguageCodes = null
             currentSmartMode = null
             if (oldWs != null) {
+                DiagnosticLog.record("Live", "drain_start", "conn=#$oldConnId timeoutMs=$drainTimeoutMs")
                 val timeoutJob = drainScope.launch(start = CoroutineStart.LAZY) {
                     delay(drainTimeoutMs)
-                    finishDrainingSocket(oldWs)
+                    finishDrainingSocket(oldWs, "timeout")
                 }
-                drainingSockets[oldWs] = timeoutJob
+                drainingSockets[oldWs] = DrainingEntry(oldConnId, timeoutJob)
                 timeoutJob.start()
             }
         }
@@ -252,17 +273,20 @@ class GeminiLiveClient(
         closeInternal(preserveUtteranceFlag = false, closeDraining = true)
     }
 
-    private fun finishDrainingSocket(ws: WebSocket) {
-        val timeoutJob = synchronized(this) {
+    private fun finishDrainingSocket(ws: WebSocket, reason: String) {
+        val entry = synchronized(this) {
             drainingSockets.remove(ws)
         }
-        timeoutJob?.cancel()
+        if (entry != null) {
+            entry.timeoutJob.cancel()
+            DiagnosticLog.record("Live", "drain_done", "conn=#${entry.connId} reason=$reason")
+        }
         runCatching { ws.close(1000, "drained") }
     }
 
     private fun closeInternal(preserveUtteranceFlag: Boolean, closeDraining: Boolean) {
         val activeWs: WebSocket?
-        val drainedList: List<Pair<WebSocket, Job>>
+        val drainedList: List<Pair<WebSocket, DrainingEntry>>
         synchronized(this) {
             if (!preserveUtteranceFlag) {
                 isUtteranceActive = false
@@ -278,6 +302,8 @@ class GeminiLiveClient(
             currentModelId = null
             currentLanguageCodes = null
             currentSmartMode = null
+            currentConnId = 0
+            currentFramesSent = AtomicInteger(0)
             activeWs = webSocket
             webSocket = null
             if (closeDraining && drainingSockets.isNotEmpty()) {
@@ -288,8 +314,9 @@ class GeminiLiveClient(
             }
         }
         activeWs?.let { runCatching { it.close(1000, "closed") } }
-        drainedList.forEach { (ws, job) ->
-            job.cancel()
+        drainedList.forEach { (ws, entry) ->
+            entry.timeoutJob.cancel()
+            DiagnosticLog.record("Live", "drain_done", "conn=#${entry.connId} reason=closed")
             runCatching { ws.close(1000, "closed") }
         }
     }
@@ -319,10 +346,14 @@ class GeminiLiveClient(
         currentLanguageCodes = languageCodes
         currentSmartMode = smartMode
 
+        val connId = connectionSeq.incrementAndGet()
+        currentConnId = connId
+        currentFramesSent = AtomicInteger(0)
+
         val cleanModel = modelId.removePrefix("models/")
         val tracker = ConnectionUsageTracker(cleanModel)
         val isTranscribe = cleanModel.contains("transcribe", ignoreCase = true)
-        DiagnosticLog.record("Live", "connect", "model=$cleanModel transcribe=$isTranscribe")
+        DiagnosticLog.record("Live", "connect", "conn=#$connId model=$cleanModel transcribe=$isTranscribe")
         val setupEnvelope = BidiSetupEnvelope(
             setup = BidiSetup(
                 model = "models/$cleanModel",
@@ -348,27 +379,32 @@ class GeminiLiveClient(
 
         webSocket = okHttpClient.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
+                DiagnosticLog.record("Live", "ws_open", "conn=#$connId")
                 webSocket.send(json.encodeToString(setupEnvelope))
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
-                handleServerPayload(webSocket, text, deferred, tracker)
+                handleServerPayload(webSocket, text, deferred, tracker, connId)
             }
 
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-                handleServerPayload(webSocket, bytes.utf8(), deferred, tracker)
+                handleServerPayload(webSocket, bytes.utf8(), deferred, tracker, connId)
             }
 
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
                 val isActive = synchronized(this@GeminiLiveClient) {
                     this@GeminiLiveClient.webSocket === webSocket
                 }
+                DiagnosticLog.record(
+                    "Live",
+                    "ws_closing",
+                    "conn=#$connId active=$isActive code=$code reason=${sanitizeKey(reason)}"
+                )
                 if (!isActive) {
-                    finishDrainingSocket(webSocket)
+                    finishDrainingSocket(webSocket, "closing")
                     return
                 }
                 if (code != 1000) {
-                    DiagnosticLog.record("Live", "ws_closing", "code=$code reason=$reason")
                     val err = mapCloseError(code, reason)
                     deferred.complete(false)
                     _events.tryEmit(LiveEvent.Failed(err))
@@ -385,15 +421,15 @@ class GeminiLiveClient(
                 val isActive = synchronized(this@GeminiLiveClient) {
                     this@GeminiLiveClient.webSocket === webSocket
                 }
-                if (!isActive) {
-                    finishDrainingSocket(webSocket)
-                    return
-                }
                 DiagnosticLog.record(
                     "Live",
                     "ws_failure",
-                    "http=${response?.code ?: 0} ${t.message ?: t::class.simpleName.orEmpty()}"
+                    "conn=#$connId active=$isActive http=${response?.code ?: 0} ${t.message ?: t::class.simpleName.orEmpty()}"
                 )
+                if (!isActive) {
+                    finishDrainingSocket(webSocket, "failure")
+                    return
+                }
                 val err = mapFailure(t, response)
                 deferred.complete(false)
                 synchronized(this@GeminiLiveClient) {
@@ -411,7 +447,8 @@ class GeminiLiveClient(
         ws: WebSocket,
         raw: String,
         deferred: CompletableDeferred<Boolean>,
-        tracker: ConnectionUsageTracker
+        tracker: ConnectionUsageTracker,
+        connId: Int
     ) {
         val isActive: Boolean
         val isDraining: Boolean
@@ -423,21 +460,43 @@ class GeminiLiveClient(
 
         val envelope = try {
             json.decodeFromString<ServerEnvelope>(raw)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            DiagnosticLog.record(
+                "Live",
+                "rx_decode_err",
+                "conn=#$connId active=$isActive ${e::class.simpleName.orEmpty()}"
+            )
             return
         }
 
+        logIncomingFrame(connId, isActive, raw)
+
         envelope.usageMetadata?.let { meta ->
-            tracker.computeDelta(meta)?.let(onUsageReported)
+            val delta = tracker.computeDelta(meta)
+            if (delta != null) {
+                DiagnosticLog.record(
+                    "Live",
+                    "usage_delta",
+                    "conn=#$connId model=${delta.modelId} req=${delta.requests} total=${delta.totalTokens} " +
+                        "in=${delta.promptTokens} out=${delta.responseTokens} audioIn=${delta.audioInputTokens} " +
+                        "thoughts=${delta.thoughtsTokens} cached=${delta.cachedTokens}"
+                )
+                onUsageReported(delta)
+            } else {
+                DiagnosticLog.record("Live", "usage_zero", "conn=#$connId")
+            }
         }
 
         if (!isActive) {
-            if (envelope.usageMetadata != null ||
+            val reason = when {
+                envelope.usageMetadata != null -> "usage"
                 envelope.serverContent?.turnComplete == true ||
-                envelope.serverContent?.generationComplete == true ||
-                envelope.error != null
-            ) {
-                finishDrainingSocket(ws)
+                    envelope.serverContent?.generationComplete == true -> "turn_complete"
+                envelope.error != null -> "error"
+                else -> null
+            }
+            if (reason != null) {
+                finishDrainingSocket(ws, reason)
             }
             return
         }
@@ -480,6 +539,26 @@ class GeminiLiveClient(
         if (content.generationComplete == true || content.turnComplete == true) {
             _events.tryEmit(LiveEvent.TurnComplete)
         }
+    }
+
+    private fun logIncomingFrame(connId: Int, isActive: Boolean, raw: String) {
+        val obj = runCatching { json.parseToJsonElement(raw) as? JsonObject }.getOrNull() ?: return
+        val topKeys = obj.keys
+        val scObj = obj["serverContent"] as? JsonObject
+        val scKeys = scObj?.keys.orEmpty()
+        val isPureInterim = topKeys.size == 1 &&
+            topKeys.contains("serverContent") &&
+            scKeys.isNotEmpty() &&
+            scKeys.all { it == "interimInputTranscription" }
+        if (isPureInterim) return
+
+        val scDesc = if (scObj == null) "none" else scKeys.joinToString(",")
+        val usageJson = obj["usageMetadata"]?.toString() ?: "none"
+        DiagnosticLog.record(
+            "Live",
+            "rx",
+            "conn=#$connId active=$isActive keys=[${topKeys.joinToString(",")}] sc=[$scDesc] usage=$usageJson"
+        )
     }
 
     private fun mapCloseError(code: Int, reason: String): LiveError {

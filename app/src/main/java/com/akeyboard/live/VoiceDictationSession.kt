@@ -5,6 +5,7 @@ import com.akeyboard.audio.AudioCaptureResult
 import com.akeyboard.audio.AudioFailureReason
 import com.akeyboard.data.ApiKeyStore
 import com.akeyboard.data.SettingsRepository
+import com.akeyboard.util.DiagnosticLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -108,6 +109,7 @@ class VoiceDictationSession(
                     runningComposingText.clear()
                     hasCommittedCurrentTurn = false
                     setPhase(VoiceSessionPhase.RECORDING)
+                    DiagnosticLog.record("Session", "start", "model=${settings.selectedModelId}")
                     liveClient.startUtterance(
                         scope = scope,
                         apiKey = key,
@@ -205,6 +207,7 @@ class VoiceDictationSession(
                     }
                     is LiveEvent.Final -> {
                         if (phase == VoiceSessionPhase.RECORDING || phase == VoiceSessionPhase.FINALIZING) {
+                            DiagnosticLog.record("Session", "final", "chars=${event.text.length} phase=$phase")
                             commitFinalText(event.text)
                             if (phase == VoiceSessionPhase.FINALIZING) {
                                 finalizeJob?.cancel()
@@ -213,6 +216,11 @@ class VoiceDictationSession(
                         }
                     }
                     LiveEvent.TurnComplete -> {
+                        DiagnosticLog.record(
+                            "Session",
+                            "turn_complete",
+                            "phase=$phase committed=$hasCommittedCurrentTurn"
+                        )
                         if (phase == VoiceSessionPhase.FINALIZING) {
                             if (!hasCommittedCurrentTurn && runningComposingText.isNotEmpty()) {
                                 commitFinalText(runningComposingText.toString())
@@ -248,12 +256,18 @@ class VoiceDictationSession(
         maxDurationJob?.cancel()
         audioManager.stop()
         setPhase(VoiceSessionPhase.FINALIZING)
+        DiagnosticLog.record("Session", "release", "reachedCap=$reachedCap")
 
         finalizeJob?.cancel()
         finalizeJob = scope.launch {
             liveClient.finishUtterance(scope)
             delay(liveClient.finalizeTimeout())
             if (phase == VoiceSessionPhase.FINALIZING) {
+                DiagnosticLog.record(
+                    "Session",
+                    "finalize_timeout",
+                    "reachedCap=$reachedCap committed=$hasCommittedCurrentTurn"
+                )
                 if (!hasCommittedCurrentTurn && runningComposingText.isNotEmpty()) {
                     commitFinalText(runningComposingText.toString())
                 } else {
@@ -271,6 +285,7 @@ class VoiceDictationSession(
     }
 
     private fun rotateWarmConnection() {
+        DiagnosticLog.record("Session", "rotate")
         liveClient.drainAndDetach()
         setPhase(VoiceSessionPhase.IDLE)
         warmUp()

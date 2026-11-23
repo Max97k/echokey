@@ -3,6 +3,7 @@ package com.akeyboard.data
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.Serializer
+import com.akeyboard.util.DiagnosticLog
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -76,8 +77,10 @@ object UsageStoreSerializer : Serializer<UsageStore> {
         return try {
             json.decodeFromString<UsageStore>(text)
         } catch (e: SerializationException) {
+            DiagnosticLog.record("Usage", "corrupt", e::class.simpleName.orEmpty())
             throw CorruptionException("Cannot read usage store.", e)
         } catch (e: IllegalArgumentException) {
+            DiagnosticLog.record("Usage", "corrupt", e::class.simpleName.orEmpty())
             throw CorruptionException("Cannot read usage store.", e)
         }
     }
@@ -107,6 +110,7 @@ class UsageRepository(
             audioInputTokens = delta.audioInputTokens.coerceAtLeast(0L)
         )
 
+        var recordedSummary = ""
         dataStore.updateData { current ->
             val today = todayProvider()
             val todayKey = today.toString()
@@ -122,11 +126,16 @@ class UsageRepository(
             }.toMap(LinkedHashMap())
 
             val todayModels = updatedDaily[todayKey].orEmpty().toMutableMap()
-            todayModels[modelId] = (todayModels[modelId] ?: ModelUsageStats()) + increment
+            val updatedDayModel = (todayModels[modelId] ?: ModelUsageStats()) + increment
+            todayModels[modelId] = updatedDayModel
             updatedDaily[todayKey] = todayModels
 
             val updatedAllTime = current.allTime.toMutableMap()
-            updatedAllTime[modelId] = (updatedAllTime[modelId] ?: ModelUsageStats()) + increment
+            val updatedAllTimeModel = (updatedAllTime[modelId] ?: ModelUsageStats()) + increment
+            updatedAllTime[modelId] = updatedAllTimeModel
+
+            recordedSummary = "date=$todayKey model=$modelId +total=${increment.totalTokens} " +
+                "dayTotal=${updatedDayModel.totalTokens} allTimeTotal=${updatedAllTimeModel.totalTokens}"
 
             current.copy(
                 schemaVersion = CURRENT_SCHEMA_VERSION,
@@ -134,10 +143,14 @@ class UsageRepository(
                 allTime = updatedAllTime
             )
         }
+        if (recordedSummary.isNotEmpty()) {
+            DiagnosticLog.record("Usage", "recorded", recordedSummary)
+        }
     }
 
     suspend fun clear() {
         dataStore.updateData { UsageStore() }
+        DiagnosticLog.record("Usage", "cleared")
     }
 
     companion object {

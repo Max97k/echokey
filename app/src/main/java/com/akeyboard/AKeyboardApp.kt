@@ -14,6 +14,7 @@ import com.akeyboard.data.UsageDelta
 import com.akeyboard.data.UsageRepository
 import com.akeyboard.data.UsageStore
 import com.akeyboard.data.UsageStoreSerializer
+import com.akeyboard.util.DiagnosticLog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -64,8 +65,8 @@ class AKeyboardApp : Application() {
                 usageRepository.record(delta)
             } catch (e: CancellationException) {
                 throw e
-            } catch (_: Exception) {
-                // Best-effort local usage accounting must never crash dictation.
+            } catch (e: Exception) {
+                DiagnosticLog.record("Usage", "record_err", "${e::class.simpleName}: ${e.message.orEmpty()}")
             }
         }
     }
