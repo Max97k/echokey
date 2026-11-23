@@ -400,7 +400,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Create or update the matching GitHub Release v<versionName> via gh CLI after Play commit",
     )
     parser.add_argument("--skip-build", action="store_true", help="Skip Gradle build and publish existing AAB")
-    parser.add_argument("--skip-checks", action="store_true", help="Skip testDebugUnitTest/lintDebug before bundleRelease")
+    parser.add_argument(
+        "--skip-checks",
+        action="store_true",
+        help="Skip Spotless, Licensee, CycloneDX SBOM, unit tests, and lint before bundleRelease",
+    )
     parser.add_argument("--aab", help="Path to signed .aab file (defaults to release bundle output)")
     parser.add_argument("--account", default=DEFAULT_ACCOUNT, help=f"gcloud user account (default: {DEFAULT_ACCOUNT})")
     parser.add_argument(
@@ -470,9 +474,18 @@ def main(
         version_name=target_version_name,
         repo=args.github_repo,
     )
-    gradle_tasks = (
-        [] if args.skip_build else ([":app:testDebugUnitTest", ":app:lintDebug"] if not args.skip_checks else []) + [":app:bundleRelease"]
+    pre_build_checks = (
+        []
+        if args.skip_checks
+        else [
+            ":app:spotlessCheck",
+            ":app:licenseeAndroidRelease",
+            ":app:cyclonedxDirectBom",
+            ":app:testDebugUnitTest",
+            ":app:lintDebug",
+        ]
     )
+    gradle_tasks = [] if args.skip_build else pre_build_checks + [":app:bundleRelease"]
 
     if not args.skip_build and not keystore_props.is_file():
         print(f"[error] Missing {keystore_props}; cannot build signed release AAB.", file=sys.stderr, flush=True)

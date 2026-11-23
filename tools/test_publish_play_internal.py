@@ -320,7 +320,28 @@ class PublishPlayInternalTests(unittest.TestCase):
                 )
             self.assertEqual(rc, 0)
             self.assertEqual(gradle_file.read_text(encoding="utf-8"), SAMPLE_GRADLE)
-            self.assertIn("versionCode: 1 -> 2", stdout.getvalue())
+            dry_out = stdout.getvalue()
+            self.assertIn("versionCode: 1 -> 2", dry_out)
+            for task in (
+                ":app:spotlessCheck",
+                ":app:licenseeAndroidRelease",
+                ":app:cyclonedxDirectBom",
+                ":app:testDebugUnitTest",
+                ":app:lintDebug",
+                ":app:bundleRelease",
+            ):
+                self.assertIn(task, dry_out)
+
+            skip_stdout = io.StringIO()
+            with redirect_stdout(skip_stdout):
+                rc_skip = pub.main(
+                    ["--dry-run", "--skip-checks"],
+                    repo_root=root,
+                    run_fn=lambda *_a, **_kw: self.fail("dry-run must not run commands"),
+                    urlopen_fn=lambda *_a, **_kw: self.fail("dry-run must not call network"),
+                )
+            self.assertEqual(rc_skip, 0)
+            self.assertIn("gradle tasks: [':app:bundleRelease']", skip_stdout.getvalue())
 
             # Simulate Gradle failure after bumping: build.gradle.kts must roll back cleanly.
             (root / "gradlew.bat").write_text("@echo off\n", encoding="utf-8")
