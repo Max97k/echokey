@@ -29,7 +29,8 @@ data class ModelUsageStats(
     val thoughtsTokens: Long = 0L,
     val cachedTokens: Long = 0L,
     val totalTokens: Long = 0L,
-    val audioInputTokens: Long = 0L
+    val audioInputTokens: Long = 0L,
+    val estimatedRequests: Long = 0L
 ) {
     operator fun plus(other: ModelUsageStats): ModelUsageStats = ModelUsageStats(
         requests = requests + other.requests,
@@ -38,7 +39,8 @@ data class ModelUsageStats(
         thoughtsTokens = thoughtsTokens + other.thoughtsTokens,
         cachedTokens = cachedTokens + other.cachedTokens,
         totalTokens = totalTokens + other.totalTokens,
-        audioInputTokens = audioInputTokens + other.audioInputTokens
+        audioInputTokens = audioInputTokens + other.audioInputTokens,
+        estimatedRequests = estimatedRequests + other.estimatedRequests
     )
 }
 
@@ -50,7 +52,8 @@ data class UsageDelta(
     val thoughtsTokens: Long = 0L,
     val cachedTokens: Long = 0L,
     val totalTokens: Long = 0L,
-    val audioInputTokens: Long = 0L
+    val audioInputTokens: Long = 0L,
+    val isEstimated: Boolean = false
 ) {
     val hasAnyUsage: Boolean
         get() = requests > 0L ||
@@ -107,7 +110,8 @@ class UsageRepository(
             thoughtsTokens = delta.thoughtsTokens.coerceAtLeast(0L),
             cachedTokens = delta.cachedTokens.coerceAtLeast(0L),
             totalTokens = delta.totalTokens.coerceAtLeast(0L),
-            audioInputTokens = delta.audioInputTokens.coerceAtLeast(0L)
+            audioInputTokens = delta.audioInputTokens.coerceAtLeast(0L),
+            estimatedRequests = if (delta.isEstimated) delta.requests.coerceAtLeast(0L) else 0L
         )
 
         var recordedSummary = ""
@@ -134,7 +138,7 @@ class UsageRepository(
             val updatedAllTimeModel = (updatedAllTime[modelId] ?: ModelUsageStats()) + increment
             updatedAllTime[modelId] = updatedAllTimeModel
 
-            recordedSummary = "date=$todayKey model=$modelId +total=${increment.totalTokens} " +
+            recordedSummary = "date=$todayKey model=$modelId +total=${increment.totalTokens} est=${delta.isEstimated} " +
                 "dayTotal=${updatedDayModel.totalTokens} allTimeTotal=${updatedAllTimeModel.totalTokens}"
 
             current.copy(
@@ -172,10 +176,13 @@ data class DailyUsageEntry(
 data class UsageSummary(
     val todayTokens: Long = 0L,
     val todayRequests: Long = 0L,
+    val todayHasEstimated: Boolean = false,
     val last30DaysTokens: Long = 0L,
     val last30DaysRequests: Long = 0L,
+    val last30DaysHasEstimated: Boolean = false,
     val allTimeTokens: Long = 0L,
     val allTimeRequests: Long = 0L,
+    val allTimeHasEstimated: Boolean = false,
     val dailyEntries: List<DailyUsageEntry> = emptyList(),
     val modelTotals: List<ModelUsageEntry> = emptyList()
 )
@@ -187,21 +194,27 @@ fun UsageStore.toSummary(today: LocalDate = LocalDate.now()): UsageSummary {
     val todayModels = daily[todayKey]?.values.orEmpty()
     val todayTokens = todayModels.sumOf { it.totalTokens }
     val todayRequests = todayModels.sumOf { it.requests }
+    val todayHasEstimated = todayModels.any { it.estimatedRequests > 0L }
 
     var last30Tokens = 0L
     var last30Requests = 0L
+    var last30HasEstimated = false
     for ((dateKey, models) in daily) {
         val parsed = parseLocalDateOrNull(dateKey) ?: continue
         if (!parsed.isBefore(thirtyDaysCutoff) && !parsed.isAfter(today)) {
             for (stats in models.values) {
                 last30Tokens += stats.totalTokens
                 last30Requests += stats.requests
+                if (stats.estimatedRequests > 0L) {
+                    last30HasEstimated = true
+                }
             }
         }
     }
 
     val allTimeTokens = allTime.values.sumOf { it.totalTokens }
     val allTimeRequests = allTime.values.sumOf { it.requests }
+    val allTimeHasEstimated = allTime.values.any { it.estimatedRequests > 0L }
 
     val modelComparator = compareByDescending<ModelUsageEntry> { it.stats.totalTokens }
         .thenBy { it.modelId }
@@ -222,10 +235,13 @@ fun UsageStore.toSummary(today: LocalDate = LocalDate.now()): UsageSummary {
     return UsageSummary(
         todayTokens = todayTokens,
         todayRequests = todayRequests,
+        todayHasEstimated = todayHasEstimated,
         last30DaysTokens = last30Tokens,
         last30DaysRequests = last30Requests,
+        last30DaysHasEstimated = last30HasEstimated,
         allTimeTokens = allTimeTokens,
         allTimeRequests = allTimeRequests,
+        allTimeHasEstimated = allTimeHasEstimated,
         dailyEntries = dailyEntries,
         modelTotals = modelTotals
     )

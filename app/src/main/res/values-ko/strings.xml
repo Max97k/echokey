@@ -156,6 +156,7 @@
     <string name="usage_detail_audio_in">오디오 입력: %1$s</string>
     <string name="usage_detail_thoughts">추론: %1$s</string>
     <string name="usage_detail_cached">캐시: %1$s</string>
+    <string name="usage_estimated_badge">추정 포함</string>
     <string name="usage_show_all_days">전체 %1$d일 보기</string>
     <string name="usage_show_less">최근 7일만 보기</string>
     <string name="usage_open_billing">AI Studio에서 결제 및 한도 확인</string>

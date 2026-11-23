@@ -236,4 +236,37 @@ class UsageRepositoryTest {
         assertEquals(listOf("model-b", "model-a"), summary.dailyEntries.first().models.map { it.modelId })
         assertEquals(listOf("model-a", "model-b"), summary.modelTotals.map { it.modelId })
     }
+
+    @Test
+    fun `records estimated usage and sets hasEstimated flags in summary`() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val today = LocalDate.of(2026, 11, 23)
+        val dataStore = createTestDataStore("usage_estimated.json", scope)
+        val repo = UsageRepository(dataStore, todayProvider = { today })
+
+        try {
+            repo.record(
+                UsageDelta(
+                    modelId = "gemini-3.5-transcribe-live",
+                    requests = 1L,
+                    promptTokens = 250L,
+                    responseTokens = 15L,
+                    totalTokens = 265L,
+                    audioInputTokens = 250L,
+                    isEstimated = true
+                )
+            )
+            val store = repo.usage.first()
+            val stats = store.daily["2026-11-23"]?.get("gemini-3.5-transcribe-live")
+            assertEquals(1L, stats?.estimatedRequests)
+            assertEquals(1L, stats?.requests)
+
+            val summary = store.toSummary(today = today)
+            assertTrue(summary.todayHasEstimated)
+            assertTrue(summary.last30DaysHasEstimated)
+            assertTrue(summary.allTimeHasEstimated)
+        } finally {
+            scope.cancel()
+        }
+    }
 }

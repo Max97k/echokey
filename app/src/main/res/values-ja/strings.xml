@@ -156,6 +156,7 @@
     <string name="usage_detail_audio_in">音声入力: %1$s</string>
     <string name="usage_detail_thoughts">思考: %1$s</string>
     <string name="usage_detail_cached">キャッシュ: %1$s</string>
+    <string name="usage_estimated_badge">推定含む</string>
     <string name="usage_show_all_days">全 %1$d 日を表示</string>
     <string name="usage_show_less">直近 7 日間を表示</string>
     <string name="usage_open_billing">AI Studio で請求と上限を確認</string>

@@ -156,6 +156,7 @@
     <string name="usage_detail_audio_in">Audio in: %1$s</string>
     <string name="usage_detail_thoughts">Thoughts: %1$s</string>
     <string name="usage_detail_cached">Cached: %1$s</string>
+    <string name="usage_estimated_badge">Est.</string>
     <string name="usage_show_all_days" tools:ignore="PluralsCandidate">Show all %1$d days</string>
     <string name="usage_show_less">Show recent 7 days</string>
     <string name="usage_open_billing">Check billing &amp; limits in AI Studio</string>

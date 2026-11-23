@@ -1160,18 +1160,21 @@ private fun UsageStatsSection(
                 label = stringResource(R.string.usage_summary_today),
                 tokens = summary.todayTokens,
                 requests = summary.todayRequests,
+                hasEstimated = summary.todayHasEstimated,
                 modifier = Modifier.weight(1f)
             )
             UsageSummaryMetric(
                 label = stringResource(R.string.usage_summary_30d),
                 tokens = summary.last30DaysTokens,
                 requests = summary.last30DaysRequests,
+                hasEstimated = summary.last30DaysHasEstimated,
                 modifier = Modifier.weight(1f)
             )
             UsageSummaryMetric(
                 label = stringResource(R.string.usage_summary_all_time),
                 tokens = summary.allTimeTokens,
                 requests = summary.allTimeRequests,
+                hasEstimated = summary.allTimeHasEstimated,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -1339,8 +1342,10 @@ private fun UsageSummaryMetric(
     label: String,
     tokens: Long,
     requests: Long,
+    hasEstimated: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val formattedTokens = (if (hasEstimated && tokens > 0L) "~" else "") + formatUsageCount(tokens)
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(2.dp)
@@ -1351,7 +1356,7 @@ private fun UsageSummaryMetric(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
-            text = stringResource(R.string.usage_tokens_unit, formatUsageCount(tokens)),
+            text = stringResource(R.string.usage_tokens_unit, formattedTokens),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold
         )
@@ -1368,6 +1373,9 @@ private fun ModelUsageRow(
     modelId: String,
     stats: ModelUsageStats
 ) {
+    val hasEstimated = stats.estimatedRequests > 0L
+    val formattedTotal = (if (hasEstimated && stats.totalTokens > 0L) "~" else "") +
+        formatUsageCount(stats.totalTokens)
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -1383,7 +1391,7 @@ private fun ModelUsageRow(
                     .padding(end = 8.dp)
             )
             Text(
-                text = stringResource(R.string.usage_tokens_unit, formatUsageCount(stats.totalTokens)),
+                text = stringResource(R.string.usage_tokens_unit, formattedTotal),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -1407,6 +1415,9 @@ private fun ModelUsageRow(
             }
             if (stats.cachedTokens > 0L) {
                 add(stringResource(R.string.usage_detail_cached, formatUsageCount(stats.cachedTokens)))
+            }
+            if (hasEstimated) {
+                add(stringResource(R.string.usage_estimated_badge))
             }
         }
         if (details.isNotEmpty()) {

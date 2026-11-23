@@ -156,6 +156,7 @@
     <string name="usage_detail_audio_in">Audio masuk: %1$s</string>
     <string name="usage_detail_thoughts">Berpikir: %1$s</string>
     <string name="usage_detail_cached">Tembolok: %1$s</string>
+    <string name="usage_estimated_badge">Est.</string>
     <string name="usage_show_all_days">Tampilkan semua %1$d hari</string>
     <string name="usage_show_less">Tampilkan 7 hari terakhir</string>
     <string name="usage_open_billing">Periksa tagihan &amp; batas di AI Studio</string>

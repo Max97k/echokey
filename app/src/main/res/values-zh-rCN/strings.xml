@@ -153,6 +153,7 @@
     <string name="usage_detail_audio_in">音频输入：%1$s</string>
     <string name="usage_detail_thoughts">思考：%1$s</string>
     <string name="usage_detail_cached">缓存：%1$s</string>
+    <string name="usage_estimated_badge">含估算</string>
     <string name="usage_show_all_days">展开全部 %1$d 天</string>
     <string name="usage_show_less">仅显示最近 7 天</string>
     <string name="usage_open_billing">前往 AI Studio 查看账单与限额</string>

@@ -25,6 +25,7 @@ import org.junit.Before
 import org.junit.Test
 import java.util.Base64
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicInteger
 
 class GeminiLiveClientTest {
 
@@ -332,5 +333,193 @@ class GeminiLiveClientTest {
         }
         okHttp.dispatcher.executorService.shutdown()
         okHttp.connectionPool.evictAll()
+    }
+
+    @Test
+    fun emitsEstimatedFallbackOnDrainWhenUsageMetadataIsMissing() = runBlocking {
+        server.enqueue(
+            MockResponse.Builder()
+                .webSocketUpgrade(object : WebSocketListener() {
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        if (text.contains("\"setup\"")) {
+                            webSocket.send("{\"setupComplete\":{}}".encodeUtf8())
+                        } else if (text.contains("activityEnd")) {
+                            webSocket.send(
+                                """{"serverContent":{"inputTranscription":{"text":"你好世界"}}}""".encodeUtf8()
+                            )
+                            webSocket.send(
+                                """{"serverContent":{"generationComplete":true}}""".encodeUtf8()
+                            )
+                        }
+                    }
+
+                    override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                        webSocket.close(code, reason)
+                    }
+                })
+                .build()
+        )
+
+        val wsUrl = "ws://${server.hostName}:${server.port}/ws"
+        val okHttp = OkHttpClient()
+        val deltas = CopyOnWriteArrayList<UsageDelta>()
+        val usageReceived = CompletableDeferred<UsageDelta>()
+        val client = GeminiLiveClient(
+            okHttpClient = okHttp,
+            baseWsUrl = wsUrl,
+            base64Encoder = { Base64.getEncoder().encodeToString(it) },
+            onUsageReported = {
+                deltas += it
+                usageReceived.complete(it)
+            },
+            drainTimeoutMs = 150L
+        )
+
+        val collected = mutableListOf<LiveEvent>()
+        withTimeout(5_000) {
+            val collectJob = launch(start = CoroutineStart.UNDISPATCHED) {
+                client.events.take(3).toList(collected)
+            }
+
+            val audio = Channel<ByteArray>(capacity = 4)
+            audio.send(ByteArray(32_000) { 1 })
+            audio.close()
+
+            client.startUtterance(this, "secret-key", "gemini-3.5-transcribe-live", audio)
+            delay(250)
+            client.finishUtterance(this)
+            collectJob.join()
+            client.drainAndDetach()
+
+            val delta = usageReceived.await()
+            assertEquals(
+                UsageDelta(
+                    modelId = "gemini-3.5-transcribe-live",
+                    requests = 1L,
+                    promptTokens = 25L,
+                    responseTokens = 2L,
+                    totalTokens = 27L,
+                    audioInputTokens = 25L,
+                    isEstimated = true
+                ),
+                delta
+            )
+            assertEquals(1, deltas.size)
+            client.close()
+        }
+        okHttp.dispatcher.executorService.shutdown()
+        okHttp.connectionPool.evictAll()
+    }
+
+    @Test
+    fun doesNotEmitFallbackWhenOfficialUsageMetadataWasReceived() = runBlocking {
+        val socketClosed = CompletableDeferred<Unit>()
+        server.enqueue(
+            MockResponse.Builder()
+                .webSocketUpgrade(object : WebSocketListener() {
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        if (text.contains("\"setup\"")) {
+                            webSocket.send("{\"setupComplete\":{}}".encodeUtf8())
+                        } else if (text.contains("activityEnd")) {
+                            webSocket.send(
+                                """{"serverContent":{"inputTranscription":{"text":"測試"},"turnComplete":true},"usageMetadata":{"promptTokenCount":80,"responseTokenCount":5,"totalTokenCount":85,"promptTokensDetails":[{"modality":"AUDIO","tokenCount":75}]}}""".encodeUtf8()
+                            )
+                        }
+                    }
+
+                    override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                        socketClosed.complete(Unit)
+                        webSocket.close(code, reason)
+                    }
+                })
+                .build()
+        )
+
+        val wsUrl = "ws://${server.hostName}:${server.port}/ws"
+        val okHttp = OkHttpClient()
+        val deltas = CopyOnWriteArrayList<UsageDelta>()
+        val client = GeminiLiveClient(
+            okHttpClient = okHttp,
+            baseWsUrl = wsUrl,
+            base64Encoder = { Base64.getEncoder().encodeToString(it) },
+            onUsageReported = { deltas += it },
+            drainTimeoutMs = 150L
+        )
+
+        withTimeout(5_000) {
+            val collectJob = launch(start = CoroutineStart.UNDISPATCHED) {
+                client.events.take(3).toList()
+            }
+
+            val audio = Channel<ByteArray>(capacity = 4)
+            audio.send(ByteArray(32_000) { 1 })
+            audio.close()
+
+            client.startUtterance(this, "secret-key", "gemini-2.5-flash-native-audio-latest", audio)
+            delay(250)
+            client.finishUtterance(this)
+            collectJob.join()
+            client.drainAndDetach()
+            socketClosed.await()
+            delay(100)
+            client.close()
+        }
+        okHttp.dispatcher.executorService.shutdown()
+        okHttp.connectionPool.evictAll()
+
+        assertEquals(1, deltas.size)
+        assertFalse(deltas.first().isEstimated)
+        assertEquals(85L, deltas.first().totalTokens)
+    }
+
+    @Test
+    fun consecutiveWarmUpCallsWhileConnectingReuseSingleConnection() = runBlocking {
+        val openCount = AtomicInteger(0)
+        server.enqueue(
+            MockResponse.Builder()
+                .webSocketUpgrade(object : WebSocketListener() {
+                    override fun onOpen(webSocket: WebSocket, response: Response) {
+                        openCount.incrementAndGet()
+                    }
+
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        if (text.contains("\"setup\"")) {
+                            Thread {
+                                Thread.sleep(150)
+                                webSocket.send("{\"setupComplete\":{}}".encodeUtf8())
+                            }.start()
+                        }
+                    }
+
+                    override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                        webSocket.close(code, reason)
+                    }
+                })
+                .build()
+        )
+
+        val wsUrl = "ws://${server.hostName}:${server.port}/ws"
+        val okHttp = OkHttpClient()
+        val client = GeminiLiveClient(
+            okHttpClient = okHttp,
+            baseWsUrl = wsUrl,
+            base64Encoder = { Base64.getEncoder().encodeToString(it) }
+        )
+
+        val collected = mutableListOf<LiveEvent>()
+        withTimeout(5_000) {
+            val collectJob = launch(start = CoroutineStart.UNDISPATCHED) {
+                client.events.take(1).toList(collected)
+            }
+            client.warmUp(this, "secret-key", "gemini-3.5-transcribe-live")
+            client.warmUp(this, "secret-key", "gemini-3.5-transcribe-live")
+            collectJob.join()
+            client.close()
+        }
+        okHttp.dispatcher.executorService.shutdown()
+        okHttp.connectionPool.evictAll()
+
+        assertEquals(1, openCount.get())
+        assertEquals(listOf(LiveEvent.Ready), collected)
     }
 }

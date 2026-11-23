@@ -51,6 +51,24 @@ private class ConnectionUsageTracker(private val modelId: String) {
     private var lastTotal = 0L
     private var lastAudioInput = 0L
     private var hasReportedRequest = false
+    private var audioBytesSent = 0L
+    private var finalTranscriptChars = 0
+    private var hasReceivedOfficialUsage = false
+    private var hasEmittedFallback = false
+
+    @Synchronized
+    fun recordAudioBytes(bytes: Int) {
+        if (bytes > 0) {
+            audioBytesSent += bytes.toLong()
+        }
+    }
+
+    @Synchronized
+    fun recordFinalTranscriptChars(chars: Int) {
+        if (chars > 0) {
+            finalTranscriptChars += chars
+        }
+    }
 
     @Synchronized
     fun computeDelta(meta: UsageMetadata): UsageDelta? {
@@ -82,6 +100,7 @@ private class ConnectionUsageTracker(private val modelId: String) {
             dCached > 0L || dTotal > 0L || dAudioInput > 0L
         if (!anyPositive) return null
 
+        hasReceivedOfficialUsage = true
         val req = if (!hasReportedRequest) {
             hasReportedRequest = true
             1L
@@ -97,6 +116,28 @@ private class ConnectionUsageTracker(private val modelId: String) {
             cachedTokens = dCached,
             totalTokens = dTotal,
             audioInputTokens = dAudioInput
+        )
+    }
+
+    @Synchronized
+    fun buildFallbackDeltaIfNeeded(): UsageDelta? {
+        if (hasReceivedOfficialUsage || hasEmittedFallback || audioBytesSent <= 0L || finalTranscriptChars <= 0) {
+            return null
+        }
+        hasEmittedFallback = true
+        val audioSeconds = audioBytesSent / 32_000.0
+        val audioInputTokens = maxOf(1L, Math.round(audioSeconds * 25.0))
+        val promptTokens = audioInputTokens
+        val responseTokens = maxOf(1L, (finalTranscriptChars + 1) / 2L)
+        val totalTokens = promptTokens + responseTokens
+        return UsageDelta(
+            modelId = modelId,
+            requests = 1L,
+            promptTokens = promptTokens,
+            responseTokens = responseTokens,
+            totalTokens = totalTokens,
+            audioInputTokens = audioInputTokens,
+            isEstimated = true
         )
     }
 }
@@ -124,6 +165,7 @@ class GeminiLiveClient(
     private var currentLanguageCodes: List<String>? = null
     private var currentSmartMode: Boolean? = null
     private var setupCompleteDeferred: CompletableDeferred<Boolean>? = null
+    private var setupSucceeded = false
     private var idleTtlJob: Job? = null
     private var streamJob: Job? = null
     private var isUtteranceActive = false
@@ -131,8 +173,13 @@ class GeminiLiveClient(
     private val connectionSeq = AtomicInteger(0)
     private var currentConnId = 0
     private var currentFramesSent = AtomicInteger(0)
+    private var currentTracker: ConnectionUsageTracker? = null
 
-    private data class DrainingEntry(val connId: Int, val timeoutJob: Job)
+    private data class DrainingEntry(
+        val connId: Int,
+        val tracker: ConnectionUsageTracker,
+        val timeoutJob: Job
+    )
 
     private val drainingSockets = mutableMapOf<WebSocket, DrainingEntry>()
 
@@ -151,7 +198,24 @@ class GeminiLiveClient(
             currentModelId == modelId &&
             currentLanguageCodes == languageCodes &&
             currentSmartMode == smartMode &&
-            setupCompleteDeferred?.isCompleted == true
+            setupSucceeded
+    }
+
+    @Synchronized
+    private fun isWarmOrConnectingFor(
+        apiKey: String,
+        modelId: String,
+        languageCodes: List<String>,
+        smartMode: Boolean
+    ): Boolean {
+        val deferred = setupCompleteDeferred ?: return false
+        return webSocket != null &&
+            currentKey == apiKey &&
+            currentModelId == modelId &&
+            currentLanguageCodes == languageCodes &&
+            currentSmartMode == smartMode &&
+            !deferred.isCancelled &&
+            (!deferred.isCompleted || setupSucceeded)
     }
 
     fun warmUp(
@@ -161,7 +225,7 @@ class GeminiLiveClient(
         languageCodes: List<String> = emptyList(),
         smartMode: Boolean = true
     ) {
-        if (isWarmFor(apiKey, modelId, languageCodes, smartMode)) {
+        if (isWarmOrConnectingFor(apiKey, modelId, languageCodes, smartMode)) {
             resetIdleTtl(scope)
             return
         }
@@ -183,11 +247,13 @@ class GeminiLiveClient(
         isUtteranceActive = true
         hasSentActivityStart = false
 
-        val deferred = if (isWarmFor(apiKey, modelId, languageCodes, smartMode)) {
-            setupCompleteDeferred!!
-        } else {
-            closeInternal(preserveUtteranceFlag = true, closeDraining = false)
-            openConnection(scope, apiKey, modelId, languageCodes, smartMode)
+        val deferred = synchronized(this) {
+            if (isWarmOrConnectingFor(apiKey, modelId, languageCodes, smartMode)) {
+                setupCompleteDeferred!!
+            } else {
+                closeInternal(preserveUtteranceFlag = true, closeDraining = false)
+                openConnection(scope, apiKey, modelId, languageCodes, smartMode)
+            }
         }
 
         streamJob = scope.launch(Dispatchers.IO) {
@@ -197,8 +263,15 @@ class GeminiLiveClient(
                 isUtteranceActive = false
                 return@launch
             }
-            val (ws, connId, framesSent) = synchronized(this@GeminiLiveClient) {
-                Triple(webSocket, currentConnId, currentFramesSent)
+            val ws: WebSocket?
+            val connId: Int
+            val framesSent: AtomicInteger
+            val tracker: ConnectionUsageTracker?
+            synchronized(this@GeminiLiveClient) {
+                ws = webSocket
+                connId = currentConnId
+                framesSent = currentFramesSent
+                tracker = currentTracker
             }
             if (ws == null) {
                 isUtteranceActive = false
@@ -217,6 +290,7 @@ class GeminiLiveClient(
                 )
                 if (ws.send(json.encodeToString(envelope))) {
                     framesSent.incrementAndGet()
+                    tracker?.recordAudioBytes(frame.size)
                 }
             }
         }
@@ -242,9 +316,11 @@ class GeminiLiveClient(
         synchronized(this) {
             val oldWs = webSocket
             val oldConnId = currentConnId
+            val oldTracker = currentTracker
             webSocket = null
             currentConnId = 0
             currentFramesSent = AtomicInteger(0)
+            currentTracker = null
             isUtteranceActive = false
             hasSentActivityStart = false
             idleTtlJob?.cancel()
@@ -253,17 +329,19 @@ class GeminiLiveClient(
             streamJob = null
             setupCompleteDeferred?.cancel()
             setupCompleteDeferred = null
+            setupSucceeded = false
             currentKey = null
             currentModelId = null
             currentLanguageCodes = null
             currentSmartMode = null
             if (oldWs != null) {
+                val trackerForDrain = oldTracker ?: ConnectionUsageTracker("")
                 DiagnosticLog.record("Live", "drain_start", "conn=#$oldConnId timeoutMs=$drainTimeoutMs")
                 val timeoutJob = drainScope.launch(start = CoroutineStart.LAZY) {
                     delay(drainTimeoutMs)
                     finishDrainingSocket(oldWs, "timeout")
                 }
-                drainingSockets[oldWs] = DrainingEntry(oldConnId, timeoutJob)
+                drainingSockets[oldWs] = DrainingEntry(oldConnId, trackerForDrain, timeoutJob)
                 timeoutJob.start()
             }
         }
@@ -280,8 +358,21 @@ class GeminiLiveClient(
         if (entry != null) {
             entry.timeoutJob.cancel()
             DiagnosticLog.record("Live", "drain_done", "conn=#${entry.connId} reason=$reason")
+            emitFallbackIfNeeded(entry.connId, entry.tracker)
         }
         runCatching { ws.close(1000, "drained") }
+    }
+
+    private fun emitFallbackIfNeeded(connId: Int, tracker: ConnectionUsageTracker) {
+        tracker.buildFallbackDeltaIfNeeded()?.let { delta ->
+            DiagnosticLog.record(
+                "Live",
+                "usage_estimated",
+                "conn=#$connId model=${delta.modelId} total=${delta.totalTokens} " +
+                    "in=${delta.promptTokens} out=${delta.responseTokens} audioIn=${delta.audioInputTokens}"
+            )
+            onUsageReported(delta)
+        }
     }
 
     private fun closeInternal(preserveUtteranceFlag: Boolean, closeDraining: Boolean) {
@@ -298,12 +389,14 @@ class GeminiLiveClient(
             streamJob = null
             setupCompleteDeferred?.cancel()
             setupCompleteDeferred = null
+            setupSucceeded = false
             currentKey = null
             currentModelId = null
             currentLanguageCodes = null
             currentSmartMode = null
             currentConnId = 0
             currentFramesSent = AtomicInteger(0)
+            currentTracker = null
             activeWs = webSocket
             webSocket = null
             if (closeDraining && drainingSockets.isNotEmpty()) {
@@ -317,6 +410,7 @@ class GeminiLiveClient(
         drainedList.forEach { (ws, entry) ->
             entry.timeoutJob.cancel()
             DiagnosticLog.record("Live", "drain_done", "conn=#${entry.connId} reason=closed")
+            emitFallbackIfNeeded(entry.connId, entry.tracker)
             runCatching { ws.close(1000, "closed") }
         }
     }
@@ -341,6 +435,7 @@ class GeminiLiveClient(
     ): CompletableDeferred<Boolean> {
         val deferred = CompletableDeferred<Boolean>()
         setupCompleteDeferred = deferred
+        setupSucceeded = false
         currentKey = apiKey
         currentModelId = modelId
         currentLanguageCodes = languageCodes
@@ -352,6 +447,7 @@ class GeminiLiveClient(
 
         val cleanModel = modelId.removePrefix("models/")
         val tracker = ConnectionUsageTracker(cleanModel)
+        currentTracker = tracker
         val isTranscribe = cleanModel.contains("transcribe", ignoreCase = true)
         DiagnosticLog.record("Live", "connect", "conn=#$connId model=$cleanModel transcribe=$isTranscribe")
         val setupEnvelope = BidiSetupEnvelope(
@@ -406,6 +502,11 @@ class GeminiLiveClient(
                 }
                 if (code != 1000) {
                     val err = mapCloseError(code, reason)
+                    synchronized(this@GeminiLiveClient) {
+                        if (setupCompleteDeferred === deferred) {
+                            setupSucceeded = false
+                        }
+                    }
                     deferred.complete(false)
                     _events.tryEmit(LiveEvent.Failed(err))
                 }
@@ -413,6 +514,7 @@ class GeminiLiveClient(
                 synchronized(this@GeminiLiveClient) {
                     if (this@GeminiLiveClient.webSocket === webSocket) {
                         this@GeminiLiveClient.webSocket = null
+                        setupSucceeded = false
                     }
                 }
             }
@@ -431,12 +533,13 @@ class GeminiLiveClient(
                     return
                 }
                 val err = mapFailure(t, response)
-                deferred.complete(false)
                 synchronized(this@GeminiLiveClient) {
                     if (this@GeminiLiveClient.webSocket === webSocket) {
                         this@GeminiLiveClient.webSocket = null
+                        setupSucceeded = false
                     }
                 }
+                deferred.complete(false)
                 _events.tryEmit(LiveEvent.Failed(err))
             }
         })
@@ -521,11 +624,21 @@ class GeminiLiveClient(
                 code == 429 -> LiveError.QuotaExceeded
                 else -> LiveError.Network(msg.ifBlank { "Server error $code" })
             }
+            synchronized(this) {
+                if (setupCompleteDeferred === deferred) {
+                    setupSucceeded = false
+                }
+            }
             deferred.complete(false)
             _events.tryEmit(LiveEvent.Failed(err))
             return
         }
         if (envelope.setupComplete != null) {
+            synchronized(this) {
+                if (setupCompleteDeferred === deferred) {
+                    setupSucceeded = true
+                }
+            }
             deferred.complete(true)
             _events.tryEmit(LiveEvent.Ready)
         }
@@ -534,6 +647,7 @@ class GeminiLiveClient(
             _events.tryEmit(LiveEvent.Interim(it))
         }
         content.inputTranscription?.text?.takeIf { it.isNotEmpty() }?.let {
+            tracker.recordFinalTranscriptChars(it.length)
             _events.tryEmit(LiveEvent.Final(it))
         }
         if (content.generationComplete == true || content.turnComplete == true) {

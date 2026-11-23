@@ -108,7 +108,7 @@ object DiagnosticLog {
             add(
                 "Model ${entry.modelId}: total=${s.totalTokens}, prompt=${s.promptTokens}, " +
                     "resp=${s.responseTokens}, audioIn=${s.audioInputTokens}, " +
-                    "thoughts=${s.thoughtsTokens}, cached=${s.cachedTokens}, req=${s.requests}"
+                    "thoughts=${s.thoughtsTokens}, cached=${s.cachedTokens}, req=${s.requests}, estReq=${s.estimatedRequests}"
             )
         }
         summary.dailyEntries.take(7).forEach { day ->

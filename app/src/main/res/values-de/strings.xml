@@ -156,6 +156,7 @@
     <string name="usage_detail_audio_in">Audio-Ein: %1$s</string>
     <string name="usage_detail_thoughts">Denken: %1$s</string>
     <string name="usage_detail_cached">Cache: %1$s</string>
+    <string name="usage_estimated_badge">Geschätzt</string>
     <string name="usage_show_all_days">Alle %1$d Tage anzeigen</string>
     <string name="usage_show_less">Letzte 7 Tage anzeigen</string>
     <string name="usage_open_billing">Abrechnung &amp; Limits im AI Studio prüfen</string>

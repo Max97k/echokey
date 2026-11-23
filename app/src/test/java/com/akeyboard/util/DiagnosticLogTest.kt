@@ -151,7 +151,7 @@ class DiagnosticLogTest {
         assertTrue(report.contains("All time: 1090 tokens (5 req), schema=v1, dailyKeys=1"))
         assertTrue(
             report.contains(
-                "Model gemini-3.5-transcribe-live: total=1090, prompt=1000, resp=80, audioIn=900, thoughts=10, cached=20, req=5"
+                "Model gemini-3.5-transcribe-live: total=1090, prompt=1000, resp=80, audioIn=900, thoughts=10, cached=20, req=5, estReq=0"
             )
         )
         assertTrue(report.contains("Day 2026-11-23: gemini-3.5-transcribe-live=430(2)"))
