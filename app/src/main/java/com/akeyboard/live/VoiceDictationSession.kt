@@ -1,3 +1,5 @@
+// Copyright 2026 Max97k
+// SPDX-License-Identifier: Apache-2.0
 package com.akeyboard.live
 
 import com.akeyboard.audio.AudioCaptureManager

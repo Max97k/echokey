@@ -1,3 +1,5 @@
+// Copyright 2026 Max97k
+// SPDX-License-Identifier: Apache-2.0
 package com.akeyboard.settings
 
 import android.Manifest
@@ -29,9 +31,12 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -86,8 +91,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.akeyboard.AKeyboardApp
 import com.akeyboard.R
 import com.akeyboard.data.ModelUsageStats
+import com.akeyboard.data.OpenSourceNotice
 import com.akeyboard.data.SettingsRepository
 import com.akeyboard.data.UsageStore
+import com.akeyboard.data.loadBundledOpenSourceNotices
 import com.akeyboard.data.toSummary
 import com.akeyboard.remote.RemoteDictationActivity
 import com.akeyboard.ui.AKeyboardTheme
@@ -370,6 +377,8 @@ private fun SettingsContent(
     var showNoBrowserHint by rememberSaveable { mutableStateOf(false) }
     var showUsageNoBrowserHint by rememberSaveable { mutableStateOf(false) }
     var showReleaseNotesNoBrowserHint by rememberSaveable { mutableStateOf(false) }
+    var showLegalNoBrowserHint by rememberSaveable { mutableStateOf(false) }
+    var showOssLicensesDialog by rememberSaveable { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner, context) {
         val observer = LifecycleEventObserver { _, event ->
@@ -929,10 +938,154 @@ private fun SettingsContent(
                     Text(stringResource(R.string.btn_copy_diagnostics))
                 }
 
+                HorizontalDivider()
+
+                // 8. About & Legal
+                AboutLegalSection(
+                    showNoBrowserHint = showLegalNoBrowserHint,
+                    onOpenPrivacyPolicy = {
+                        showLegalNoBrowserHint = !context.openExternalUrl(PRIVACY_POLICY_URL)
+                    },
+                    onOpenLicense = {
+                        showLegalNoBrowserHint = !context.openExternalUrl(GITHUB_LICENSE_URL)
+                    },
+                    onOpenThirdPartyLicenses = { showOssLicensesDialog = true }
+                )
+
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
+
+    if (showOssLicensesDialog) {
+        val notices = remember(context) { loadBundledOpenSourceNotices(context) }
+        OpenSourceLicensesDialog(
+            notices = notices,
+            onDismiss = { showOssLicensesDialog = false }
+        )
+    }
+}
+
+@Composable
+private fun AboutLegalSection(
+    showNoBrowserHint: Boolean,
+    onOpenPrivacyPolicy: () -> Unit,
+    onOpenLicense: () -> Unit,
+    onOpenThirdPartyLicenses: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("settings_about_section"),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.section_about_legal),
+            style = MaterialTheme.typography.titleMedium
+        )
+        Text(
+            text = stringResource(R.string.about_copyright_license),
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.testTag("settings_license_info")
+        )
+        Text(
+            text = stringResource(R.string.about_affiliation_disclaimer),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.testTag("settings_affiliation_disclaimer")
+        )
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedButton(
+                onClick = onOpenPrivacyPolicy,
+                modifier = Modifier.testTag("settings_privacy_policy_btn")
+            ) {
+                Text(stringResource(R.string.btn_privacy_policy))
+            }
+            OutlinedButton(
+                onClick = onOpenLicense,
+                modifier = Modifier.testTag("settings_apache_license_btn")
+            ) {
+                Text(stringResource(R.string.btn_apache_license))
+            }
+            OutlinedButton(
+                onClick = onOpenThirdPartyLicenses,
+                modifier = Modifier.testTag("settings_oss_licenses_btn")
+            ) {
+                Text(stringResource(R.string.btn_open_source_licenses))
+            }
+        }
+        if (showNoBrowserHint) {
+            Text(
+                text = stringResource(R.string.legal_no_browser),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.testTag("settings_legal_no_browser_hint")
+            )
+        }
+    }
+}
+
+@Composable
+private fun OpenSourceLicensesDialog(
+    notices: List<OpenSourceNotice>,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = Modifier
+            .semantics { testTagsAsResourceId = true }
+            .testTag("settings_oss_licenses_dialog"),
+        title = {
+            Text(stringResource(R.string.oss_licenses_dialog_title))
+        },
+        text = {
+            if (notices.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.oss_licenses_empty),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 380.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(notices, key = { it.coordinates }) { notice ->
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = notice.displayName,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = notice.coordinates,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = notice.licenseSummary,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.testTag("settings_oss_licenses_close_btn")
+            ) {
+                Text(stringResource(R.string.oss_licenses_close))
+            }
+        }
+    )
 }
 
 @Composable
@@ -1026,6 +1179,8 @@ internal const val AI_STUDIO_API_KEY_URL = "https://aistudio.google.com/apikey"
 internal const val AI_STUDIO_REGIONS_URL = "https://ai.google.dev/gemini-api/docs/available-regions"
 internal const val AI_STUDIO_BILLING_URL = "https://aistudio.google.com/usage"
 internal const val GITHUB_RELEASES_BASE_URL = "https://github.com/Max97k/voice-keyboard-pc-bridge/releases"
+internal const val PRIVACY_POLICY_URL = "https://max97k.github.io/voice-keyboard-pc-bridge/privacy.html"
+internal const val GITHUB_LICENSE_URL = "https://github.com/Max97k/voice-keyboard-pc-bridge/blob/main/LICENSE"
 private val SEMVER_TAG_REGEX = Regex("""^\d+\.\d+\.\d+(?:[-.][0-9A-Za-z.]+)?$""")
 
 internal fun buildReleaseNotesUrl(versionName: String): String {

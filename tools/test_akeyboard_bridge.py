@@ -1,3 +1,6 @@
+# Copyright 2026 Max97k
+# SPDX-License-Identifier: Apache-2.0
+
 import ctypes
 import inspect
 import io
@@ -581,6 +584,16 @@ class AKeyboardBridgeTests(unittest.TestCase):
         self.assertEqual(logs.count("[ready]"), 3)
         self.assertIn("invalid channel 0", logs)
         self.assertIn("10047", logs)
+
+    def test_all_tools_python_files_have_spdx_header(self):
+        tools_dir = Path(__file__).resolve().parent
+        py_files = sorted(tools_dir.glob("*.py"))
+        self.assertGreater(len(py_files), 0)
+        for py_file in py_files:
+            lines = py_file.read_text(encoding="utf-8").splitlines()
+            self.assertGreaterEqual(len(lines), 2, py_file.name)
+            self.assertEqual(lines[0], "# Copyright 2026 Max97k", py_file.name)
+            self.assertEqual(lines[1], "# SPDX-License-Identifier: Apache-2.0", py_file.name)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,6 @@
+# Copyright 2026 Max97k
+# SPDX-License-Identifier: Apache-2.0
+
 import io
 import json
 from pathlib import Path

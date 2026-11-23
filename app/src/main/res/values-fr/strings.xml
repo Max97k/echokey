@@ -184,4 +184,15 @@
     <string name="update_status_downloaded">Mise à jour téléchargée. Redémarrez AKeyboard pour terminer l\'installation.</string>
     <string name="update_status_up_to_date">Vous disposez déjà de la dernière version.</string>
     <string name="update_status_unavailable">Les mises à jour du Play Store ne sont disponibles que pour les installations depuis Google Play.</string>
+
+    <string name="section_about_legal">8. À propos et mentions légales</string>
+    <string name="about_copyright_license">Copyright 2026 Max97k · Apache License 2.0</string>
+    <string name="about_affiliation_disclaimer">Projet open source indépendant. Non affilié à ni approuvé par Google LLC ou Microsoft Corporation.</string>
+    <string name="btn_privacy_policy">Confidentialité</string>
+    <string name="btn_apache_license">Licence Apache-2.0</string>
+    <string name="btn_open_source_licenses">Licences open source</string>
+    <string name="oss_licenses_dialog_title">Licences open source</string>
+    <string name="oss_licenses_empty">Aucune métadonnée de licence tierce trouvée.</string>
+    <string name="oss_licenses_close">Fermer</string>
+    <string name="legal_no_browser">Aucun navigateur trouvé. Ouvrez github.com/Max97k/voice-keyboard-pc-bridge manuellement.</string>
 </resources>

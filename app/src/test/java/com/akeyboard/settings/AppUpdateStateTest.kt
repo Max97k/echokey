@@ -1,3 +1,5 @@
+// Copyright 2026 Max97k
+// SPDX-License-Identifier: Apache-2.0
 package com.akeyboard.settings
 
 import com.google.android.play.core.install.model.InstallStatus

@@ -181,4 +181,15 @@
     <string name="update_status_downloaded">更新已下載完成，請重新啟動以完成安裝。</string>
     <string name="update_status_up_to_date">目前已是最新版本。</string>
     <string name="update_status_unavailable">需透過 Google Play（含內部測試）安裝才支援應用程式內更新。</string>
+
+    <string name="section_about_legal">8. 關於與法律聲明</string>
+    <string name="about_copyright_license">Copyright 2026 Max97k · Apache License 2.0</string>
+    <string name="about_affiliation_disclaimer">獨立開源專案，與 Google LLC 或 Microsoft Corporation 無任何隸屬或背書關係。</string>
+    <string name="btn_privacy_policy">隱私權政策</string>
+    <string name="btn_apache_license">Apache-2.0 授權條款</string>
+    <string name="btn_open_source_licenses">開放原始碼授權</string>
+    <string name="oss_licenses_dialog_title">開放原始碼授權</string>
+    <string name="oss_licenses_empty">找不到隨附的第三方開源授權資料。</string>
+    <string name="oss_licenses_close">關閉</string>
+    <string name="legal_no_browser">找不到瀏覽器，請手動前往 github.com/Max97k/voice-keyboard-pc-bridge。</string>
 </resources>

@@ -184,4 +184,15 @@
     <string name="update_status_downloaded">Pembaruan diunduh. Mulai ulang AKeyboard untuk menyelesaikan pemasangan.</string>
     <string name="update_status_up_to_date">Anda sudah menggunakan versi terbaru.</string>
     <string name="update_status_unavailable">Pembaruan Play Store hanya tersedia untuk pemasangan dari Google Play.</string>
+
+    <string name="section_about_legal">8. Tentang &amp; Hukum</string>
+    <string name="about_copyright_license">Copyright 2026 Max97k · Apache License 2.0</string>
+    <string name="about_affiliation_disclaimer">Proyek sumber terbuka independen. Tidak berafiliasi dengan atau didukung oleh Google LLC maupun Microsoft Corporation.</string>
+    <string name="btn_privacy_policy">Kebijakan Privasi</string>
+    <string name="btn_apache_license">Lisensi Apache-2.0</string>
+    <string name="btn_open_source_licenses">Lisensi Sumber Terbuka</string>
+    <string name="oss_licenses_dialog_title">Lisensi Sumber Terbuka</string>
+    <string name="oss_licenses_empty">Tidak ada metadata lisensi pihak ketiga yang dibundel.</string>
+    <string name="oss_licenses_close">Tutup</string>
+    <string name="legal_no_browser">Browser tidak ditemukan. Buka github.com/Max97k/voice-keyboard-pc-bridge secara manual.</string>
 </resources>

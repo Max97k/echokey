@@ -60,3 +60,24 @@ appId: com.max97k.akeyboard
     id: "settings_copy_diagnostics_btn"
 - assertVisible:
     id: "settings_copy_diagnostics_btn"
+- scrollUntilVisible:
+    element:
+      id: "settings_oss_licenses_btn"
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: "settings_license_info"
+- assertVisible:
+    id: "settings_affiliation_disclaimer"
+- assertVisible:
+    id: "settings_privacy_policy_btn"
+- assertVisible:
+    id: "settings_oss_licenses_btn"
+- tapOn:
+    id: "settings_oss_licenses_btn"
+- assertVisible:
+    id: "settings_oss_licenses_dialog"
+- tapOn:
+    id: "settings_oss_licenses_close_btn"
+- assertNotVisible:
+    id: "settings_oss_licenses_dialog"

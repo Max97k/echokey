@@ -4,6 +4,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.spotless)
+    alias(libs.plugins.licensee)
+    alias(libs.plugins.cyclonedx.bom)
 }
 
 android {
@@ -120,4 +123,32 @@ dependencies {
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+
+spotless {
+    kotlin {
+        target("src/**/*.kt")
+        licenseHeaderFile(rootProject.file("spotless/copyright.kt"))
+    }
+}
+
+licensee {
+    allow("Apache-2.0")
+    allow("MIT")
+    allow("BSD-2-Clause")
+    allow("BSD-3-Clause")
+    allowUrl("https://developer.android.com/studio/terms.html") {
+        because("Android SDK Terms of Service (Google Play Services transitive dependency)")
+    }
+    allowUrl("https://developer.android.com/guide/playcore/license") {
+        because("Play Core SDK Terms of Service (Google Play In-App Updates)")
+    }
+    bundleAndroidAsset = true
+}
+
+tasks.named<org.cyclonedx.gradle.CyclonedxDirectTask>("cyclonedxDirectBom") {
+    includeConfigs = listOf("releaseRuntimeClasspath")
+    projectType = org.cyclonedx.model.Component.Type.APPLICATION
+    jsonOutput = layout.buildDirectory.file("reports/sbom.json")
+    xmlOutput.unsetConvention()
 }

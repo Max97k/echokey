@@ -1,3 +1,6 @@
+# Copyright 2026 Max97k
+# SPDX-License-Identifier: Apache-2.0
+
 """Build, verify, and publish a signed AAB to Google Play Internal Testing.
 
 Uses only Python 3.10+ standard library and gcloud service-account impersonation

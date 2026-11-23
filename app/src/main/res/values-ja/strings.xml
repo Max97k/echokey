@@ -184,4 +184,15 @@
     <string name="update_status_downloaded">アップデートのダウンロードが完了しました。AKeyboardを再起動してインストールを完了してください。</string>
     <string name="update_status_up_to_date">すでに最新バージョンです。</string>
     <string name="update_status_unavailable">PlayストアのアップデートはGoogle Playからのインストール時のみ利用可能です。</string>
+
+    <string name="section_about_legal">8. アプリ情報・法的情報</string>
+    <string name="about_copyright_license">Copyright 2026 Max97k · Apache License 2.0</string>
+    <string name="about_affiliation_disclaimer">独立したオープンソースプロジェクトです。Google LLC または Microsoft Corporation と提携・推奨されたものではありません。</string>
+    <string name="btn_privacy_policy">プライバシーポリシー</string>
+    <string name="btn_apache_license">Apache-2.0 ライセンス</string>
+    <string name="btn_open_source_licenses">オープンソースライセンス</string>
+    <string name="oss_licenses_dialog_title">オープンソースライセンス</string>
+    <string name="oss_licenses_empty">同梱されたサードパーティライセンス情報が見つかりません。</string>
+    <string name="oss_licenses_close">閉じる</string>
+    <string name="legal_no_browser">ブラウザが見つかりません。手動で github.com/Max97k/voice-keyboard-pc-bridge を開いてください。</string>
 </resources>

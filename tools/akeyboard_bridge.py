@@ -1,3 +1,6 @@
+# Copyright 2026 Max97k
+# SPDX-License-Identifier: Apache-2.0
+
 """Standalone Windows 10/11 Bluetooth RFCOMM receiver for AKeyboard Voice Bridge.
 
 Uses only Python 3.10+ standard library (socket, select, re, json, ctypes, threading).

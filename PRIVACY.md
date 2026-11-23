@@ -176,3 +176,7 @@ AKeyboard 僅宣告並請求維持核心功能運作所不可或缺的權限：
 - **開發者**：Max97k
 - **電子信箱**：[Max97k@users.noreply.github.com](mailto:Max97k@users.noreply.github.com)
 - **專案 Issue 追蹤**：[https://github.com/Max97k/voice-keyboard-pc-bridge/issues](https://github.com/Max97k/voice-keyboard-pc-bridge/issues)
+
+---
+
+*Copyright 2026 Max97k • AKeyboard • Open Source under [Apache License 2.0](LICENSE)*
