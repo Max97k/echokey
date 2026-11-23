@@ -89,7 +89,10 @@ class RemoteDictationViewModel(
         context = app,
         preferBuiltInMicProvider = { preferBuiltInMic.value }
     )
-    private val liveClient = GeminiLiveClient(app.okHttpClient)
+    private val liveClient = GeminiLiveClient(
+        okHttpClient = app.okHttpClient,
+        onUsageReported = app::recordUsage
+    )
 
     private val _dictationState = MutableStateFlow<DictationState>(DictationState.Idle)
     val dictationState: StateFlow<DictationState> = _dictationState.asStateFlow()

@@ -271,7 +271,7 @@ class VoiceDictationSession(
     }
 
     private fun rotateWarmConnection() {
-        liveClient.close()
+        liveClient.drainAndDetach()
         setPhase(VoiceSessionPhase.IDLE)
         warmUp()
     }

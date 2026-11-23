@@ -9,6 +9,8 @@ import com.akeyboard.data.ModelInfo
 import com.akeyboard.data.ModelRegistryClient
 import com.akeyboard.data.ModelRegistryException
 import com.akeyboard.data.SettingsRepository
+import com.akeyboard.data.UsageRepository
+import com.akeyboard.data.UsageStore
 import com.akeyboard.data.UserSettings
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +35,7 @@ sealed class KeyValidationStatus {
 
 data class SettingsUiState(
     val settings: UserSettings = UserSettings(),
+    val usageStore: UsageStore = UsageStore(),
     val hasStoredKey: Boolean = false,
     val keyInput: String = "",
     val models: List<ModelInfo> = emptyList(),
@@ -44,7 +47,8 @@ data class SettingsUiState(
 class SettingsViewModel(
     private val apiKeyStore: ApiKeyStore,
     private val settingsRepository: SettingsRepository,
-    private val modelRegistryClient: ModelRegistryClient
+    private val modelRegistryClient: ModelRegistryClient,
+    private val usageRepository: UsageRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -54,6 +58,11 @@ class SettingsViewModel(
         viewModelScope.launch {
             settingsRepository.settings.collect { userSettings ->
                 _uiState.update { it.copy(settings = userSettings) }
+            }
+        }
+        viewModelScope.launch {
+            usageRepository.usage.collect { store ->
+                _uiState.update { it.copy(usageStore = store) }
             }
         }
         viewModelScope.launch {
@@ -139,6 +148,12 @@ class SettingsViewModel(
         }
     }
 
+    fun resetUsageStats() {
+        viewModelScope.launch {
+            usageRepository.clear()
+        }
+    }
+
     private suspend fun refreshModels(apiKey: String, persistKey: Boolean) {
         _uiState.update { it.copy(keyStatus = KeyValidationStatus.Validating) }
         val result = modelRegistryClient.fetchLiveModels(apiKey)
@@ -188,11 +203,17 @@ class SettingsViewModel(
     class Factory(
         private val apiKeyStore: ApiKeyStore,
         private val settingsRepository: SettingsRepository,
-        private val modelRegistryClient: ModelRegistryClient
+        private val modelRegistryClient: ModelRegistryClient,
+        private val usageRepository: UsageRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return SettingsViewModel(apiKeyStore, settingsRepository, modelRegistryClient) as T
+            return SettingsViewModel(
+                apiKeyStore = apiKeyStore,
+                settingsRepository = settingsRepository,
+                modelRegistryClient = modelRegistryClient,
+                usageRepository = usageRepository
+            ) as T
         }
     }
 

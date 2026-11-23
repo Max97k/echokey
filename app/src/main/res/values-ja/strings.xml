@@ -143,7 +143,31 @@
     <string name="remote_btn_pc_bridge_code">GitHubでPythonスクリプトを開く</string>
     <string name="remote_pc_bridge_no_browser">ブラウザが見つかりません。手動で github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py を開いてください。</string>
 
-    <string name="section_app_update">6. アプリのアップデート</string>
+    <string name="section_usage">6. API 使用量統計</string>
+    <string name="usage_summary_today">今日</string>
+    <string name="usage_summary_30d">過去 30 日間</string>
+    <string name="usage_summary_all_time">累計</string>
+    <string name="usage_tokens_unit">%1$s tokens</string>
+    <string name="usage_requests_short">%1$d 回</string>
+    <string name="usage_tab_daily">日別</string>
+    <string name="usage_tab_model">モデル別</string>
+    <string name="usage_empty">API の使用記録はまだありません。音声入力の完了後にトークン数が表示されます。</string>
+    <string name="usage_breakdown_primary">入力: %1$s · 出力: %2$s · %3$d 回</string>
+    <string name="usage_detail_audio_in">音声入力: %1$s</string>
+    <string name="usage_detail_thoughts">思考: %1$s</string>
+    <string name="usage_detail_cached">キャッシュ: %1$s</string>
+    <string name="usage_show_all_days">全 %1$d 日を表示</string>
+    <string name="usage_show_less">直近 7 日間を表示</string>
+    <string name="usage_open_billing">AI Studio で請求と上限を確認</string>
+    <string name="usage_no_browser">ブラウザが見つかりません。手動で aistudio.google.com/usage を開いてください。</string>
+    <string name="usage_reset_btn">統計をリセット</string>
+    <string name="usage_reset_dialog_title">API 使用量統計をリセットしますか？</string>
+    <string name="usage_reset_dialog_body">この端末に保存されたローカルのトークン記録のみを消去します。Google AI Studio の割り当てや請求には影響しません。</string>
+    <string name="usage_reset_confirm">リセット</string>
+    <string name="usage_reset_cancel">キャンセル</string>
+    <string name="usage_disclaimer">この端末の AKeyboard が API から受信した使用量のみを記録します（他端末や Web での利用は含まれず、請求とわずかに異なる場合があります）。</string>
+
+    <string name="section_app_update">7. アプリのアップデート</string>
     <string name="app_version_label">現在のバージョン：%1$s (%2$d)</string>
     <string name="btn_check_update">アップデートを確認</string>
     <string name="cd_release_notes">GitHubでリリースノートを表示</string>

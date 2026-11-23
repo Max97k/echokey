@@ -143,7 +143,31 @@
     <string name="remote_btn_pc_bridge_code">Abrir script de Python en GitHub</string>
     <string name="remote_pc_bridge_no_browser">No se encontró navegador. Abre github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py manualmente.</string>
 
-    <string name="section_app_update">6. Actualizaciones de la app</string>
+    <string name="section_usage">6. Estadísticas de uso de la API</string>
+    <string name="usage_summary_today">Hoy</string>
+    <string name="usage_summary_30d">Últimos 30 días</string>
+    <string name="usage_summary_all_time">Total</string>
+    <string name="usage_tokens_unit">%1$s tokens</string>
+    <string name="usage_requests_short">%1$d sol.</string>
+    <string name="usage_tab_daily">Diario</string>
+    <string name="usage_tab_model">Por modelo</string>
+    <string name="usage_empty">Aún no hay uso de la API registrado. El conteo de tokens aparecerá al finalizar un dictado por voz.</string>
+    <string name="usage_breakdown_primary">Ent: %1$s · Sal: %2$s · %3$d sol.</string>
+    <string name="usage_detail_audio_in">Audio ent: %1$s</string>
+    <string name="usage_detail_thoughts">Pensamiento: %1$s</string>
+    <string name="usage_detail_cached">Caché: %1$s</string>
+    <string name="usage_show_all_days">Mostrar los %1$d días</string>
+    <string name="usage_show_less">Mostrar últimos 7 días</string>
+    <string name="usage_open_billing">Ver facturación y límites en AI Studio</string>
+    <string name="usage_no_browser">No se encontró navegador. Abre aistudio.google.com/usage manualmente.</string>
+    <string name="usage_reset_btn">Restablecer estadísticas</string>
+    <string name="usage_reset_dialog_title">¿Restablecer las estadísticas de uso?</string>
+    <string name="usage_reset_dialog_body">Esto solo borra los contadores locales de tokens guardados en este dispositivo. No afecta a tu cuota ni a tu facturación de Google AI Studio.</string>
+    <string name="usage_reset_confirm">Restablecer</string>
+    <string name="usage_reset_cancel">Cancelar</string>
+    <string name="usage_disclaimer">Registra solo el uso de tokens reportado a este dispositivo por AKeyboard (excluye otros dispositivos o la web y puede diferir ligeramente de la factura).</string>
+
+    <string name="section_app_update">7. Actualizaciones de la app</string>
     <string name="app_version_label">Versión actual: %1$s (%2$d)</string>
     <string name="btn_check_update">Buscar actualizaciones</string>
     <string name="cd_release_notes">Ver notas de la versión en GitHub</string>

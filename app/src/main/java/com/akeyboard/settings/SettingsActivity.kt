@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -43,6 +44,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -74,6 +76,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -82,7 +85,10 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.akeyboard.AKeyboardApp
 import com.akeyboard.R
+import com.akeyboard.data.ModelUsageStats
 import com.akeyboard.data.SettingsRepository
+import com.akeyboard.data.UsageStore
+import com.akeyboard.data.toSummary
 import com.akeyboard.remote.RemoteDictationActivity
 import com.akeyboard.ui.AKeyboardTheme
 import com.akeyboard.util.DiagnosticLog
@@ -96,6 +102,7 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
+import java.text.NumberFormat
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -146,7 +153,8 @@ class SettingsActivity : ComponentActivity() {
         SettingsViewModel.Factory(
             apiKeyStore = app.apiKeyStore,
             settingsRepository = app.settingsRepository,
-            modelRegistryClient = app.modelRegistryClient
+            modelRegistryClient = app.modelRegistryClient,
+            usageRepository = app.usageRepository
         )
     }
 
@@ -360,6 +368,7 @@ private fun SettingsContent(
         mutableStateOf(context.hasPermission(Manifest.permission.RECORD_AUDIO))
     }
     var showNoBrowserHint by rememberSaveable { mutableStateOf(false) }
+    var showUsageNoBrowserHint by rememberSaveable { mutableStateOf(false) }
     var showReleaseNotesNoBrowserHint by rememberSaveable { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner, context) {
@@ -818,7 +827,19 @@ private fun SettingsContent(
 
                 HorizontalDivider()
 
-                // 6. App Updates
+                // 6. API Usage Statistics
+                UsageStatsSection(
+                    usageStore = state.usageStore,
+                    showNoBrowserHint = showUsageNoBrowserHint,
+                    onOpenBilling = {
+                        showUsageNoBrowserHint = !context.openExternalUrl(AI_STUDIO_BILLING_URL)
+                    },
+                    onResetUsage = viewModel::resetUsageStats
+                )
+
+                HorizontalDivider()
+
+                // 7. App Updates
                 Text(
                     text = stringResource(R.string.section_app_update),
                     style = MaterialTheme.typography.titleMedium
@@ -1002,6 +1023,7 @@ private fun KeyStatusText(status: KeyValidationStatus) {
 
 internal const val AI_STUDIO_API_KEY_URL = "https://aistudio.google.com/apikey"
 internal const val AI_STUDIO_REGIONS_URL = "https://ai.google.dev/gemini-api/docs/available-regions"
+internal const val AI_STUDIO_BILLING_URL = "https://aistudio.google.com/usage"
 internal const val GITHUB_RELEASES_BASE_URL = "https://github.com/Max97k/echokey/releases"
 private val SEMVER_TAG_REGEX = Regex("""^\d+\.\d+\.\d+(?:[-.][0-9A-Za-z.]+)?$""")
 
@@ -1100,3 +1122,300 @@ private fun SetupChecklistRow(
         )
     }
 }
+
+private const val DEFAULT_VISIBLE_USAGE_DAYS = 7
+
+@Composable
+private fun UsageStatsSection(
+    usageStore: UsageStore,
+    showNoBrowserHint: Boolean,
+    onOpenBilling: () -> Unit,
+    onResetUsage: () -> Unit
+) {
+    val summary = remember(usageStore) { usageStore.toSummary() }
+    var showByModel by rememberSaveable { mutableStateOf(false) }
+    var showAllDays by rememberSaveable { mutableStateOf(false) }
+    var showResetDialog by rememberSaveable { mutableStateOf(false) }
+
+    Text(
+        text = stringResource(R.string.section_usage),
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.testTag("settings_usage_section")
+    )
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("settings_usage_summary_card")
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            UsageSummaryMetric(
+                label = stringResource(R.string.usage_summary_today),
+                tokens = summary.todayTokens,
+                requests = summary.todayRequests,
+                modifier = Modifier.weight(1f)
+            )
+            UsageSummaryMetric(
+                label = stringResource(R.string.usage_summary_30d),
+                tokens = summary.last30DaysTokens,
+                requests = summary.last30DaysRequests,
+                modifier = Modifier.weight(1f)
+            )
+            UsageSummaryMetric(
+                label = stringResource(R.string.usage_summary_all_time),
+                tokens = summary.allTimeTokens,
+                requests = summary.allTimeRequests,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterChip(
+            selected = !showByModel,
+            onClick = { showByModel = false },
+            label = { Text(stringResource(R.string.usage_tab_daily)) },
+            modifier = Modifier.testTag("settings_usage_tab_daily")
+        )
+        FilterChip(
+            selected = showByModel,
+            onClick = { showByModel = true },
+            label = { Text(stringResource(R.string.usage_tab_model)) },
+            modifier = Modifier.testTag("settings_usage_tab_model")
+        )
+    }
+
+    val isEmpty = if (showByModel) summary.modelTotals.isEmpty() else summary.dailyEntries.isEmpty()
+    if (isEmpty) {
+        Text(
+            text = stringResource(R.string.usage_empty),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.testTag("settings_usage_empty")
+        )
+    } else if (!showByModel) {
+        val visibleDays = if (showAllDays) {
+            summary.dailyEntries
+        } else {
+            summary.dailyEntries.take(DEFAULT_VISIBLE_USAGE_DAYS)
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            visibleDays.forEach { day ->
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = day.date,
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        day.models.forEachIndexed { index, entry ->
+                            if (index > 0) {
+                                HorizontalDivider()
+                            }
+                            ModelUsageRow(modelId = entry.modelId, stats = entry.stats)
+                        }
+                    }
+                }
+            }
+            if (summary.dailyEntries.size > DEFAULT_VISIBLE_USAGE_DAYS) {
+                TextButton(
+                    onClick = { showAllDays = !showAllDays },
+                    modifier = Modifier.testTag("settings_usage_toggle_expand_btn")
+                ) {
+                    Text(
+                        if (showAllDays) {
+                            stringResource(R.string.usage_show_less)
+                        } else {
+                            stringResource(R.string.usage_show_all_days, summary.dailyEntries.size)
+                        }
+                    )
+                }
+            }
+        }
+    } else {
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                summary.modelTotals.forEachIndexed { index, entry ->
+                    if (index > 0) {
+                        HorizontalDivider()
+                    }
+                    ModelUsageRow(modelId = entry.modelId, stats = entry.stats)
+                }
+            }
+        }
+    }
+
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        TextButton(
+            onClick = onOpenBilling,
+            modifier = Modifier.testTag("settings_usage_billing_btn")
+        ) {
+            Text(stringResource(R.string.usage_open_billing))
+        }
+        OutlinedButton(
+            onClick = { showResetDialog = true },
+            modifier = Modifier.testTag("settings_usage_reset_btn")
+        ) {
+            Text(stringResource(R.string.usage_reset_btn))
+        }
+    }
+
+    if (showNoBrowserHint) {
+        Text(
+            text = stringResource(R.string.usage_no_browser),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.error,
+            modifier = Modifier.testTag("settings_usage_no_browser_hint")
+        )
+    }
+
+    Text(
+        text = stringResource(R.string.usage_disclaimer),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            modifier = Modifier
+                .semantics { testTagsAsResourceId = true }
+                .testTag("settings_usage_reset_dialog"),
+            title = { Text(stringResource(R.string.usage_reset_dialog_title)) },
+            text = { Text(stringResource(R.string.usage_reset_dialog_body)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showResetDialog = false
+                        onResetUsage()
+                    },
+                    modifier = Modifier.testTag("settings_usage_reset_confirm_btn")
+                ) {
+                    Text(stringResource(R.string.usage_reset_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showResetDialog = false },
+                    modifier = Modifier.testTag("settings_usage_reset_cancel_btn")
+                ) {
+                    Text(stringResource(R.string.usage_reset_cancel))
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun UsageSummaryMetric(
+    label: String,
+    tokens: Long,
+    requests: Long,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = stringResource(R.string.usage_tokens_unit, formatUsageCount(tokens)),
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold
+        )
+        Text(
+            text = stringResource(R.string.usage_requests_short, requests),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun ModelUsageRow(
+    modelId: String,
+    stats: ModelUsageStats
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = modelId,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp)
+            )
+            Text(
+                text = stringResource(R.string.usage_tokens_unit, formatUsageCount(stats.totalTokens)),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+        Text(
+            text = stringResource(
+                R.string.usage_breakdown_primary,
+                formatUsageCount(stats.promptTokens),
+                formatUsageCount(stats.responseTokens),
+                stats.requests
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        val details = buildList {
+            if (stats.audioInputTokens > 0L) {
+                add(stringResource(R.string.usage_detail_audio_in, formatUsageCount(stats.audioInputTokens)))
+            }
+            if (stats.thoughtsTokens > 0L) {
+                add(stringResource(R.string.usage_detail_thoughts, formatUsageCount(stats.thoughtsTokens)))
+            }
+            if (stats.cachedTokens > 0L) {
+                add(stringResource(R.string.usage_detail_cached, formatUsageCount(stats.cachedTokens)))
+            }
+        }
+        if (details.isNotEmpty()) {
+            Text(
+                text = details.joinToString(" · "),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+private fun formatUsageCount(value: Long): String = NumberFormat.getIntegerInstance().format(value)

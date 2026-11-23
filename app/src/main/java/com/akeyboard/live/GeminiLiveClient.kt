@@ -1,11 +1,14 @@
 package com.akeyboard.live
 
 import android.util.Base64
+import com.akeyboard.data.UsageDelta
 import com.akeyboard.util.DiagnosticLog
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.delay
@@ -38,6 +41,64 @@ sealed class LiveEvent {
     data class Failed(val error: LiveError) : LiveEvent()
 }
 
+private class ConnectionUsageTracker(private val modelId: String) {
+    private var lastPrompt = 0L
+    private var lastResponse = 0L
+    private var lastThoughts = 0L
+    private var lastCached = 0L
+    private var lastTotal = 0L
+    private var lastAudioInput = 0L
+    private var hasReportedRequest = false
+
+    @Synchronized
+    fun computeDelta(meta: UsageMetadata): UsageDelta? {
+        val prompt = (meta.promptTokenCount ?: 0).toLong().coerceAtLeast(0L)
+        val response = (meta.responseTokenCount ?: 0).toLong().coerceAtLeast(0L)
+        val thoughts = (meta.thoughtsTokenCount ?: 0).toLong().coerceAtLeast(0L)
+        val cached = (meta.cachedContentTokenCount ?: 0).toLong().coerceAtLeast(0L)
+        val rawTotal = (meta.totalTokenCount ?: 0).toLong().coerceAtLeast(0L)
+        val total = if (rawTotal > 0L) rawTotal else (prompt + response + thoughts + cached)
+        val audioInput = meta.promptTokensDetails.orEmpty()
+            .filter { it.modality.equals("AUDIO", ignoreCase = true) }
+            .sumOf { (it.tokenCount ?: 0).toLong().coerceAtLeast(0L) }
+
+        val dPrompt = (prompt - lastPrompt).coerceAtLeast(0L)
+        val dResponse = (response - lastResponse).coerceAtLeast(0L)
+        val dThoughts = (thoughts - lastThoughts).coerceAtLeast(0L)
+        val dCached = (cached - lastCached).coerceAtLeast(0L)
+        val dTotal = (total - lastTotal).coerceAtLeast(0L)
+        val dAudioInput = (audioInput - lastAudioInput).coerceAtLeast(0L)
+
+        lastPrompt = maxOf(lastPrompt, prompt)
+        lastResponse = maxOf(lastResponse, response)
+        lastThoughts = maxOf(lastThoughts, thoughts)
+        lastCached = maxOf(lastCached, cached)
+        lastTotal = maxOf(lastTotal, total)
+        lastAudioInput = maxOf(lastAudioInput, audioInput)
+
+        val anyPositive = dPrompt > 0L || dResponse > 0L || dThoughts > 0L ||
+            dCached > 0L || dTotal > 0L || dAudioInput > 0L
+        if (!anyPositive) return null
+
+        val req = if (!hasReportedRequest) {
+            hasReportedRequest = true
+            1L
+        } else {
+            0L
+        }
+        return UsageDelta(
+            modelId = modelId,
+            requests = req,
+            promptTokens = dPrompt,
+            responseTokens = dResponse,
+            thoughtsTokens = dThoughts,
+            cachedTokens = dCached,
+            totalTokens = dTotal,
+            audioInputTokens = dAudioInput
+        )
+    }
+}
+
 class GeminiLiveClient(
     private val okHttpClient: OkHttpClient,
     private val baseWsUrl: String = DEFAULT_WS_URL,
@@ -50,7 +111,10 @@ class GeminiLiveClient(
     },
     private val base64Encoder: (ByteArray) -> String = { bytes ->
         Base64.encodeToString(bytes, Base64.NO_WRAP)
-    }
+    },
+    private val onUsageReported: (UsageDelta) -> Unit = {},
+    private val drainTimeoutMs: Long = DEFAULT_DRAIN_TIMEOUT_MS,
+    private val drainScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 ) {
     private var webSocket: WebSocket? = null
     private var currentKey: String? = null
@@ -62,6 +126,7 @@ class GeminiLiveClient(
     private var streamJob: Job? = null
     private var isUtteranceActive = false
     private var hasSentActivityStart = false
+    private val drainingSockets = mutableMapOf<WebSocket, Job>()
 
     private val _events = MutableSharedFlow<LiveEvent>(extraBufferCapacity = 64)
     val events: Flow<LiveEvent> = _events.asSharedFlow()
@@ -92,7 +157,7 @@ class GeminiLiveClient(
             resetIdleTtl(scope)
             return
         }
-        close()
+        closeInternal(preserveUtteranceFlag = false, closeDraining = false)
         openConnection(scope, apiKey, modelId, languageCodes, smartMode)
         resetIdleTtl(scope)
     }
@@ -113,7 +178,7 @@ class GeminiLiveClient(
         val deferred = if (isWarmFor(apiKey, modelId, languageCodes, smartMode)) {
             setupCompleteDeferred!!
         } else {
-            closeInternal(preserveUtteranceFlag = true)
+            closeInternal(preserveUtteranceFlag = true, closeDraining = false)
             openConnection(scope, apiKey, modelId, languageCodes, smartMode)
         }
 
@@ -156,28 +221,77 @@ class GeminiLiveClient(
 
     fun finalizeTimeout(): Long = finalizeTimeoutMs
 
-    fun close() {
-        closeInternal(preserveUtteranceFlag = false)
+    fun drainAndDetach() {
+        synchronized(this) {
+            val oldWs = webSocket
+            webSocket = null
+            isUtteranceActive = false
+            hasSentActivityStart = false
+            idleTtlJob?.cancel()
+            idleTtlJob = null
+            streamJob?.cancel()
+            streamJob = null
+            setupCompleteDeferred?.cancel()
+            setupCompleteDeferred = null
+            currentKey = null
+            currentModelId = null
+            currentLanguageCodes = null
+            currentSmartMode = null
+            if (oldWs != null) {
+                val timeoutJob = drainScope.launch(start = CoroutineStart.LAZY) {
+                    delay(drainTimeoutMs)
+                    finishDrainingSocket(oldWs)
+                }
+                drainingSockets[oldWs] = timeoutJob
+                timeoutJob.start()
+            }
+        }
     }
 
-    @Synchronized
-    private fun closeInternal(preserveUtteranceFlag: Boolean) {
-        if (!preserveUtteranceFlag) {
-            isUtteranceActive = false
+    fun close() {
+        closeInternal(preserveUtteranceFlag = false, closeDraining = true)
+    }
+
+    private fun finishDrainingSocket(ws: WebSocket) {
+        val timeoutJob = synchronized(this) {
+            drainingSockets.remove(ws)
         }
-        hasSentActivityStart = false
-        idleTtlJob?.cancel()
-        idleTtlJob = null
-        streamJob?.cancel()
-        streamJob = null
-        setupCompleteDeferred?.cancel()
-        setupCompleteDeferred = null
-        currentKey = null
-        currentModelId = null
-        currentLanguageCodes = null
-        currentSmartMode = null
-        webSocket?.close(1000, "closed")
-        webSocket = null
+        timeoutJob?.cancel()
+        runCatching { ws.close(1000, "drained") }
+    }
+
+    private fun closeInternal(preserveUtteranceFlag: Boolean, closeDraining: Boolean) {
+        val activeWs: WebSocket?
+        val drainedList: List<Pair<WebSocket, Job>>
+        synchronized(this) {
+            if (!preserveUtteranceFlag) {
+                isUtteranceActive = false
+            }
+            hasSentActivityStart = false
+            idleTtlJob?.cancel()
+            idleTtlJob = null
+            streamJob?.cancel()
+            streamJob = null
+            setupCompleteDeferred?.cancel()
+            setupCompleteDeferred = null
+            currentKey = null
+            currentModelId = null
+            currentLanguageCodes = null
+            currentSmartMode = null
+            activeWs = webSocket
+            webSocket = null
+            if (closeDraining && drainingSockets.isNotEmpty()) {
+                drainedList = drainingSockets.entries.map { it.key to it.value }
+                drainingSockets.clear()
+            } else {
+                drainedList = emptyList()
+            }
+        }
+        activeWs?.let { runCatching { it.close(1000, "closed") } }
+        drainedList.forEach { (ws, job) ->
+            job.cancel()
+            runCatching { ws.close(1000, "closed") }
+        }
     }
 
     private fun resetIdleTtl(scope: CoroutineScope) {
@@ -206,6 +320,7 @@ class GeminiLiveClient(
         currentSmartMode = smartMode
 
         val cleanModel = modelId.removePrefix("models/")
+        val tracker = ConnectionUsageTracker(cleanModel)
         val isTranscribe = cleanModel.contains("transcribe", ignoreCase = true)
         DiagnosticLog.record("Live", "connect", "model=$cleanModel transcribe=$isTranscribe")
         val setupEnvelope = BidiSetupEnvelope(
@@ -237,14 +352,21 @@ class GeminiLiveClient(
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
-                handleServerPayload(text, deferred)
+                handleServerPayload(webSocket, text, deferred, tracker)
             }
 
             override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-                handleServerPayload(bytes.utf8(), deferred)
+                handleServerPayload(webSocket, bytes.utf8(), deferred, tracker)
             }
 
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+                val isActive = synchronized(this@GeminiLiveClient) {
+                    this@GeminiLiveClient.webSocket === webSocket
+                }
+                if (!isActive) {
+                    finishDrainingSocket(webSocket)
+                    return
+                }
                 if (code != 1000) {
                     DiagnosticLog.record("Live", "ws_closing", "code=$code reason=$reason")
                     val err = mapCloseError(code, reason)
@@ -260,6 +382,13 @@ class GeminiLiveClient(
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                val isActive = synchronized(this@GeminiLiveClient) {
+                    this@GeminiLiveClient.webSocket === webSocket
+                }
+                if (!isActive) {
+                    finishDrainingSocket(webSocket)
+                    return
+                }
                 DiagnosticLog.record(
                     "Live",
                     "ws_failure",
@@ -278,12 +407,41 @@ class GeminiLiveClient(
         return deferred
     }
 
-    private fun handleServerPayload(raw: String, deferred: CompletableDeferred<Boolean>) {
+    private fun handleServerPayload(
+        ws: WebSocket,
+        raw: String,
+        deferred: CompletableDeferred<Boolean>,
+        tracker: ConnectionUsageTracker
+    ) {
+        val isActive: Boolean
+        val isDraining: Boolean
+        synchronized(this) {
+            isActive = webSocket === ws
+            isDraining = !isActive && drainingSockets.containsKey(ws)
+        }
+        if (!isActive && !isDraining) return
+
         val envelope = try {
             json.decodeFromString<ServerEnvelope>(raw)
         } catch (_: Exception) {
             return
         }
+
+        envelope.usageMetadata?.let { meta ->
+            tracker.computeDelta(meta)?.let(onUsageReported)
+        }
+
+        if (!isActive) {
+            if (envelope.usageMetadata != null ||
+                envelope.serverContent?.turnComplete == true ||
+                envelope.serverContent?.generationComplete == true ||
+                envelope.error != null
+            ) {
+                finishDrainingSocket(ws)
+            }
+            return
+        }
+
         if (envelope.error != null) {
             val code = envelope.error.code ?: 0
             val status = envelope.error.status.orEmpty()
@@ -367,6 +525,7 @@ class GeminiLiveClient(
             "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent"
         const val DEFAULT_IDLE_TTL_MS = 45_000L
         const val DEFAULT_FINALIZE_TIMEOUT_MS = 2_000L
+        const val DEFAULT_DRAIN_TIMEOUT_MS = 900L
         private const val SETUP_TIMEOUT_MS = 10_000L
 
         private val KEY_QUERY_REGEX = Regex("([?&]key=)[^&\\s]+", RegexOption.IGNORE_CASE)

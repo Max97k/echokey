@@ -143,7 +143,31 @@
     <string name="remote_btn_pc_bridge_code">GitHub에서 Python 스크립트 열기</string>
     <string name="remote_pc_bridge_no_browser">브라우저를 찾을 수 없습니다. github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py 를 직접 열어주세요.</string>
 
-    <string name="section_app_update">6. 앱 업데이트</string>
+    <string name="section_usage">6. API 사용량 통계</string>
+    <string name="usage_summary_today">오늘</string>
+    <string name="usage_summary_30d">최근 30일</string>
+    <string name="usage_summary_all_time">전체 누적</string>
+    <string name="usage_tokens_unit">%1$s tokens</string>
+    <string name="usage_requests_short">%1$d회</string>
+    <string name="usage_tab_daily">일별</string>
+    <string name="usage_tab_model">모델별</string>
+    <string name="usage_empty">기록된 API 사용량이 아직 없습니다. 음성 입력이 완료되면 토큰 수가 표시됩니다.</string>
+    <string name="usage_breakdown_primary">입력: %1$s · 출력: %2$s · %3$d회</string>
+    <string name="usage_detail_audio_in">오디오 입력: %1$s</string>
+    <string name="usage_detail_thoughts">추론: %1$s</string>
+    <string name="usage_detail_cached">캐시: %1$s</string>
+    <string name="usage_show_all_days">전체 %1$d일 보기</string>
+    <string name="usage_show_less">최근 7일만 보기</string>
+    <string name="usage_open_billing">AI Studio에서 결제 및 한도 확인</string>
+    <string name="usage_no_browser">브라우저를 찾을 수 없습니다. aistudio.google.com/usage 를 직접 열어주세요.</string>
+    <string name="usage_reset_btn">통계 초기화</string>
+    <string name="usage_reset_dialog_title">API 사용량 통계를 초기화할까요?</string>
+    <string name="usage_reset_dialog_body">이 기기에 로컬로 저장된 토큰 카운터만 지워지며, Google AI Studio 할당량이나 결제에는 영향을 주지 않습니다.</string>
+    <string name="usage_reset_confirm">초기화</string>
+    <string name="usage_reset_cancel">취소</string>
+    <string name="usage_disclaimer">이 기기의 AKeyboard로 보고된 API 사용량만 집계합니다(다른 기기나 웹 사용은 제외되며 실제 청구와 약간 다를 수 있습니다).</string>
+
+    <string name="section_app_update">7. 앱 업데이트</string>
     <string name="app_version_label">현재 버전: %1$s (%2$d)</string>
     <string name="btn_check_update">업데이트 확인</string>
     <string name="cd_release_notes">GitHub에서 릴리스 노트 보기</string>

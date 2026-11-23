@@ -157,7 +157,10 @@ class AKeyboardImeService :
         lifecycleDispatcher.onServicePreSuperOnStart()
 
         app = application as AKeyboardApp
-        liveClient = GeminiLiveClient(app.okHttpClient)
+        liveClient = GeminiLiveClient(
+            okHttpClient = app.okHttpClient,
+            onUsageReported = app::recordUsage
+        )
         dictationSession = VoiceDictationSession(
             scope = serviceScope,
             audioManager = audioManager,

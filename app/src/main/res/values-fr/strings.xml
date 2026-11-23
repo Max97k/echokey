@@ -143,7 +143,31 @@
     <string name="remote_btn_pc_bridge_code">Ouvrir le script Python sur GitHub</string>
     <string name="remote_pc_bridge_no_browser">Aucun navigateur trouvé. Ouvrez github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py manuellement.</string>
 
-    <string name="section_app_update">6. Mises à jour de l\'application</string>
+    <string name="section_usage">6. Statistiques d\'utilisation de l\'API</string>
+    <string name="usage_summary_today">Aujourd\'hui</string>
+    <string name="usage_summary_30d">30 derniers jours</string>
+    <string name="usage_summary_all_time">Total</string>
+    <string name="usage_tokens_unit">%1$s jetons</string>
+    <string name="usage_requests_short">%1$d req.</string>
+    <string name="usage_tab_daily">Par jour</string>
+    <string name="usage_tab_model">Par modèle</string>
+    <string name="usage_empty">Aucune utilisation de l\'API enregistrée. Les jetons apparaîtront après une dictée vocale.</string>
+    <string name="usage_breakdown_primary">Entrée : %1$s · Sortie : %2$s · %3$d req.</string>
+    <string name="usage_detail_audio_in">Audio entrée : %1$s</string>
+    <string name="usage_detail_thoughts">Réflexion : %1$s</string>
+    <string name="usage_detail_cached">En cache : %1$s</string>
+    <string name="usage_show_all_days">Afficher les %1$d jours</string>
+    <string name="usage_show_less">Afficher les 7 derniers jours</string>
+    <string name="usage_open_billing">Voir facturation et limites sur AI Studio</string>
+    <string name="usage_no_browser">Aucun navigateur trouvé. Ouvrez aistudio.google.com/usage manuellement.</string>
+    <string name="usage_reset_btn">Réinitialiser</string>
+    <string name="usage_reset_dialog_title">Réinitialiser les statistiques d\'utilisation ?</string>
+    <string name="usage_reset_dialog_body">Cela efface uniquement les compteurs locaux de jetons sur cet appareil, sans affecter votre quota ni votre facturation Google AI Studio.</string>
+    <string name="usage_reset_confirm">Réinitialiser</string>
+    <string name="usage_reset_cancel">Annuler</string>
+    <string name="usage_disclaimer">Comptabilise uniquement l\'utilisation signalée à cet appareil par AKeyboard (hors autres appareils ou web ; peut légèrement différer de la facturation).</string>
+
+    <string name="section_app_update">7. Mises à jour de l\'application</string>
     <string name="app_version_label">Version actuelle : %1$s (%2$d)</string>
     <string name="btn_check_update">Rechercher des mises à jour</string>
     <string name="cd_release_notes">Voir les notes de version sur GitHub</string>

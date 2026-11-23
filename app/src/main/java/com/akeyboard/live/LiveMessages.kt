@@ -79,7 +79,26 @@ class EmptyObject
 data class ServerEnvelope(
     val setupComplete: EmptyObject? = null,
     val serverContent: ServerContent? = null,
+    val usageMetadata: UsageMetadata? = null,
     val error: ServerError? = null
+)
+
+@Serializable
+data class UsageMetadata(
+    val promptTokenCount: Int? = null,
+    val cachedContentTokenCount: Int? = null,
+    val responseTokenCount: Int? = null,
+    val thoughtsTokenCount: Int? = null,
+    val totalTokenCount: Int? = null,
+    val promptTokensDetails: List<ModalityTokenCount>? = null,
+    val cacheTokensDetails: List<ModalityTokenCount>? = null,
+    val responseTokensDetails: List<ModalityTokenCount>? = null
+)
+
+@Serializable
+data class ModalityTokenCount(
+    val modality: String? = null,
+    val tokenCount: Int? = null
 )
 
 @Serializable

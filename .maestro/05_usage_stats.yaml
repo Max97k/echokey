@@ -1,0 +1,48 @@
+appId: com.max97k.akeyboard
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: "disclosure_agree_btn"
+- tapOn:
+    id: "disclosure_agree_btn"
+- scrollUntilVisible:
+    element:
+      id: "settings_usage_section"
+    direction: DOWN
+- scrollUntilVisible:
+    element:
+      id: "settings_usage_summary_card"
+    direction: DOWN
+- assertVisible:
+    id: "settings_usage_summary_card"
+- scrollUntilVisible:
+    element:
+      id: "settings_usage_empty"
+    direction: DOWN
+- assertVisible:
+    id: "settings_usage_empty"
+- tapOn:
+    id: "settings_usage_tab_model"
+- assertVisible:
+    id: "settings_usage_empty"
+- tapOn:
+    id: "settings_usage_tab_daily"
+- scrollUntilVisible:
+    element:
+      id: "settings_usage_reset_btn"
+    direction: DOWN
+- tapOn:
+    id: "settings_usage_reset_btn"
+- assertVisible:
+    id: "settings_usage_reset_dialog"
+- tapOn:
+    id: "settings_usage_reset_confirm_btn"
+- assertNotVisible:
+    id: "settings_usage_reset_dialog"
+- scrollUntilVisible:
+    element:
+      id: "settings_usage_summary_card"
+    direction: UP
+- assertVisible:
+    id: "settings_usage_summary_card"

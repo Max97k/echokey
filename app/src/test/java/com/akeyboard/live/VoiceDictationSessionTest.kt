@@ -6,6 +6,7 @@ import com.akeyboard.audio.AudioCaptureResult
 import com.akeyboard.audio.AudioFailureReason
 import com.akeyboard.data.ApiKeyStore
 import com.akeyboard.data.SettingsRepository
+import com.akeyboard.data.UsageDelta
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -489,6 +490,136 @@ class VoiceDictationSessionTest {
             session.onMicPressed()
             val err = withTimeout(3_000) { errorDeferred.await() }
             assertEquals(VoiceSessionError.REGION_NOT_SUPPORTED, err)
+        } finally {
+            session.close()
+            scope.cancel()
+            okHttpClient.dispatcher.executorService.shutdown()
+            okHttpClient.connectionPool.evictAll()
+            kotlinx.coroutines.delay(100)
+        }
+    }
+
+    @Test
+    fun `commits final text immediately and still captures trailing usageMetadata while draining`() = runBlocking {
+        val conn1ReadyForDrain = CompletableDeferred<Unit>()
+        val conn2SetupReceived = CompletableDeferred<Unit>()
+        val usageReceived = CompletableDeferred<UsageDelta>()
+        val connectionCounter = AtomicInteger(0)
+
+        server.enqueue(
+            MockResponse.Builder()
+                .webSocketUpgrade(object : WebSocketListener() {
+                    override fun onOpen(webSocket: WebSocket, response: okhttp3.Response) {
+                        serverSockets += webSocket
+                    }
+
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        val idx = connectionCounter.get()
+                        if (text.contains("\"setup\"")) {
+                            connectionCounter.incrementAndGet()
+                            webSocket.send("{\"setupComplete\":{}}".encodeUtf8())
+                        } else if (text.contains("activityEnd") && idx >= 1) {
+                            webSocket.send(
+                                "{\"serverContent\":{\"inputTranscription\":{\"text\":\"測試計量\"}}}".encodeUtf8()
+                            )
+                            Thread {
+                                Thread.sleep(150)
+                                webSocket.send(
+                                    """{"serverContent":{"turnComplete":true},"usageMetadata":{"promptTokenCount":250,"responseTokenCount":12,"totalTokenCount":262,"promptTokensDetails":[{"modality":"AUDIO","tokenCount":240}]}}""".encodeUtf8()
+                                )
+                            }.start()
+                        }
+                    }
+                })
+                .build()
+        )
+        server.enqueue(
+            MockResponse.Builder()
+                .webSocketUpgrade(object : WebSocketListener() {
+                    override fun onOpen(webSocket: WebSocket, response: okhttp3.Response) {
+                        serverSockets += webSocket
+                    }
+
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        if (text.contains("\"setup\"")) {
+                            conn2SetupReceived.complete(Unit)
+                            webSocket.send("{\"setupComplete\":{}}".encodeUtf8())
+                        }
+                    }
+                })
+                .build()
+        )
+
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val dataStore = PreferenceDataStoreFactory.create(scope = scope) {
+            File(tempFolder.root, "usage_drain_session.preferences_pb")
+        }
+        val apiKeyStore = ApiKeyStore(dataStore)
+        val settingsRepo = SettingsRepository(dataStore)
+
+        val fakeAudio = object : AudioCaptureManager() {
+            private var ch: Channel<ByteArray>? = null
+            override fun start(scope: CoroutineScope): AudioCaptureResult {
+                ch = Channel<ByteArray>(capacity = 4).also { it.trySend(ByteArray(32)) }
+                return AudioCaptureResult.Started(ch!!)
+            }
+
+            override fun stop() {
+                ch?.close()
+                ch = null
+            }
+        }
+
+        val okHttpClient = OkHttpClient()
+        val liveClient = GeminiLiveClient(
+            okHttpClient = okHttpClient,
+            baseWsUrl = server.url("/ws").toString().replace("http://", "ws://"),
+            base64Encoder = { bytes -> Base64.getEncoder().encodeToString(bytes) },
+            onUsageReported = { usageReceived.complete(it) },
+            drainTimeoutMs = 1_500L
+        )
+
+        val commits = CopyOnWriteArrayList<String>()
+        val session = VoiceDictationSession(
+            scope = scope,
+            audioManager = fakeAudio,
+            liveClient = liveClient,
+            apiKeyStore = apiKeyStore,
+            settingsRepository = settingsRepo,
+            hasMicPermission = { true },
+            isNetworkAvailable = { true },
+            onPhaseChanged = {},
+            onInterim = {},
+            onFinal = { text ->
+                commits += text
+                conn1ReadyForDrain.complete(Unit)
+            },
+            onFinishComposing = {},
+            onError = { err -> throw AssertionError("Unexpected error: $err") },
+            loadApiKey = { "test-key" }
+        )
+
+        try {
+            session.onMicPressed()
+            kotlinx.coroutines.delay(150)
+            session.onMicReleased()
+
+            withTimeout(3_000) { conn1ReadyForDrain.await() }
+            withTimeout(3_000) { conn2SetupReceived.await() }
+            val delta = withTimeout(3_000) { usageReceived.await() }
+
+            assertEquals(listOf("測試計量"), commits)
+            assertEquals(
+                UsageDelta(
+                    modelId = "gemini-3.5-transcribe-live",
+                    requests = 1L,
+                    promptTokens = 250L,
+                    responseTokens = 12L,
+                    totalTokens = 262L,
+                    audioInputTokens = 240L
+                ),
+                delta
+            )
         } finally {
             session.close()
             scope.cancel()

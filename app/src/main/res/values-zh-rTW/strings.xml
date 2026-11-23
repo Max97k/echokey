@@ -140,7 +140,31 @@
     <string name="remote_btn_pc_bridge_code">前往 GitHub 複製電腦端 Python 程式碼</string>
     <string name="remote_pc_bridge_no_browser">找不到瀏覽器，請手動開啟 github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py。</string>
 
-    <string name="section_app_update">6. 應用程式更新</string>
+    <string name="section_usage">6. API 用量統計</string>
+    <string name="usage_summary_today">今日</string>
+    <string name="usage_summary_30d">近 30 天</string>
+    <string name="usage_summary_all_time">累計</string>
+    <string name="usage_tokens_unit">%1$s tokens</string>
+    <string name="usage_requests_short">%1$d 次</string>
+    <string name="usage_tab_daily">每日明細</string>
+    <string name="usage_tab_model">依模型總計</string>
+    <string name="usage_empty">尚未記錄 API 用量，完成語音輸入後即會顯示 Token 統計。</string>
+    <string name="usage_breakdown_primary">輸入：%1$s · 輸出：%2$s · %3$d 次</string>
+    <string name="usage_detail_audio_in">音訊輸入：%1$s</string>
+    <string name="usage_detail_thoughts">思考：%1$s</string>
+    <string name="usage_detail_cached">快取：%1$s</string>
+    <string name="usage_show_all_days">展開全部 %1$d 天</string>
+    <string name="usage_show_less">僅顯示最近 7 天</string>
+    <string name="usage_open_billing">前往 AI Studio 查看帳單與限額</string>
+    <string name="usage_no_browser">找不到瀏覽器，請手動前往 aistudio.google.com/usage。</string>
+    <string name="usage_reset_btn">重設統計</string>
+    <string name="usage_reset_dialog_title">確定要重設 API 用量統計嗎？</string>
+    <string name="usage_reset_dialog_body">這只會清除儲存在本機的 Token 計數紀錄，不會影響您的 Google AI Studio 配額或帳單。</string>
+    <string name="usage_reset_confirm">重設</string>
+    <string name="usage_reset_cancel">取消</string>
+    <string name="usage_disclaimer">僅統計本機 AKeyboard 收到 API 回報的用量，不含其他裝置或網頁端，且與帳單可能略有差異。</string>
+
+    <string name="section_app_update">7. 應用程式更新</string>
     <string name="app_version_label">目前版本：%1$s（%2$d）</string>
     <string name="btn_check_update">檢查更新</string>
     <string name="cd_release_notes">查看 GitHub 版本更新說明</string>
