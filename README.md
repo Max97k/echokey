@@ -13,7 +13,7 @@
 [![Languages](https://img.shields.io/badge/UI%20Locales-10%20Languages-blueviolet?style=flat-square)](#-key-capabilities)
 [![Tests](https://img.shields.io/badge/Tests-66%20Unit%20%2B%205%20Maestro%20E2E-brightgreen?style=flat-square)](#-build--test)
 [![Privacy Policy](https://img.shields.io/badge/Privacy%20Policy-Online-blue?style=flat-square&logo=githubpages&logoColor=white)](https://max97k.github.io/voice-keyboard-pc-bridge/privacy.html)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=flat-square)](LICENSE)
 
 [English](README.md) • [繁體中文](README_zh.md) • [Releases](https://github.com/Max97k/voice-keyboard-pc-bridge/releases) • [Privacy Policy](https://max97k.github.io/voice-keyboard-pc-bridge/privacy.html) ([Markdown](PRIVACY.md)) • [Design Docs](docs/designs/akeyboard_voice_ime.md)
 
@@ -147,4 +147,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .agents/scripts/run_maestro_
 
 ## 📄 License
 
-Distributed under the MIT License. See [LICENSE](LICENSE) for details.
+Distributed under the Apache License 2.0. See [LICENSE](LICENSE) for details.

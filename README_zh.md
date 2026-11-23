@@ -13,7 +13,7 @@
 [![Languages](https://img.shields.io/badge/支援語系-10%20國介面語言-blueviolet?style=flat-square)](#-核心功能一覽)
 [![Tests](https://img.shields.io/badge/測試驗證-66%20單元測試%20%2B%205%20Maestro%20E2E-brightgreen?style=flat-square)](#-建置與測試)
 [![Privacy Policy](https://img.shields.io/badge/Privacy%20Policy-線上網頁-blue?style=flat-square&logo=githubpages&logoColor=white)](https://max97k.github.io/voice-keyboard-pc-bridge/privacy.html)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=flat-square)](LICENSE)
 
 [English](README.md) • [繁體中文](README_zh.md) • [版本發行紀錄](https://github.com/Max97k/voice-keyboard-pc-bridge/releases) • [隱私權政策](https://max97k.github.io/voice-keyboard-pc-bridge/privacy.html) ([Markdown](PRIVACY.md)) • [設計文件](docs/designs/akeyboard_voice_ime.md)
 
@@ -147,4 +147,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .agents/scripts/run_maestro_
 
 ## 📄 授權條款
 
-採用 MIT 授權條款，詳見 [LICENSE](LICENSE)。
+採用 Apache License 2.0 授權條款，詳見 [LICENSE](LICENSE)。
