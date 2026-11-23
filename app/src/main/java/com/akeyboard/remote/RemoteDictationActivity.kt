@@ -117,7 +117,7 @@ import com.akeyboard.util.openExternalUrl
 import com.akeyboard.util.readClipboardText
 
 internal const val PC_BRIDGE_SCRIPT_URL =
-    "https://github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py"
+    "https://github.com/Max97k/voice-keyboard-pc-bridge/blob/main/tools/akeyboard_bridge.py"
 
 class RemoteDictationActivity : ComponentActivity() {
 

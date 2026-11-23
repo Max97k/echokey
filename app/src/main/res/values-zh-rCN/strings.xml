@@ -138,7 +138,7 @@
     <string name="remote_windows_ime_tip">提醒：使用前请先将 Windows 输入法切换为英文，使用 Windows 注音输入法会导致标点符号错乱。</string>
     <string name="remote_pc_bridge_guide">首次连接电脑请先在 Windows 10/11 运行电脑端 Python 桥接脚本（akeyboard_bridge.py，免安装依赖）：</string>
     <string name="remote_btn_pc_bridge_code">前往 GitHub 复制电脑端 Python 代码</string>
-    <string name="remote_pc_bridge_no_browser">找不到浏览器，请手动打开 github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py。</string>
+    <string name="remote_pc_bridge_no_browser">找不到浏览器，请手动打开 github.com/Max97k/voice-keyboard-pc-bridge/blob/main/tools/akeyboard_bridge.py。</string>
 
     <string name="section_usage">6. API 用量统计</string>
     <string name="usage_summary_today">今日</string>
@@ -169,7 +169,7 @@
     <string name="app_version_label">当前版本：%1$s（%2$d）</string>
     <string name="btn_check_update">检查更新</string>
     <string name="cd_release_notes">查看 GitHub 版本更新说明</string>
-    <string name="release_notes_no_browser">找不到浏览器，请手动前往 github.com/Max97k/echokey/releases。</string>
+    <string name="release_notes_no_browser">找不到浏览器，请手动前往 github.com/Max97k/voice-keyboard-pc-bridge/releases。</string>
     <string name="btn_copy_diagnostics">复制调试诊断信息</string>
     <string name="diagnostics_desc">仅复制版本、设备型号、近期异常退出原因与脱敏技术日志（绝不含语音、输入文字或 API Key）。</string>
     <string name="diagnostics_copied">已将调试诊断信息复制到剪贴板。</string>

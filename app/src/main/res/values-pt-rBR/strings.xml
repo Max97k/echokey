@@ -141,7 +141,7 @@
     <string name="remote_windows_ime_tip">Dica: Mude o método de entrada do Windows para inglês antes de ditar — o IME Zhuyin (Bopomofo) pode corromper a pontuação.</string>
     <string name="remote_pc_bridge_guide">Primeira vez conectando ao PC? Copie e execute akeyboard_bridge.py no Windows 10/11 (Python 3.10+, sem pip install).</string>
     <string name="remote_btn_pc_bridge_code">Abrir script Python no GitHub</string>
-    <string name="remote_pc_bridge_no_browser">Nenhum navegador encontrado. Abra github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py manualmente.</string>
+    <string name="remote_pc_bridge_no_browser">Nenhum navegador encontrado. Abra github.com/Max97k/voice-keyboard-pc-bridge/blob/main/tools/akeyboard_bridge.py manualmente.</string>
 
     <string name="section_usage">6. Estatísticas de uso da API</string>
     <string name="usage_summary_today">Hoje</string>
@@ -172,7 +172,7 @@
     <string name="app_version_label">Versão atual: %1$s (%2$d)</string>
     <string name="btn_check_update">Verificar atualizações</string>
     <string name="cd_release_notes">Ver notas da versão no GitHub</string>
-    <string name="release_notes_no_browser">Nenhum navegador encontrado. Abra github.com/Max97k/echokey/releases manualmente.</string>
+    <string name="release_notes_no_browser">Nenhum navegador encontrado. Abra github.com/Max97k/voice-keyboard-pc-bridge/releases manualmente.</string>
     <string name="btn_copy_diagnostics">Copiar diagnóstico de depuração</string>
     <string name="diagnostics_desc">Copia versão, dados do dispositivo, motivos de falhas recentes e logs técnicos limpos (nunca inclui voz, texto digitado ou sua chave de API).</string>
     <string name="diagnostics_copied">Diagnóstico copiado para a área de transferência.</string>

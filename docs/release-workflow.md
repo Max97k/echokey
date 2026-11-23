@@ -1,6 +1,6 @@
 # AKeyboard Release & Version Alignment Workflow
 
-This project distributes updates via **Google Play (Internal Testing)** while keeping **GitHub Releases** (`Max97k/echokey`) as the canonical source of release notes.
+This project distributes updates via **Google Play (Internal Testing)** while keeping **GitHub Releases** (`Max97k/voice-keyboard-pc-bridge`) as the canonical source of release notes.
 
 ## 1. Version Mapping Rule (Single Source of Truth)
 
@@ -8,7 +8,7 @@ This project distributes updates via **Google Play (Internal Testing)** while ke
 | :--- | :--- | :--- | :--- |
 | `app/build.gradle.kts` `versionName` | `X.Y.Z` (SemVer) | `0.3.0` | Human-facing version; matches GitHub Release tag without `v` |
 | `app/build.gradle.kts` `versionCode` | Strictly increasing integer | `2` | Required by Google Play for every new `.aab` upload |
-| GitHub Git Tag & Release | `vX.Y.Z` | `v0.3.0` | Canonical full Markdown release notes (`https://github.com/Max97k/echokey/releases/tag/v0.3.0`) |
+| GitHub Git Tag & Release | `vX.Y.Z` | `v0.3.0` | Canonical full Markdown release notes (`https://github.com/Max97k/voice-keyboard-pc-bridge/releases/tag/v0.3.0`) |
 | Google Play Release Name | `vX.Y.Z (<versionCode>)` | `v0.3.0 (2)` | Links Play track release back to GitHub tag + build number |
 | In-App `ⓘ` Button (`SettingsActivity`) | `.../releases/tag/v<versionName>` | `.../releases/tag/v0.3.0` | Opens the installed version's GitHub Release Notes |
 
@@ -17,7 +17,7 @@ This project distributes updates via **Google Play (Internal Testing)** while ke
 ## 2. Release Notes Alignment (GitHub ↔ Google Play)
 
 - **GitHub Release (`vX.Y.Z`)**: Holds the full Markdown changelog, Play track name, and `versionCode` (no sideload APK attachment is required when distributing through Google Play).
-- **Google Play Release Notes (`en-US`, `zh-TW`)**: Automatically formatted by `tools/publish_play_internal.py` to keep the summary within Google Play's **500-character limit** while always preserving the direct link `https://github.com/Max97k/echokey/releases/tag/vX.Y.Z`.
+- **Google Play Release Notes (`en-US`, `zh-TW`)**: Automatically formatted by `tools/publish_play_internal.py` to keep the summary within Google Play's **500-character limit** while always preserving the direct link `https://github.com/Max97k/voice-keyboard-pc-bridge/releases/tag/vX.Y.Z`.
 
 ## 3. Standard Release Steps
 

@@ -1,6 +1,6 @@
 # Privacy Policy / 隱私權政策 — AKeyboard
 
-*Last updated: 2026-11-20 / 最後更新日期：2026 年 11 月 20 日*
+*Last updated: 2026-11-23 / 最後更新日期：2026 年 11 月 23 日*
 
 [English](#english) • [繁體中文](#繁體中文)
 
@@ -32,7 +32,7 @@
 
 ### 4. Bluetooth Bridge Mode (Local Remote Input)
 AKeyboard includes an optional **Bluetooth Bridge** feature allowing you to dictate text from your phone directly into a paired Windows PC:
-- **Local Peer-to-Peer Only**: Text and virtual key commands (`ENTER`, `BACKSPACE`) are transmitted strictly over standard Bluetooth RFCOMM (Serial Port Profile) directly to the paired computer running the EchoKey companion desktop utility.
+- **Local Peer-to-Peer Only**: Text and virtual key commands (`ENTER`, `BACKSPACE`) are transmitted strictly over standard Bluetooth RFCOMM (Serial Port Profile) directly to the paired computer running the AKeyboard companion desktop utility (`tools/akeyboard_bridge.py`).
 - **No Intermediary Relays**: Bluetooth transmissions are purely local and near-field; no Bluetooth payload or transmitted text is routed through or uploaded to external servers or cloud services.
 
 ---
@@ -66,8 +66,8 @@ When using AKeyboard, speech audio and model listing requests are transmitted di
 ---
 
 ### 8. Data Retention, Control & Deletion
-- **Instant Deletion upon Clear / Uninstall**: Because all user data (encrypted API key, language preferences, model selection) is stored locally on-device, you can permanently delete all data at any time by:
-  1. Opening **Settings** in AKeyboard and clicking **Clear API Key**; or
+- **Instant Deletion upon Clear / Uninstall**: Because all user data (encrypted API key, language preferences, model selection, and local API token usage counters) is stored locally on-device, you can permanently delete all data at any time by:
+  1. Opening **Settings** in AKeyboard and clicking **Clear Key** / **Reset stats**; or
   2. Going to Android **System Settings > Apps > AKeyboard > Storage > Clear Data**; or
   3. **Uninstalling** the AKeyboard application from your device.
 - **No Server-Side Retention**: Since the developer operates no servers, there is no server-side user data to retain or delete.
@@ -88,7 +88,7 @@ Any updates to this policy will be posted to our open-source repository and refl
 If you have questions, feedback, or concerns regarding this Privacy Policy or your data, please contact the developer:
 - **Developer / Maintainer**: Max97k
 - **Email**: [Max97k@users.noreply.github.com](mailto:Max97k@users.noreply.github.com)
-- **Repository Issues**: [https://github.com/Max97k/echokey/issues](https://github.com/Max97k/echokey/issues)
+- **Repository Issues**: [https://github.com/Max97k/voice-keyboard-pc-bridge/issues](https://github.com/Max97k/voice-keyboard-pc-bridge/issues)
 
 ---
 ---
@@ -119,7 +119,7 @@ If you have questions, feedback, or concerns regarding this Privacy Policy or yo
 
 ### 4. 藍牙語音遙控輸入（Bluetooth Bridge）
 AKeyboard 提供可選的 **藍牙語音遙控輸入** 功能，允許您將手機上的語音聽寫文字即時輸入至已配對的 Windows 電腦：
-- **近端點對點傳輸**：轉錄文字與虛擬控制鍵（`ENTER`、`BACKSPACE`）僅透過近距離藍牙 RFCOMM（串列埠規範 SPP）直接傳送至執行 EchoKey 接收端的 Windows 裝置。
+- **近端點對點傳輸**：轉錄文字與虛擬控制鍵（`ENTER`、`BACKSPACE`）僅透過近距離藍牙 RFCOMM（串列埠規範 SPP）直接傳送至執行 AKeyboard 電腦端接收腳本（`tools/akeyboard_bridge.py`）的 Windows 裝置。
 - **不經過任何雲端中繼**：藍牙傳輸完全限定於本機近場裝置之間，絕不將通訊內容轉發或上傳至外部伺服器或第三方雲端服務。
 
 ---
@@ -153,8 +153,8 @@ AKeyboard 僅宣告並請求維持核心功能運作所不可或缺的權限：
 ---
 
 ### 8. 資料保留、使用者控制與刪除機制
-- **即時且徹底的資料刪除**：本應用程式的所有使用者資料（加密金鑰、語言設定、偏好設定）皆僅存於使用者本機裝置。您可以透過以下任一方式永久銷毀所有個人設定與金鑰：
-  1. 在 AKeyboard 設定介面中點選「**清除 API Key**」；或
+- **即時且徹底的資料刪除**：本應用程式的所有使用者資料（加密金鑰、語言設定、偏好設定與本機 API 用量統計）皆僅存於使用者本機裝置。您可以透過以下任一方式永久銷毀所有個人設定與金鑰：
+  1. 在 AKeyboard 設定介面中點選「**清除 Key**」／「**重設統計**」；或
   2. 至 Android **系統設定 > 應用程式 > AKeyboard > 儲存空間 > 清除所有資料**；或
   3. 直接從裝置中 **解除安裝 AKeyboard**。
 - **無伺服器端資料留存**：由於開發者未營運伺服器，因此本專案不存在任何伺服器端使用者資料可供保留或需提出刪除請求。
@@ -175,4 +175,4 @@ AKeyboard 僅宣告並請求維持核心功能運作所不可或缺的權限：
 若您對本隱私權政策或資料安全有任何疑問或建議，歡迎透過以下方式與開發者聯繫：
 - **開發者**：Max97k
 - **電子信箱**：[Max97k@users.noreply.github.com](mailto:Max97k@users.noreply.github.com)
-- **專案 Issue 追蹤**：[https://github.com/Max97k/echokey/issues](https://github.com/Max97k/echokey/issues)
+- **專案 Issue 追蹤**：[https://github.com/Max97k/voice-keyboard-pc-bridge/issues](https://github.com/Max97k/voice-keyboard-pc-bridge/issues)

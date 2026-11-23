@@ -243,22 +243,22 @@ class PublishPlayInternalTests(unittest.TestCase):
     def test_release_notes_alignment_and_500_char_limit(self):
         self.assertEqual(
             pub.build_github_release_url("0.3.0"),
-            "https://github.com/Max97k/echokey/releases/tag/v0.3.0",
+            "https://github.com/Max97k/voice-keyboard-pc-bridge/releases/tag/v0.3.0",
         )
         self.assertEqual(
             pub.build_github_release_url("v0.2.0"),
-            "https://github.com/Max97k/echokey/releases/tag/v0.2.0",
+            "https://github.com/Max97k/voice-keyboard-pc-bridge/releases/tag/v0.2.0",
         )
 
         default_notes = pub.format_play_release_notes(None, "0.3.0")
         self.assertIn("v0.3.0", default_notes)
-        self.assertIn("https://github.com/Max97k/echokey/releases/tag/v0.3.0", default_notes)
+        self.assertIn("https://github.com/Max97k/voice-keyboard-pc-bridge/releases/tag/v0.3.0", default_notes)
         self.assertLessEqual(len(default_notes), 500)
 
         long_summary = "A" * 700
         truncated = pub.format_play_release_notes(long_summary, "0.3.0")
         self.assertLessEqual(len(truncated), 500)
-        self.assertTrue(truncated.endswith("https://github.com/Max97k/echokey/releases/tag/v0.3.0"))
+        self.assertTrue(truncated.endswith("https://github.com/Max97k/voice-keyboard-pc-bridge/releases/tag/v0.3.0"))
         self.assertIn("…", truncated)
 
     def test_sync_github_release_creates_or_edits_via_gh_cli(self):
@@ -278,7 +278,7 @@ class PublishPlayInternalTests(unittest.TestCase):
             run_fn=run_create,
             which_fn=lambda name: "gh.exe" if name == "gh.exe" else None,
         )
-        self.assertEqual(url, "https://github.com/Max97k/echokey/releases/tag/v0.3.0")
+        self.assertEqual(url, "https://github.com/Max97k/voice-keyboard-pc-bridge/releases/tag/v0.3.0")
         self.assertEqual(create_cmds[0][:4], ["gh.exe", "release", "view", "v0.3.0"])
         self.assertEqual(create_cmds[1][:4], ["gh.exe", "release", "create", "v0.3.0"])
         self.assertIn("v0.3.0 (2)", create_cmds[1][create_cmds[1].index("--notes") + 1])

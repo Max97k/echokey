@@ -1025,7 +1025,7 @@ private fun KeyStatusText(status: KeyValidationStatus) {
 internal const val AI_STUDIO_API_KEY_URL = "https://aistudio.google.com/apikey"
 internal const val AI_STUDIO_REGIONS_URL = "https://ai.google.dev/gemini-api/docs/available-regions"
 internal const val AI_STUDIO_BILLING_URL = "https://aistudio.google.com/usage"
-internal const val GITHUB_RELEASES_BASE_URL = "https://github.com/Max97k/echokey/releases"
+internal const val GITHUB_RELEASES_BASE_URL = "https://github.com/Max97k/voice-keyboard-pc-bridge/releases"
 private val SEMVER_TAG_REGEX = Regex("""^\d+\.\d+\.\d+(?:[-.][0-9A-Za-z.]+)?$""")
 
 internal fun buildReleaseNotesUrl(versionName: String): String {

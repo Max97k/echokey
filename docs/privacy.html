@@ -249,7 +249,7 @@
         <span class="badge">No Backend Server</span>
       </div>
       <h1>Privacy Policy / 隱私權政策</h1>
-      <p class="meta">AKeyboard (EchoKey) &bull; Last updated / 最後更新：2026-11-20</p>
+      <p class="meta">AKeyboard &bull; Last updated / 最後更新：2026-11-23</p>
       <div class="lang-switcher">
         <a href="#zh-tw" class="lang-btn">繁體中文 (Traditional Chinese)</a>
         <a href="#en" class="lang-btn">English (英文版)</a>
@@ -286,7 +286,7 @@
       <h3>4. 藍牙語音遙控輸入（Bluetooth Bridge）</h3>
       <p>AKeyboard 提供可選的<strong>藍牙語音遙控輸入</strong>功能，允許您將手機上的語音聽寫文字即時輸入至已配對的 Windows 電腦：</p>
       <ul>
-        <li><strong>近端點對點傳輸</strong>：轉錄文字與虛擬控制鍵（<code>ENTER</code>、<code>BACKSPACE</code>）僅透過近距離藍牙 RFCOMM（串列埠規範 SPP）直接傳送至執行 EchoKey 接收端的 Windows 裝置。</li>
+        <li><strong>近端點對點傳輸</strong>：轉錄文字與虛擬控制鍵（<code>ENTER</code>、<code>BACKSPACE</code>）僅透過近距離藍牙 RFCOMM（串列埠規範 SPP）直接傳送至執行 AKeyboard 電腦端接收腳本（<code>tools/akeyboard_bridge.py</code>）的 Windows 裝置。</li>
         <li><strong>不經過任何雲端中繼</strong>：藍牙傳輸完全限定於本機近場裝置之間，絕不將通訊內容轉發或上傳至外部伺服器或第三方雲端服務。</li>
       </ul>
 
@@ -345,9 +345,9 @@
 
       <h3>8. 資料保留、使用者控制與刪除機制 (Data Retention & Deletion)</h3>
       <ul>
-        <li><strong>即時且徹底的資料刪除</strong>：本應用程式的所有使用者資料（加密金鑰、語言設定、偏好設定）皆僅存於使用者本機裝置。您可以透過以下任一方式永久銷毀所有個人設定與金鑰：
+        <li><strong>即時且徹底的資料刪除</strong>：本應用程式的所有使用者資料（加密金鑰、語言設定、偏好設定與本機 API 用量統計）皆僅存於使用者本機裝置。您可以透過以下任一方式永久銷毀所有個人設定與金鑰：
           <ol>
-            <li>在 AKeyboard 設定介面中點選「<strong>清除 API Key</strong>」；或</li>
+            <li>在 AKeyboard 設定介面中點選「<strong>清除 Key</strong>」／「<strong>重設統計</strong>」；或</li>
             <li>至 Android <strong>系統設定 > 應用程式 > AKeyboard > 儲存空間 > 清除所有資料</strong>；或</li>
             <li>直接從裝置中 <strong>解除安裝 AKeyboard</strong>。</li>
           </ol>
@@ -365,7 +365,7 @@
       <ul>
         <li><strong>開發者</strong>：Max97k</li>
         <li><strong>電子信箱</strong>：<a href="mailto:Max97k@users.noreply.github.com">Max97k@users.noreply.github.com</a></li>
-        <li><strong>專案儲存庫與 Issue 追蹤</strong>：<a href="https://github.com/Max97k/echokey/issues" target="_blank" rel="noopener">https://github.com/Max97k/echokey/issues</a></li>
+        <li><strong>專案儲存庫與 Issue 追蹤</strong>：<a href="https://github.com/Max97k/voice-keyboard-pc-bridge/issues" target="_blank" rel="noopener">https://github.com/Max97k/voice-keyboard-pc-bridge/issues</a></li>
       </ul>
     </main>
 
@@ -399,7 +399,7 @@
       <h3>4. Bluetooth Bridge Mode (Local Remote Input)</h3>
       <p>AKeyboard includes an optional <strong>Bluetooth Bridge</strong> feature allowing you to dictate text from your phone directly into a paired Windows PC:</p>
       <ul>
-        <li><strong>Local Peer-to-Peer Only</strong>: Text and virtual key commands (<code>ENTER</code>, <code>BACKSPACE</code>) are transmitted strictly over standard Bluetooth RFCOMM (Serial Port Profile) directly to the paired computer running the EchoKey companion desktop utility.</li>
+        <li><strong>Local Peer-to-Peer Only</strong>: Text and virtual key commands (<code>ENTER</code>, <code>BACKSPACE</code>) are transmitted strictly over standard Bluetooth RFCOMM (Serial Port Profile) directly to the paired computer running the AKeyboard companion desktop utility (<code>tools/akeyboard_bridge.py</code>).</li>
         <li><strong>No Intermediary Relays</strong>: Bluetooth transmissions are purely local and near-field; no Bluetooth payload or transmitted text is routed through or uploaded to external servers or cloud services.</li>
       </ul>
 
@@ -458,9 +458,9 @@
 
       <h3>8. Data Retention, Control &amp; Deletion</h3>
       <ul>
-        <li><strong>Instant Deletion upon Clear / Uninstall</strong>: Because all user data (encrypted API key, language preferences, model selection) is stored locally on-device, you can permanently delete all data at any time by:
+        <li><strong>Instant Deletion upon Clear / Uninstall</strong>: Because all user data (encrypted API key, language preferences, model selection, and local API token usage counters) is stored locally on-device, you can permanently delete all data at any time by:
           <ol>
-            <li>Opening <strong>Settings</strong> in AKeyboard and clicking <strong>Clear API Key</strong>; or</li>
+            <li>Opening <strong>Settings</strong> in AKeyboard and clicking <strong>Clear Key</strong> / <strong>Reset stats</strong>; or</li>
             <li>Going to Android <strong>System Settings > Apps > AKeyboard > Storage > Clear Data</strong>; or</li>
             <li><strong>Uninstalling</strong> the AKeyboard application from your device.</li>
           </ol>
@@ -478,12 +478,12 @@
       <ul>
         <li><strong>Developer / Maintainer</strong>: Max97k</li>
         <li><strong>Email</strong>: <a href="mailto:Max97k@users.noreply.github.com">Max97k@users.noreply.github.com</a></li>
-        <li><strong>Repository &amp; Issues</strong>: <a href="https://github.com/Max97k/echokey/issues" target="_blank" rel="noopener">https://github.com/Max97k/echokey/issues</a></li>
+        <li><strong>Repository &amp; Issues</strong>: <a href="https://github.com/Max97k/voice-keyboard-pc-bridge/issues" target="_blank" rel="noopener">https://github.com/Max97k/voice-keyboard-pc-bridge/issues</a></li>
       </ul>
     </main>
 
     <footer>
-      <p>&copy; 2026 Max97k &bull; AKeyboard (EchoKey) &bull; Open Source under MIT License</p>
+      <p>&copy; 2026 Max97k &bull; AKeyboard &bull; Open Source under MIT License</p>
     </footer>
   </div>
 </body>

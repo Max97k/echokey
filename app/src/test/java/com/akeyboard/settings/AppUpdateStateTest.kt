@@ -116,23 +116,23 @@ class AppUpdateStateTest {
     @Test
     fun `buildReleaseNotesUrl maps semver versionName to tag URL and falls back safely`() {
         assertEquals(
-            "https://github.com/Max97k/echokey/releases/tag/v0.1.0",
+            "https://github.com/Max97k/voice-keyboard-pc-bridge/releases/tag/v0.1.0",
             buildReleaseNotesUrl("0.1.0")
         )
         assertEquals(
-            "https://github.com/Max97k/echokey/releases/tag/v0.2.0",
+            "https://github.com/Max97k/voice-keyboard-pc-bridge/releases/tag/v0.2.0",
             buildReleaseNotesUrl("v0.2.0")
         )
         assertEquals(
-            "https://github.com/Max97k/echokey/releases/tag/v0.3.0-beta.1",
+            "https://github.com/Max97k/voice-keyboard-pc-bridge/releases/tag/v0.3.0-beta.1",
             buildReleaseNotesUrl("0.3.0-beta.1")
         )
         assertEquals(
-            "https://github.com/Max97k/echokey/releases",
+            "https://github.com/Max97k/voice-keyboard-pc-bridge/releases",
             buildReleaseNotesUrl("")
         )
         assertEquals(
-            "https://github.com/Max97k/echokey/releases",
+            "https://github.com/Max97k/voice-keyboard-pc-bridge/releases",
             buildReleaseNotesUrl("dev build")
         )
     }

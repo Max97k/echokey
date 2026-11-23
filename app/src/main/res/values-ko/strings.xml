@@ -141,7 +141,7 @@
     <string name="remote_windows_ime_tip">팁: 받아쓰기 전에 Windows 입력기를 영어로 전환하세요. 일부 IME에서는 문장 부호가 깨질 수 있습니다.</string>
     <string name="remote_pc_bridge_guide">PC에 처음 연결하시나요? Windows 10/11에서 akeyboard_bridge.py를 복사해 실행하세요 (Python 3.10+, pip 설치 불필요).</string>
     <string name="remote_btn_pc_bridge_code">GitHub에서 Python 스크립트 열기</string>
-    <string name="remote_pc_bridge_no_browser">브라우저를 찾을 수 없습니다. github.com/Max97k/echokey/blob/main/tools/akeyboard_bridge.py 를 직접 열어주세요.</string>
+    <string name="remote_pc_bridge_no_browser">브라우저를 찾을 수 없습니다. github.com/Max97k/voice-keyboard-pc-bridge/blob/main/tools/akeyboard_bridge.py 를 직접 열어주세요.</string>
 
     <string name="section_usage">6. API 사용량 통계</string>
     <string name="usage_summary_today">오늘</string>
@@ -172,7 +172,7 @@
     <string name="app_version_label">현재 버전: %1$s (%2$d)</string>
     <string name="btn_check_update">업데이트 확인</string>
     <string name="cd_release_notes">GitHub에서 릴리스 노트 보기</string>
-    <string name="release_notes_no_browser">브라우저를 찾을 수 없습니다. github.com/Max97k/echokey/releases 를 직접 열어주세요.</string>
+    <string name="release_notes_no_browser">브라우저를 찾을 수 없습니다. github.com/Max97k/voice-keyboard-pc-bridge/releases 를 직접 열어주세요.</string>
     <string name="btn_copy_diagnostics">디버그 진단 정보 복사</string>
     <string name="diagnostics_desc">버전, 기기 정보, 최근 비정상 종료 원인 및 정제된 기술 로그를 복사합니다(음성, 입력 텍스트, API 키는 절대 포함되지 않음).</string>
     <string name="diagnostics_copied">진단 정보가 클립보드에 복사되었습니다.</string>

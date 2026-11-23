@@ -20,7 +20,7 @@ import zipfile
 
 DEFAULT_ACCOUNT = "4r099015@gmail.com"
 DEFAULT_SERVICE_ACCOUNT = "play-store@my-project-play-store-490116.iam.gserviceaccount.com"
-DEFAULT_GITHUB_REPO = "Max97k/echokey"
+DEFAULT_GITHUB_REPO = "Max97k/voice-keyboard-pc-bridge"
 PLAY_RELEASE_NOTES_MAX_CHARS = 500
 ANDROID_PUBLISHER_SCOPE = "https://www.googleapis.com/auth/androidpublisher"
 API_BASE = "https://androidpublisher.googleapis.com/androidpublisher/v3/applications"
